@@ -1,0 +1,194 @@
+openapi: 3.1.0
+info:
+  title: Final Schedule View API
+  version: 1.0.0
+  description: |
+    Contract for UC-15 final schedule viewing. Supports public access in both
+    published and unpublished states, with optional authenticated author context.
+servers:
+  - url: https://cms.example.com
+tags:
+  - name: Final Schedule
+paths:
+  /api/final-schedule:
+    get:
+      tags: [Final Schedule]
+      summary: Get final schedule view payload
+      description: |
+        Returns schedule content when publication status is published.
+        Returns an unpublished notice with no schedule entries when unpublished.
+        Endpoint is publicly accessible; authenticated sessions receive author personalization.
+      operationId: getFinalSchedule
+      security:
+        - {}
+        - sessionCookie: []
+      responses:
+        "200":
+          description: Final schedule response for published or unpublished state
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/PublishedScheduleResponse"
+                  - $ref: "#/components/schemas/UnpublishedScheduleResponse"
+              examples:
+                published:
+                  summary: Published schedule for authenticated author
+                  value:
+                    status: published
+                    conferenceTimeZone: America/Toronto
+                    generatedAt: "2026-02-08T15:00:00Z"
+                    viewerContext:
+                      isAuthenticated: true
+                      viewerRole: author
+                      authorId: A-102
+                    sessions:
+                      - sessionId: S-301
+                        title: Graph ML for Systems
+                        startTimeUtc: "2026-05-09T14:00:00Z"
+                        endTimeUtc: "2026-05-09T14:30:00Z"
+                        room: Hall B
+                        track: AI Systems
+                        authorIds: [A-102, A-215]
+                        isCurrentAuthorSession: true
+                unpublished:
+                  summary: Unpublished schedule for anonymous viewer
+                  value:
+                    status: unpublished
+                    generatedAt: "2026-02-08T15:00:00Z"
+                    viewerContext:
+                      isAuthenticated: false
+                      viewerRole: anonymous
+                      authorId: null
+                    notice:
+                      code: SCHEDULE_UNPUBLISHED
+                      message: The final conference schedule has not been published yet.
+        "500":
+          description: Unexpected server error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: session_id
+
+  schemas:
+    ViewerContext:
+      type: object
+      additionalProperties: false
+      required: [isAuthenticated, viewerRole, authorId]
+      properties:
+        isAuthenticated:
+          type: boolean
+        viewerRole:
+          type: string
+          enum: [anonymous, author, other]
+        authorId:
+          type:
+            - string
+            - "null"
+
+    ScheduleSession:
+      type: object
+      additionalProperties: false
+      required:
+        - sessionId
+        - title
+        - startTimeUtc
+        - endTimeUtc
+        - room
+        - authorIds
+        - isCurrentAuthorSession
+      properties:
+        sessionId:
+          type: string
+        title:
+          type: string
+        startTimeUtc:
+          type: string
+          format: date-time
+        endTimeUtc:
+          type: string
+          format: date-time
+        room:
+          type: string
+        track:
+          type: string
+        authorIds:
+          type: array
+          items:
+            type: string
+        isCurrentAuthorSession:
+          type: boolean
+
+    ScheduleAvailabilityNotice:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          enum: [SCHEDULE_UNPUBLISHED]
+        message:
+          type: string
+
+    PublishedScheduleResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - conferenceTimeZone
+        - generatedAt
+        - viewerContext
+        - sessions
+      properties:
+        status:
+          type: string
+          const: published
+        conferenceTimeZone:
+          type: string
+          description: IANA time zone name for conference schedule display
+        generatedAt:
+          type: string
+          format: date-time
+        viewerContext:
+          $ref: "#/components/schemas/ViewerContext"
+        sessions:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScheduleSession"
+
+    UnpublishedScheduleResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - generatedAt
+        - viewerContext
+        - notice
+      properties:
+        status:
+          type: string
+          const: unpublished
+        generatedAt:
+          type: string
+          format: date-time
+        viewerContext:
+          $ref: "#/components/schemas/ViewerContext"
+        notice:
+          $ref: "#/components/schemas/ScheduleAvailabilityNotice"
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
