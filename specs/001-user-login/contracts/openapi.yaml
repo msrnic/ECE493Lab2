@@ -1,0 +1,196 @@
+openapi: 3.0.3
+info:
+  title: CMS User Login API
+  version: 1.0.0
+  description: |
+    API contract for UC-02 login behavior.
+    Governing sources:
+    - /home/m_srnic/ece493/lab2/ECE493Lab2/Use Cases/UC-02.md
+    - /home/m_srnic/ece493/lab2/ECE493Lab2/Acceptance Tests/UC-02-AS.md
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: Login and session state endpoints
+
+paths:
+  /api/auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Authenticate with email and password
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Authentication succeeded; dashboard access granted.
+          headers:
+            Set-Cookie:
+              description: Session cookie (HttpOnly; Secure in production)
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginSuccessResponse'
+        '401':
+          description: Invalid credentials; user remains logged out.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidCredentials:
+                  value:
+                    error: INVALID_CREDENTIALS
+                    message: Invalid email or password.
+        '429':
+          description: Account temporarily blocked after failed-attempt threshold.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ThrottleErrorResponse'
+
+  /api/auth/session:
+    get:
+      tags:
+        - Authentication
+      summary: Get current authentication state
+      description: Used to redirect already-authenticated users away from login view.
+      operationId: getSessionStatus
+      responses:
+        '200':
+          description: Session is authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionStatusResponse'
+              examples:
+                authenticated:
+                  value:
+                    authenticated: true
+                    user:
+                      id: usr_123
+                      email: user@example.com
+                    dashboardUrl: /dashboard.html
+        '401':
+          description: Session is not authenticated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionStatusResponse'
+              examples:
+                unauthenticated:
+                  value:
+                    authenticated: false
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: cms_session
+
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        password:
+          type: string
+          minLength: 1
+          example: p@ssw0rd123
+
+    LoginSuccessResponse:
+      type: object
+      required:
+        - authenticated
+        - user
+        - dashboardUrl
+      properties:
+        authenticated:
+          type: boolean
+          enum: [true]
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        dashboardUrl:
+          type: string
+          example: /dashboard.html
+
+    SessionStatusResponse:
+      type: object
+      required:
+        - authenticated
+      properties:
+        authenticated:
+          type: boolean
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        dashboardUrl:
+          type: string
+      additionalProperties: false
+
+    UserSummary:
+      type: object
+      required:
+        - id
+        - email
+      properties:
+        id:
+          type: string
+          example: usr_123
+        email:
+          type: string
+          format: email
+          example: user@example.com
+
+    ErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          enum:
+            - INVALID_CREDENTIALS
+        message:
+          type: string
+          enum:
+            - Invalid email or password.
+
+    ThrottleErrorResponse:
+      type: object
+      required:
+        - error
+        - message
+        - retryAfterSeconds
+        - blockedUntil
+      properties:
+        error:
+          type: string
+          enum:
+            - LOGIN_TEMPORARILY_BLOCKED
+        message:
+          type: string
+          example: Too many failed login attempts. Try again later.
+        retryAfterSeconds:
+          type: integer
+          minimum: 1
+          example: 600
+        blockedUntil:
+          type: string
+          format: date-time
