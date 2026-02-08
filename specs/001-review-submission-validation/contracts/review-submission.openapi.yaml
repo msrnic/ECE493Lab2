@@ -1,0 +1,224 @@
+openapi: 3.0.3
+info:
+  title: Review Submission Validation API
+  version: 1.0.0
+  description: >
+    REST contract for UC-09 submit-review flow. Enforces required-field validation,
+    completion-once semantics, and duplicate/concurrent submission protection.
+servers:
+  - url: http://localhost:3000
+    description: Local development
+tags:
+  - name: ReviewSubmission
+    description: Endpoints for review submission status and completion
+paths:
+  /api/reviewer-assignments/{assignmentId}/review-status:
+    get:
+      tags:
+        - ReviewSubmission
+      summary: Get current completion status for a reviewer-paper assignment
+      operationId: getReviewSubmissionStatus
+      parameters:
+        - name: assignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Current status for assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewStatusResponse"
+        "403":
+          description: Reviewer no longer has access to the assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /api/reviewer-assignments/{assignmentId}/review-submissions:
+    post:
+      tags:
+        - ReviewSubmission
+      summary: Submit and complete a review for an assignment
+      operationId: submitReview
+      parameters:
+        - name: assignmentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Idempotency-Key
+          in: header
+          required: false
+          schema:
+            type: string
+            maxLength: 128
+          description: Optional key to prevent duplicate client retry writes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewSubmissionRequest"
+      responses:
+        "201":
+          description: Review saved and marked complete
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewSubmissionAcceptedResponse"
+        "400":
+          description: Required fields missing or invalid; no persistence performed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "403":
+          description: Reviewer does not have active access to this assignment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Review already completed or concurrent duplicate rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConflictErrorResponse"
+components:
+  schemas:
+    ReviewSubmissionRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - recommendation
+        - overallScore
+        - confidenceScore
+        - summary
+      properties:
+        recommendation:
+          type: string
+          enum:
+            - STRONG_ACCEPT
+            - ACCEPT
+            - WEAK_ACCEPT
+            - WEAK_REJECT
+            - REJECT
+            - STRONG_REJECT
+        overallScore:
+          type: integer
+          minimum: 1
+          maximum: 5
+        confidenceScore:
+          type: integer
+          minimum: 1
+          maximum: 5
+        summary:
+          type: string
+          minLength: 1
+          pattern: ".*\\S.*"
+          description: Non-whitespace summary text
+        strengths:
+          type: string
+        weaknesses:
+          type: string
+        commentsForChair:
+          type: string
+    ReviewStatusResponse:
+      type: object
+      required:
+        - assignmentId
+        - status
+      properties:
+        assignmentId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - NOT_SUBMITTED
+            - COMPLETED
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+    ReviewSubmissionAcceptedResponse:
+      type: object
+      required:
+        - reviewId
+        - assignmentId
+        - status
+        - completedAt
+      properties:
+        reviewId:
+          type: string
+          format: uuid
+        assignmentId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            - COMPLETED
+        completedAt:
+          type: string
+          format: date-time
+    ValidationErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+        - missingFields
+      properties:
+        code:
+          type: string
+          enum:
+            - VALIDATION_FAILED
+        message:
+          type: string
+        missingFields:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+            enum:
+              - recommendation
+              - overallScore
+              - confidenceScore
+              - summary
+        fieldMessages:
+          type: object
+          additionalProperties:
+            type: string
+    ConflictErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - REVIEW_ALREADY_COMPLETED
+            - CONCURRENT_SUBMISSION_REJECTED
+        message:
+          type: string
+        existingReviewId:
+          type: string
+          format: uuid
+          nullable: true
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
