@@ -1,0 +1,457 @@
+openapi: 3.1.0
+info:
+  title: Draft Save API
+  version: 0.1.0
+  description: |
+    API contract for UC-05 Save Paper Draft behavior.
+    Governing use case: /home/m_srnic/ece493/lab2/ECE493Lab2/Use Cases/UC-05.md
+    Governing acceptance suite: /home/m_srnic/ece493/lab2/ECE493Lab2/Acceptance Tests/UC-05-AS.md
+servers:
+  - url: https://cms.example.com
+    description: Production
+  - url: http://localhost:3000
+    description: Local development
+tags:
+  - name: Draft
+  - name: Draft Versions
+  - name: Draft Retention
+paths:
+  /api/submissions/{submissionId}/draft:
+    put:
+      tags: [Draft]
+      summary: Save current in-progress draft
+      description: |
+        Saves metadata and file changes as a new immutable draft version.
+        Rejects stale saves when baseRevision is not current.
+      operationId: saveDraft
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SaveDraftRequest'
+      responses:
+        '200':
+          description: Draft saved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveDraftResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          description: Stale save attempt rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                staleSave:
+                  value:
+                    code: DRAFT_STALE
+                    message: Draft has changed since it was loaded. Reload latest draft before saving.
+                    reloadRequired: true
+                    latestRevision: 8
+                    latestVersionId: 9d5ea4ef-1b19-45f2-8810-7b14fd9df3fd
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      tags: [Draft]
+      summary: Load latest saved draft
+      operationId: getLatestDraft
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+      responses:
+        '200':
+          description: Latest draft loaded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftVersionPayload'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: No saved draft exists for this submission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/submissions/{submissionId}/draft/versions:
+    get:
+      tags: [Draft Versions]
+      summary: List saved draft versions
+      description: Accessible to submission owner and conference administrators only.
+      operationId: listDraftVersions
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+      responses:
+        '200':
+          description: Version history returned newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [submissionId, latestRevision, versions]
+                properties:
+                  submissionId:
+                    type: string
+                    format: uuid
+                  latestRevision:
+                    type: integer
+                    minimum: 0
+                  versions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DraftVersionSummary'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Submission not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/submissions/{submissionId}/draft/versions/{versionId}:
+    get:
+      tags: [Draft Versions]
+      summary: Get a specific draft version snapshot
+      description: Accessible to submission owner and conference administrators only.
+      operationId: getDraftVersion
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+        - $ref: '#/components/parameters/VersionId'
+      responses:
+        '200':
+          description: Selected version loaded.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DraftVersionPayload'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Requested version not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/submissions/{submissionId}/draft/versions/{versionId}/restore:
+    post:
+      tags: [Draft Versions]
+      summary: Restore a prior draft version as new latest
+      description: |
+        Restores the chosen version by creating a new latest immutable version.
+        Requires current baseRevision to prevent stale restore overwrites.
+      operationId: restoreDraftVersion
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+        - $ref: '#/components/parameters/VersionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [baseRevision]
+              properties:
+                baseRevision:
+                  type: integer
+                  minimum: 0
+      responses:
+        '200':
+          description: Version restored as latest draft.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SaveDraftResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          description: Requested version not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Restore attempted with stale base revision.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/submissions/{submissionId}/draft/retention/prune:
+    post:
+      tags: [Draft Retention]
+      summary: Prune old draft versions after final submission
+      description: Internal integration endpoint invoked when final submission completes.
+      operationId: pruneDraftRetention
+      security:
+        - internalServiceAuth: []
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PruneRetentionRequest'
+      responses:
+        '200':
+          description: Older versions pruned; latest version retained.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PruneRetentionResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          description: Submission not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    internalServiceAuth:
+      type: apiKey
+      in: header
+      name: X-Internal-Service-Token
+
+  parameters:
+    SubmissionId:
+      name: submissionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    VersionId:
+      name: versionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  responses:
+    BadRequest:
+      description: Request failed validation.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Caller lacks permission for this draft action.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: Save failed because of a system error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          examples:
+            systemFailure:
+              value:
+                code: DRAFT_SAVE_FAILED
+                message: Draft was not saved due to a system error. Please retry.
+                reloadRequired: false
+
+  schemas:
+    SaveDraftRequest:
+      type: object
+      required: [baseRevision, metadata]
+      properties:
+        baseRevision:
+          type: integer
+          minimum: 0
+          description: Revision the client currently has loaded.
+        metadata:
+          type: string
+          description: JSON string containing all submission metadata fields.
+        files:
+          type: array
+          items:
+            type: string
+            format: binary
+        removedFileIds:
+          type: array
+          items:
+            type: string
+            format: uuid
+
+    SaveDraftResponse:
+      type: object
+      required: [submissionId, versionId, revision, savedAt, message]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        versionId:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 1
+        savedAt:
+          type: string
+          format: date-time
+        message:
+          type: string
+          example: Draft saved successfully.
+
+    DraftVersionSummary:
+      type: object
+      required: [versionId, revision, savedAt, savedByUserId]
+      properties:
+        versionId:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 1
+        savedAt:
+          type: string
+          format: date-time
+        savedByUserId:
+          type: string
+          format: uuid
+        restoredFromVersionId:
+          type: string
+          format: uuid
+          nullable: true
+
+    DraftVersionPayload:
+      type: object
+      required:
+        - submissionId
+        - versionId
+        - revision
+        - savedAt
+        - metadata
+        - files
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        versionId:
+          type: string
+          format: uuid
+        revision:
+          type: integer
+          minimum: 1
+        savedAt:
+          type: string
+          format: date-time
+        savedByUserId:
+          type: string
+          format: uuid
+        restoredFromVersionId:
+          type: string
+          format: uuid
+          nullable: true
+        metadata:
+          type: object
+          additionalProperties: true
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/FileDescriptor'
+
+    FileDescriptor:
+      type: object
+      required: [fileId, fileName, mimeType, sizeBytes, checksum, storageKey]
+      properties:
+        fileId:
+          type: string
+          format: uuid
+        fileName:
+          type: string
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+          minimum: 1
+        checksum:
+          type: string
+        storageKey:
+          type: string
+
+    PruneRetentionRequest:
+      type: object
+      required: [finalSubmissionId]
+      properties:
+        finalSubmissionId:
+          type: string
+          format: uuid
+
+    PruneRetentionResponse:
+      type: object
+      required: [submissionId, retainedVersionId, prunedVersionCount]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        retainedVersionId:
+          type: string
+          format: uuid
+        prunedVersionCount:
+          type: integer
+          minimum: 0
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        reloadRequired:
+          type: boolean
+        latestRevision:
+          type: integer
+          minimum: 0
+        latestVersionId:
+          type: string
+          format: uuid
