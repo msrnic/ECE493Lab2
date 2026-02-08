@@ -1,0 +1,341 @@
+openapi: 3.1.0
+info:
+  title: Author Decision Notification API
+  version: 0.1.0
+  description: >-
+    Contracts for UC-12 notification generation, single retry handling, and
+    administrator access to unresolved notification failures.
+servers:
+  - url: https://cms.example.com
+    description: Production
+  - url: http://localhost:3000
+    description: Local development
+security: []
+paths:
+  /api/internal/decisions/{decisionId}/notifications:
+    post:
+      summary: Trigger decision notification generation and first delivery attempt
+      description: >-
+        Called when a decision is finalized. Idempotent for repeated triggers
+        with the same decision/author context.
+      operationId: triggerDecisionNotification
+      security:
+        - internalServiceKey: []
+      parameters:
+        - in: path
+          name: decisionId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotificationTriggerRequest'
+      responses:
+        '202':
+          description: Notification accepted for processing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDispatchResponse'
+        '200':
+          description: Duplicate trigger handled idempotently
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationDispatchResponse'
+        '400':
+          description: Invalid trigger payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid internal service credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/internal/notifications/{notificationId}/retry:
+    post:
+      summary: Execute the single automatic retry after initial failure
+      description: >-
+        Invoked by scheduler/worker only when attempt 1 failed.
+        Rejects retries beyond attempt number 2.
+      operationId: retryNotificationDelivery
+      security:
+        - internalServiceKey: []
+      parameters:
+        - in: path
+          name: notificationId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetryRequest'
+      responses:
+        '200':
+          description: Retry processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetryResponse'
+        '409':
+          description: Retry not allowed (already delivered or retry already consumed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: Missing or invalid internal service credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/notification-failures:
+    get:
+      summary: List unresolved notification failures
+      description: Administrator-only endpoint for operational follow-up.
+      operationId: listUnresolvedNotificationFailures
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: submissionId
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: authorId
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: from
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: to
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: page
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 25
+      responses:
+        '200':
+          description: Unresolved failures returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FailureRecordPage'
+        '403':
+          description: Authenticated user is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/admin/notification-failures/{failureRecordId}:
+    get:
+      summary: Retrieve a specific unresolved failure record
+      operationId: getUnresolvedNotificationFailure
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: failureRecordId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Failure record returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FailureRecord'
+        '403':
+          description: Authenticated user is not an administrator
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Failure record not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    internalServiceKey:
+      type: apiKey
+      in: header
+      name: X-Internal-Service-Key
+
+  schemas:
+    NotificationTriggerRequest:
+      type: object
+      required:
+        - submissionId
+        - authorId
+        - authorEmail
+        - decisionOutcome
+        - finalizedAt
+      properties:
+        submissionId:
+          type: string
+        authorId:
+          type: string
+        authorEmail:
+          type: string
+          format: email
+        decisionOutcome:
+          type: string
+          enum: [accepted, rejected, revision]
+        finalizedAt:
+          type: string
+          format: date-time
+
+    NotificationDispatchResponse:
+      type: object
+      required:
+        - notificationId
+        - status
+        - attemptsUsed
+      properties:
+        notificationId:
+          type: string
+        status:
+          type: string
+          enum: [queued, delivered, already_processed, unresolved_failure]
+        attemptsUsed:
+          type: integer
+          minimum: 0
+          maximum: 2
+
+    RetryRequest:
+      type: object
+      required:
+        - attemptNumber
+      properties:
+        attemptNumber:
+          type: integer
+          enum: [2]
+
+    RetryResponse:
+      type: object
+      required:
+        - notificationId
+        - attemptNumber
+        - result
+      properties:
+        notificationId:
+          type: string
+        attemptNumber:
+          type: integer
+          enum: [2]
+        result:
+          type: string
+          enum: [delivered, unresolved_failure]
+        failureRecordId:
+          type: string
+          nullable: true
+
+    FailureRecord:
+      type: object
+      required:
+        - failureRecordId
+        - timestamp
+        - submissionId
+        - authorId
+        - failureReason
+        - attemptNumber
+        - finalDeliveryStatus
+        - retainedUntil
+      properties:
+        failureRecordId:
+          type: string
+        notificationId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        submissionId:
+          type: string
+        authorId:
+          type: string
+        failureReason:
+          type: string
+        attemptNumber:
+          type: integer
+          enum: [2]
+        finalDeliveryStatus:
+          type: string
+          enum: [unresolved_failure]
+        retainedUntil:
+          type: string
+          format: date-time
+
+    FailureRecordPage:
+      type: object
+      required:
+        - items
+        - page
+        - pageSize
+        - total
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailureRecord'
+        page:
+          type: integer
+          minimum: 1
+        pageSize:
+          type: integer
+          minimum: 1
+          maximum: 100
+        total:
+          type: integer
+          minimum: 0
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
