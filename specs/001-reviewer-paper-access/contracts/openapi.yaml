@@ -1,0 +1,290 @@
+openapi: 3.0.3
+info:
+  title: Reviewer Paper Access API
+  version: 0.1.0
+  description: >
+    Contract for UC-08 reviewer paper access, revoked-access denial, temporary outage
+    retry behavior, and restricted access-record visibility.
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+tags:
+  - name: ReviewerAccess
+  - name: AccessRecords
+paths:
+  /reviewer/papers:
+    get:
+      tags: [ReviewerAccess]
+      summary: List papers assigned to the authenticated reviewer
+      operationId: listAssignedPapers
+      responses:
+        "200":
+          description: Assigned papers returned
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [papers]
+                properties:
+                  papers:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/AssignedPaper"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+  /reviewer/papers/{paperId}/files:
+    get:
+      tags: [ReviewerAccess]
+      summary: Get file metadata for a selected assigned paper
+      description: >
+        Entitlement is re-validated on every request. Revoked access returns 403.
+        Temporary file outages return 503 with immediate retry allowance. Repeated
+        outage retries can return 429 when throttled to one request per 5 seconds
+        per reviewer-paper.
+      operationId: getPaperFiles
+      parameters:
+        - $ref: "#/components/parameters/PaperId"
+      responses:
+        "200":
+          description: Paper files available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaperFileBundleResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Access denied due to revoked or missing entitlement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessDeniedResponse"
+        "429":
+          description: Temporary outage retry throttled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThrottledResponse"
+        "503":
+          description: Temporary outage; immediate retry available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemporaryUnavailableResponse"
+  /reviewer/papers/{paperId}/files/{fileId}:
+    get:
+      tags: [ReviewerAccess]
+      summary: Download a specific file for an assigned paper
+      description: >
+        Each file request repeats entitlement validation and applies temporary-outage
+        retry/throttle rules.
+      operationId: downloadPaperFile
+      parameters:
+        - $ref: "#/components/parameters/PaperId"
+        - $ref: "#/components/parameters/FileId"
+      responses:
+        "200":
+          description: File content
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Access denied due to revoked or missing entitlement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessDeniedResponse"
+        "429":
+          description: Temporary outage retry throttled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ThrottledResponse"
+        "503":
+          description: Temporary outage; immediate retry available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TemporaryUnavailableResponse"
+  /papers/{paperId}/access-attempts:
+    get:
+      tags: [AccessRecords]
+      summary: View paper access-attempt records for editor/support/admin users
+      operationId: listPaperAccessAttempts
+      parameters:
+        - $ref: "#/components/parameters/PaperId"
+        - name: outcome
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [granted, denied-revoked, temporarily-unavailable, throttled]
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 200
+            default: 50
+      responses:
+        "200":
+          description: Access attempts returned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccessAttemptListResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Requester is not a paper editor or support/admin
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    PaperId:
+      name: paperId
+      in: path
+      required: true
+      schema:
+        type: string
+    FileId:
+      name: fileId
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    AssignedPaper:
+      type: object
+      required: [paperId, title]
+      properties:
+        paperId:
+          type: string
+        title:
+          type: string
+    PaperFile:
+      type: object
+      required: [fileId, fileName, contentType, sizeBytes]
+      properties:
+        fileId:
+          type: string
+        fileName:
+          type: string
+        contentType:
+          type: string
+        sizeBytes:
+          type: integer
+          minimum: 0
+    PaperFileBundleResponse:
+      type: object
+      required: [paperId, outcome, files]
+      properties:
+        paperId:
+          type: string
+        outcome:
+          type: string
+          enum: [granted]
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/PaperFile"
+    AccessDeniedResponse:
+      type: object
+      required: [outcome, reasonCode, message]
+      properties:
+        outcome:
+          type: string
+          enum: [denied-revoked]
+        reasonCode:
+          type: string
+          enum: [ACCESS_REVOKED, ACCESS_NOT_ASSIGNED]
+        message:
+          type: string
+    TemporaryUnavailableResponse:
+      type: object
+      required: [outcome, reasonCode, message, immediateRetryAllowed]
+      properties:
+        outcome:
+          type: string
+          enum: [temporarily-unavailable]
+        reasonCode:
+          type: string
+          enum: [TEMPORARY_OUTAGE]
+        message:
+          type: string
+        immediateRetryAllowed:
+          type: boolean
+          enum: [true]
+    ThrottledResponse:
+      type: object
+      required: [outcome, reasonCode, message, retryAfterSeconds]
+      properties:
+        outcome:
+          type: string
+          enum: [throttled]
+        reasonCode:
+          type: string
+          enum: [TEMP_OUTAGE_THROTTLED]
+        message:
+          type: string
+        retryAfterSeconds:
+          type: integer
+          minimum: 1
+          maximum: 5
+    AccessAttemptRecord:
+      type: object
+      required: [attemptId, reviewerId, paperId, outcome, reasonCode, occurredAt]
+      properties:
+        attemptId:
+          type: string
+        reviewerId:
+          type: string
+        paperId:
+          type: string
+        fileId:
+          type: string
+          nullable: true
+        outcome:
+          type: string
+          enum: [granted, denied-revoked, temporarily-unavailable, throttled]
+        reasonCode:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+    AccessAttemptListResponse:
+      type: object
+      required: [records]
+      properties:
+        records:
+          type: array
+          items:
+            $ref: "#/components/schemas/AccessAttemptRecord"
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
