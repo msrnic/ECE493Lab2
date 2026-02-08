@@ -17,7 +17,7 @@ Implement UC-01 registration end-to-end in a strict MVC web architecture using H
 **Project Type**: web (MVC)
 **Performance Goals**: Client-side validation feedback under 200ms p95; registration submit response under 1s p95 under normal load
 **Constraints**: Scope must map to `Use Cases/UC-01.md` and `Acceptance Tests/UC-01-AS.md`, production behavior must remain in HTML/CSS/JavaScript, and MVC boundaries must remain explicit
-**Scale/Scope**: UC scope: UC-01 only; UX scope: registration and confirmation views; planned implementation scope: 5-7 JavaScript modules across models, views, controllers
+**Scale/Scope**: UC scope: UC-01 only; UX scope: registration and confirmation views; planned implementation scope: 12-16 JavaScript modules across models, views, controllers, and browser assets
 
 ## Constitution Check
 
@@ -56,16 +56,26 @@ Implement UC-01 registration end-to-end in a strict MVC web architecture using H
 ├── Use Cases/
 ├── Acceptance Tests/
 ├── src/
+│   ├── app.js
+│   ├── server.js
 │   ├── models/
+│   │   ├── repository.js
+│   │   ├── registration-validation.js
+│   │   ├── email-normalization.js
 │   │   ├── user-account-model.js
+│   │   ├── email-confirmation-token-model.js
+│   │   ├── confirmation-token-service.js
+│   │   ├── registration-submission-model.js
 │   │   ├── registration-attempt-model.js
 │   │   └── email-delivery-job-model.js
 │   ├── views/
 │   │   ├── registration-view.js
 │   │   └── registration-status-view.js
 │   ├── controllers/
+│   │   ├── registration-page-controller.js
 │   │   ├── registration-controller.js
-│   │   └── confirmation-controller.js
+│   │   ├── confirmation-controller.js
+│   │   └── email-delivery-service.js
 │   ├── assets/
 │   │   ├── css/
 │   │   │   └── registration.css
@@ -75,13 +85,26 @@ Implement UC-01 registration end-to-end in a strict MVC web architecture using H
 └── tests/
     ├── acceptance/
     │   └── uc-01-registration.acceptance.test.js
+    ├── integration/
+    │   ├── register-page.contract.test.js
+    │   ├── create-registration.contract.test.js
+    │   ├── confirm-registration.contract.test.js
+    │   └── registration-latency.test.js
     └── unit/
         ├── registration-controller.test.js
         ├── user-account-model.test.js
-        └── registration-attempt-model.test.js
+        ├── registration-attempt-model.test.js
+        └── email-delivery-job-model.test.js
 ```
 
-**Structure Decision**: Use `src/models`, `src/views`, and `src/controllers` as the only production logic layers so the constitution-mandated MVC separation is explicit and testable. Keep acceptance and unit coverage in `/home/m_srnic/ece493/lab2/ECE493Lab2/tests` and map them directly to UC-01/UC-01-AS.
+**Structure Decision**: Use `src/models`, `src/views`, and `src/controllers` as the only production logic layers so the constitution-mandated MVC separation is explicit and testable. Keep acceptance, integration, and unit coverage evidence in `/home/m_srnic/ece493/lab2/ECE493Lab2/tests` and map it directly to UC-01/UC-01-AS.
+
+## Performance & Usability Verification
+
+- Measure `POST /api/registrations` latency in `tests/integration/registration-latency.test.js` and record p95 results in `specs/001-user-registration/checklists/registration.md`.
+- Measure client-side validation timing using instrumentation in `src/assets/js/registration-form.js` and record p95 evidence in `specs/001-user-registration/checklists/registration.md`.
+- Run first-time-user usability verification using the protocol documented in `specs/001-user-registration/quickstart.md`, including sample-size and first-attempt-success capture.
+- Record SC-004 and SC-005 evidence in `specs/001-user-registration/checklists/registration.md` before marking UC-01 complete.
 
 ## Post-Design Constitution Re-Check
 
