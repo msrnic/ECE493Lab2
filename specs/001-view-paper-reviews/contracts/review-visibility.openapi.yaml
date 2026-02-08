@@ -1,0 +1,163 @@
+openapi: 3.1.0
+info:
+  title: Editor Review Visibility API
+  version: 0.1.0
+  description: >-
+    UC-10 contract for viewing completed paper reviews with pending-state messaging,
+    reviewer identity display, authorization-safe unavailable responses, and audit-triggering
+    semantics.
+servers:
+  - url: https://cms.local
+tags:
+  - name: Reviews
+    description: Paper review visibility for editors
+paths:
+  /api/papers/{paperId}/reviews:
+    get:
+      tags:
+        - Reviews
+      summary: View reviews for a selected paper
+      description: >-
+        For authorized editors assigned to the paper or track, returns completed reviews when present,
+        otherwise returns pending status. Unauthorized or inaccessible requests return a generic
+        unavailable response.
+      operationId: getPaperReviews
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: paperId
+          in: path
+          required: true
+          description: Identifier of the selected paper.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        '200':
+          description: Authorized request processed.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/ReviewsAvailableResponse'
+                  - $ref: '#/components/schemas/ReviewsPendingResponse'
+              examples:
+                available:
+                  summary: Completed reviews found
+                  value:
+                    paperId: PAPER-123
+                    status: available
+                    reviews:
+                      - reviewId: REV-1
+                        reviewerId: USER-91
+                        reviewerName: Jordan Lee
+                        overallScore: 4.5
+                        comments: Strong methodology and clear results.
+                        submittedAt: '2026-02-08T14:12:00Z'
+                pending:
+                  summary: No completed reviews yet
+                  value:
+                    paperId: PAPER-123
+                    status: pending
+                    reviews: []
+        '401':
+          description: Authentication is required before review visibility can be evaluated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthenticationRequiredResponse'
+              example:
+                message: Authentication required
+        '404':
+          description: Generic unavailable response for unauthorized or inaccessible requests.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnavailableResponse'
+              example:
+                message: Paper reviews unavailable
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: session_id
+  schemas:
+    ReviewsAvailableResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - paperId
+        - status
+        - reviews
+      properties:
+        paperId:
+          type: string
+        status:
+          type: string
+          const: available
+        reviews:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ReviewSummary'
+    ReviewsPendingResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - paperId
+        - status
+        - reviews
+      properties:
+        paperId:
+          type: string
+        status:
+          type: string
+          const: pending
+        reviews:
+          type: array
+          maxItems: 0
+          items:
+            $ref: '#/components/schemas/ReviewSummary'
+    ReviewSummary:
+      type: object
+      additionalProperties: false
+      required:
+        - reviewId
+        - reviewerId
+        - reviewerName
+        - overallScore
+        - comments
+        - submittedAt
+      properties:
+        reviewId:
+          type: string
+        reviewerId:
+          type: string
+        reviewerName:
+          type: string
+        overallScore:
+          type: number
+        comments:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+    UnavailableResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          const: Paper reviews unavailable
+    AuthenticationRequiredResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          const: Authentication required
