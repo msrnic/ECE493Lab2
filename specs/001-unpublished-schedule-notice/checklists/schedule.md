@@ -8,10 +8,10 @@
 
 ## Requirement Completeness
 
-- [ ] CHK001 Are access-policy requirements defined for every viewer context (unauthenticated, authenticated non-author, authenticated author) across both publication states? [Completeness, Spec §FR-001, Spec §FR-006, Spec §FR-009]
+- [ ] CHK001 Are access-policy requirements defined for every viewer context (unauthenticated, authenticated non-author, authenticated author) across both publication states? [Completeness, Spec §FR-001, Spec §FR-004, Spec §FR-006]
 - [ ] CHK002 Are requirements explicit about which data elements constitute the "full final conference schedule" (content scope, ordering, and grouping)? [Completeness, Ambiguity, Spec §FR-002]
 - [ ] CHK003 Are requirements defined for authenticated authors with no assigned sessions beyond the statement that no session is highlighted? [Completeness, Spec §Edge Cases]
-- [ ] CHK004 Are direct-link access requirements specified for both published and unpublished states across all viewer contexts? [Coverage, Spec §Edge Cases, Spec §FR-001, Spec §FR-009]
+- [ ] CHK004 Are direct-link access requirements specified for both published and unpublished states across all viewer contexts? [Coverage, Spec §Edge Cases, Spec §FR-001, Spec §FR-004]
 
 ## Requirement Clarity
 
@@ -23,9 +23,9 @@
 
 ## Requirement Consistency
 
-- [ ] CHK010 Do FR-001, FR-006, and FR-009 use consistent access-policy wording for unauthenticated viewers in each publication state? [Consistency, Spec §FR-001, Spec §FR-006, Spec §FR-009]
-- [ ] CHK011 Do user-story acceptance scenarios align with functional requirements on when login is or is not required? [Consistency, Spec §User Story 1, Spec §User Story 2, Spec §FR-001, Spec §FR-009]
-- [ ] CHK012 Does FR-007 add uniquely testable requirement value rather than duplicating other FRs in a way that can create interpretation conflicts? [Consistency, Ambiguity, Spec §FR-007]
+- [ ] CHK010 Do FR-001, FR-004, and FR-006 use consistent access-policy wording for unauthenticated viewers in each publication state? [Consistency, Spec §FR-001, Spec §FR-004, Spec §FR-006]
+- [ ] CHK011 Do user-story acceptance scenarios align with functional requirements on when login is or is not required? [Consistency, Spec §User Story 1, Spec §User Story 2, Spec §FR-001, Spec §FR-004]
+- [ ] CHK012 Is FR-006 narrowly scoped to personalization eligibility without duplicating FR-001/FR-003 access and highlight requirements? [Consistency, Ambiguity, Spec §FR-001, Spec §FR-003, Spec §FR-006]
 - [ ] CHK013 Is traceability consistent between the traceability matrix and requirement statements with no missing or mismatched IDs? [Consistency, Traceability, Spec §Traceability Matrix, Spec §Functional Requirements]
 
 ## Acceptance Criteria Quality

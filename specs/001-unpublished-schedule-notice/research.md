@@ -33,7 +33,7 @@ No unresolved `NEEDS CLARIFICATION` markers remain in technical context after de
 ### 3. Publication-state data exposure rule
 
 - Decision: API response shape is status-driven; unpublished response includes notice metadata and omits session entries entirely.
-- Rationale: Meets FR-004/FR-005/FR-009 and eliminates accidental unpublished leakage in view rendering.
+- Rationale: Meets FR-004/FR-005 and eliminates accidental unpublished leakage in view rendering.
 - Alternatives considered: Send sessions plus an `unpublished` flag and hide client-side (rejected because hidden data is still exposed in network payload).
 
 ### 4. Public access with optional personalization

@@ -66,12 +66,10 @@ As a schedule viewer, I want a clear notice when the schedule is not yet publish
 | FR-001 | UC-15 | UC-15-AS | Published schedule access policy |
 | FR-002 | UC-15 | UC-15-AS | Published schedule display behavior |
 | FR-003 | UC-15 | UC-15-AS | Author session highlighting in published schedule |
-| FR-004 | UC-15 | UC-15-AS | Unpublished schedule notice behavior |
+| FR-004 | UC-15 | UC-15-AS | Unpublished notice and public access behavior |
 | FR-005 | UC-15 | UC-15-AS | Visibility control for unpublished state |
-| FR-006 | UC-15 | UC-15-AS | Public published access and personalization behavior |
-| FR-007 | UC-15 | UC-15-AS | Behavioral consistency with mapped acceptance suite |
+| FR-006 | UC-15 | UC-15-AS | Personalization eligibility behavior |
 | FR-008 | UC-15 | UC-15-AS | Dual time-zone schedule display |
-| FR-009 | UC-15 | UC-15-AS | Public unpublished notice access behavior |
 
 ### Edge Cases
 
@@ -88,12 +86,10 @@ As a schedule viewer, I want a clear notice when the schedule is not yet publish
 - **FR-001 (UC-15 / UC-15-AS)**: When the schedule is published, the system MUST allow any viewer (authenticated or unauthenticated) to access the final schedule view.
 - **FR-002 (UC-15 / UC-15-AS)**: When the schedule is published, the system MUST display the full final conference schedule to the viewer.
 - **FR-003 (UC-15 / UC-15-AS)**: When the schedule is published and the viewer is an authenticated author with assigned session(s), the system MUST visibly highlight the author's own session(s) within the full schedule.
-- **FR-004 (UC-15 / UC-15-AS)**: When the schedule is unpublished, the system MUST display a clear notice that the final schedule is not yet available.
+- **FR-004 (UC-15 / UC-15-AS)**: When the schedule is unpublished, the system MUST allow any viewer to access the schedule view without login and MUST display a clear notice that the final schedule is not yet available.
 - **FR-005 (UC-15 / UC-15-AS)**: While the schedule is unpublished, the system MUST prevent display of final schedule entries.
-- **FR-006 (UC-15 / UC-15-AS)**: For published schedules, unauthenticated viewers MUST still receive full schedule visibility, while author-specific highlighting applies only when an authenticated author context exists.
-- **FR-007 (UC-15 / UC-15-AS)**: The system MUST satisfy both mapped acceptance outcomes: published schedules are shown and unpublished schedules show a notice.
+- **FR-006 (UC-15 / UC-15-AS)**: For published schedules, author-session personalization MUST be applied only when `viewerRole=author` and `authorId` is present; otherwise no author-specific highlight is rendered.
 - **FR-008 (UC-15 / UC-15-AS)**: When the schedule is published, the system MUST display session times in both the conference time zone and the viewer's local time zone, where local time zone is determined automatically from the current device/browser time zone.
-- **FR-009 (UC-15 / UC-15-AS)**: When the schedule is unpublished, the system MUST allow unauthenticated viewers to access the schedule view and receive the unpublished-schedule notice without a login requirement.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -126,5 +122,5 @@ As a schedule viewer, I want a clear notice when the schedule is not yet publish
 - **SC-003**: In published-state testing, 100% of attempts show the full final schedule, and 100% of attempts for authors with assigned sessions show those session(s) highlighted.
 - **SC-004**: In unpublished-state testing, 100% of attempts from both authenticated and unauthenticated viewers show the unpublished-schedule notice and 0 schedule entries.
 - **SC-005**: 100% of scenarios in `UC-15-AS` pass without modifying mapped acceptance text.
-- **SC-006**: During stakeholder review, at least 95% of sampled authors report the schedule availability state is clear on first view.
+- **SC-006**: During stakeholder review, at least 20 sampled authors answer a single-question clarity survey after first schedule view, and at least 95% select a positive clarity response.
 - **SC-007**: In published-state testing, 100% of displayed sessions include both conference-time and local-time values, with local-time values matching the viewing device/browser time zone.

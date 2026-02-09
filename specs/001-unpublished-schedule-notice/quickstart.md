@@ -24,6 +24,7 @@ mkdir -p src/models src/views src/controllers src/services src/assets/css src/as
   - unpublished notice visible to unauthenticated viewer without login
   - author highlighting in published state
   - both conference and local time labels for published sessions
+  - authenticated author reaches schedule outcome within 2 actions after login
   - no session payload rendering in unpublished state
 
 ## 4. Run verification and collect evidence
@@ -41,3 +42,12 @@ npx c8 --reporter=text --reporter=lcov npm test
 - Production behavior uses HTML/CSS/JavaScript only.
 - MVC boundaries remain separated by folder and responsibility.
 - Coverage evidence for in-scope JS is recorded, with remediation notes if below 100%.
+
+## 6. Stakeholder clarity protocol (SC-006)
+
+- Sample at least 20 authenticated authors after their first final-schedule page view.
+- Ask one fixed prompt: "Is the schedule availability state clear on first view?"
+- Allowed responses: `Yes` (positive) or `No` (negative).
+- Compute `clarity_rate = yes_count / total_responses`.
+- Pass criterion: `clarity_rate >= 0.95`.
+- Record total sample size, yes/no counts, and computed rate in `specs/001-unpublished-schedule-notice/checklists/schedule.md`.
