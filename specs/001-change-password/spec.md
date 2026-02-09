@@ -175,7 +175,9 @@ that cites exact `Use Cases/UC-03.md` and `Acceptance Tests/UC-03-AS.md` text.
 
 - **SC-001**: 100% of UC-03 acceptance scenarios pass exactly as written in UC-03-AS.
 - **SC-002**: In validation testing, at least 95% of valid password-change submissions complete
-  successfully within 30 seconds from submit action to success feedback.
+  successfully within 30 seconds from submit action to success feedback. Measurement starts at the
+  password-change submit event and ends at first rendered success feedback, with at least 100 valid
+  submissions in the sample set.
 - **SC-003**: In 100% of test cases with an incorrect current password, the password remains
   unchanged and a clear rejection message is shown.
 - **SC-004**: In 100% of test cases where the new password fails policy validation (including

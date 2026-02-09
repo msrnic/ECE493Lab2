@@ -17,7 +17,7 @@ Implement UC-03 password change for logged-in users using HTML for definition, C
 **Project Type**: web (MVC)
 **Performance Goals**: Meet SC-002 by completing at least 95% of valid password changes within 30 seconds from submit to success feedback; keep client-side validation feedback under 200ms
 **Constraints**: Scope limited to `Use Cases/UC-03.md` and `Acceptance Tests/UC-03-AS.md`; production behavior must remain in HTML/CSS/JavaScript; Model, View, and Controller concerns must remain separated
-**Scale/Scope**: 1 password-change interaction flow, 1 controller, 6 supporting models/adapters (policy, credential, throttle, session, notification, audit), and 1 mapped acceptance suite
+**Scale/Scope**: 1 password-change interaction flow, 1 controller, 7 supporting models/adapters (API client, policy, credential, throttle, session, notification, audit), 1 mapped acceptance suite, and companion contract/integration/performance/usability evidence artifacts
 
 ## Constitution Check
 
@@ -52,6 +52,17 @@ Implement UC-03 password change for logged-in users using HTML for definition, C
 ├── research.md
 ├── data-model.md
 ├── quickstart.md
+├── traceability.md
+├── implementation-notes.md
+├── coverage/
+│   ├── us1-coverage.md
+│   ├── us2-coverage.md
+│   └── final-coverage.md
+├── performance/
+│   └── sc002-results.md
+├── usability/
+│   ├── protocol.md
+│   └── results.md
 ├── contracts/
 │   └── password-change.openapi.yaml
 └── tasks.md
@@ -65,6 +76,7 @@ Use Cases/
 Acceptance Tests/
 src/
 ├── models/
+│   ├── password-change-api-client.js
 │   ├── password-change-model.js
 │   ├── password-policy-model.js
 │   ├── attempt-throttle-model.js
@@ -85,7 +97,14 @@ src/
 
 tests/
 ├── acceptance/
-│   └── uc03-change-password.acceptance.test.js
+│   ├── uc03-change-password.acceptance.test.js
+│   └── uc03-change-password.performance.test.js
+├── contract/
+│   └── password-change.contract.test.js
+├── integration/
+│   ├── setup.js
+│   ├── password-change-success.integration.test.js
+│   └── password-change-rejection.integration.test.js
 └── unit/
     ├── password-change-model.test.js
     ├── attempt-throttle-model.test.js
@@ -93,6 +112,28 @@ tests/
 ```
 
 **Structure Decision**: The feature uses strict MVC. Models encapsulate password rules and integrations, Views own HTML/CSS rendering and feedback elements, and the Controller coordinates user interaction and flow control. This directly satisfies Constitution Principle III and the explicit user instruction for HTML/CSS/JavaScript with MVC.
+
+## Bidirectional Traceability Matrix
+
+| Use Case | Requirements | Acceptance Suite | Planned Modules |
+|----------|--------------|------------------|-----------------|
+| UC-03 | FR-001 through FR-013 | UC-03-AS | src/models/password-change-api-client.js, src/models/password-change-model.js, src/models/password-policy-model.js, src/models/attempt-throttle-model.js, src/models/session-model.js, src/models/notification-model.js, src/models/audit-log-model.js, src/views/password-change-view.html, src/views/password-change-view.js, src/controllers/password-change-controller.js, src/assets/js/app.js, src/assets/css/password-change.css |
+
+| Requirement | Use Case | Acceptance Suite | Planned Module(s) |
+|-------------|----------|------------------|-------------------|
+| FR-001 | UC-03 | UC-03-AS | src/views/password-change-view.html, src/controllers/password-change-controller.js |
+| FR-002 | UC-03 | UC-03-AS | src/views/password-change-view.html, src/controllers/password-change-controller.js |
+| FR-003 | UC-03 | UC-03-AS | src/models/password-change-model.js |
+| FR-004 | UC-03 | UC-03-AS | src/models/password-policy-model.js |
+| FR-005 | UC-03 | UC-03-AS | src/models/password-change-model.js, src/controllers/password-change-controller.js |
+| FR-006 | UC-03 | UC-03-AS | src/models/password-change-model.js, src/views/password-change-view.js |
+| FR-007 | UC-03 | UC-03-AS | src/controllers/password-change-controller.js, src/views/password-change-view.js |
+| FR-008 | UC-03 | UC-03-AS | src/models/password-policy-model.js |
+| FR-009 | UC-03 | UC-03-AS | package.json, .c8rc.json, specs/001-change-password/coverage/final-coverage.md |
+| FR-010 | UC-03 | UC-03-AS | src/models/session-model.js |
+| FR-011 | UC-03 | UC-03-AS | src/models/notification-model.js |
+| FR-012 | UC-03 | UC-03-AS | src/models/attempt-throttle-model.js |
+| FR-013 | UC-03 | UC-03-AS | src/models/audit-log-model.js |
 
 ## Phase 0 Research Plan
 
