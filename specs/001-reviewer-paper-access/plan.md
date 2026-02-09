@@ -12,11 +12,11 @@ Implement UC-08 reviewer paper access using HTML/CSS/JavaScript and strict MVC s
 **Language/Version**: HTML5, CSS3, JavaScript (ES2022 modules)
 **Primary Dependencies**: Browser DOM APIs, Fetch API, FormData API, Node.js `node:test` for automated tests, Istanbul/c8-compatible line-coverage reporting
 **Storage**: Server-side persistent data for reviewer-paper entitlement and access-attempt records; client keeps only transient UI state in memory
-**Testing**: Acceptance tests mapped to `Acceptance Tests/UC-08-AS.md` in `tests/acceptance/uc-08-as.test.js`; unit tests for models/controllers in `tests/unit/`; coverage report for in-scope JavaScript tied to UC-08
+**Testing**: Acceptance tests mapped to `Acceptance Tests/UC-08-AS.md` in `tests/acceptance/uc-08-as.test.js`, SC-002 timing validation in `tests/acceptance/uc-08-performance.test.js`, and unit tests for models/controllers/views (including outage retry control) in `tests/unit/`; coverage report for in-scope JavaScript tied to UC-08
 **Target Platform**: Modern desktop and mobile browsers (Chrome, Firefox, Safari, Edge)
 **Project Type**: web (MVC)
-**Performance Goals**: Meet SC-002 (`>=95%` of authorized paper selections display files within 3 seconds) and SC-008/SC-011 (post-revocation requests denied on next request)
-**Constraints**: Map all planned behavior to `Use Cases/UC-08.md` and `Acceptance Tests/UC-08-AS.md`; enforce revocation at access time on each request; temporary outages must support immediate retry plus 1-per-5-second throttle for repeated retries; production-facing behavior must remain HTML/CSS/JavaScript with MVC boundaries preserved
+**Performance Goals**: Meet SC-002 via measured p95 over >=100 authorized selection-to-render events (<=3 seconds) and SC-008/SC-011 (post-revocation requests denied on next request)
+**Constraints**: Map all planned behavior to the governed current text of `Use Cases/UC-08.md` and `Acceptance Tests/UC-08-AS.md`; enforce revocation at access time on each request; temporary outages must support immediate retry plus 1-per-5-second throttle for repeated retries; production-facing behavior must remain HTML/CSS/JavaScript with MVC boundaries preserved
 **Scale/Scope**: UC-08 only; 2 user-facing views (reviewer paper-access screen and access-record viewer), 4 controllers, 4 models, 4 API endpoints
 
 ## Constitution Check
@@ -81,10 +81,12 @@ Implement UC-08 reviewer paper access using HTML/CSS/JavaScript and strict MVC s
 │       └── paper-access-api.service.js
 └── tests/
     ├── acceptance/
-    │   └── uc-08-as.test.js
+    │   ├── uc-08-as.test.js
+    │   └── uc-08-performance.test.js
     └── unit/
         ├── controllers/
-        └── models/
+        ├── models/
+        └── views/
 ```
 
 **Structure Decision**: Use a single `src/` MVC web app with explicit model/view/controller modules and a thin service layer for API calls. This preserves constitution-mandated MVC boundaries while keeping reviewer access, outage handling, and access-record viewing traceable to UC-08 requirements.
@@ -99,11 +101,12 @@ Implement UC-08 reviewer paper access using HTML/CSS/JavaScript and strict MVC s
 ## Post-Design Constitution Check
 
 - [x] Planned behavior-to-use-case mapping remains UC-08 only; FR-001 through FR-011 remain traceable.
-- [x] `Acceptance Tests/UC-08-AS.md` remains the authoritative acceptance suite with no reinterpretation.
+- [x] `Acceptance Tests/UC-08-AS.md` (current governed revision) remains the authoritative acceptance suite with no reinterpretation.
 - [x] Planned implementation stack remains HTML/CSS/JavaScript only for production-facing behavior.
 - [x] MVC boundaries remain explicit in planned paths (`src/models`, `src/views`, `src/controllers`).
 - [x] Contract and data model preserve per-request entitlement checks and revocation behavior.
 - [x] Coverage plan continues targeting 100% line coverage for in-scope project-owned JavaScript.
+- [x] SC-002 measurement method and artifact paths are defined (`tests/acceptance/uc-08-performance.test.js`, `tests/acceptance/uc-08-performance.md`).
 - [x] No coverage exception below 100% is planned; if needed later, remediation details are required.
 - [x] Regression plan includes rerunning previously passing acceptance suites before merge.
 
