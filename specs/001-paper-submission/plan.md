@@ -8,7 +8,7 @@
 Implement UC-04 paper submission with an HTML/CSS/JavaScript MVC stack: Views render the submission
 workflow and feedback, Controllers orchestrate metadata capture/upload/validation/retry flow, and
 Models enforce submission rules, duplicate protection, and persistence state transitions. Design
-targets FR-001 through FR-014 with explicit mapping to `Use Cases/UC-04.md` and
+targets FR-001 through FR-015 with explicit mapping to `Use Cases/UC-04.md` and
 `Acceptance Tests/UC-04-AS.md`.
 
 ## Technical Context
@@ -28,8 +28,9 @@ detection, successful end-to-end submit flow within SC-002 target (3 minutes use
 **Constraints**: Scope must remain mapped to UC-04; production behavior must use HTML/CSS/JavaScript;
 MVC separation is mandatory; no regression in previously passing acceptance suites
 **Scale/Scope**: 1 use case (UC-04), 1 primary submission view, 3 controller modules
-(submission/upload/status), 4 model modules (submission/file/session/dedup), 1 acceptance suite
-(UC-04-AS) plus regression run of existing suites
+(submission/upload/status), 4 model modules (submission/file/session/dedup), 3 repository modules,
+2 service adapters, 1 session middleware module, and UC-04 acceptance + performance/usability
+evidence with regression run of existing suites
 
 ## Constitution Check
 
@@ -58,7 +59,7 @@ MVC separation is mandatory; no regression in previously passing acceptance suit
 ├── quickstart.md
 ├── contracts/
 │   └── openapi.yaml
-└── tasks.md              # Phase 2 output (not created in this step)
+└── tasks.md
 ```
 
 ### Source Code (repository root)
@@ -68,6 +69,19 @@ MVC separation is mandatory; no regression in previously passing acceptance suit
 ├── Use Cases/
 ├── Acceptance Tests/
 ├── src/
+│   ├── app.js
+│   ├── server.js
+│   ├── config/
+│   │   └── submission-config.js
+│   ├── middleware/
+│   │   └── session-auth.js
+│   ├── services/
+│   │   ├── storage-service.js
+│   │   └── scan-service.js
+│   ├── repositories/
+│   │   ├── submission-repository.js
+│   │   ├── file-repository.js
+│   │   └── session-state-repository.js
 │   ├── models/
 │   │   ├── submission-model.js
 │   │   ├── file-model.js
@@ -88,10 +102,13 @@ MVC separation is mandatory; no regression in previously passing acceptance suit
 │           └── submit-paper-page.js
 └── tests/
     ├── acceptance/
-    │   └── uc-04-submission.spec.js
+    │   ├── uc-04-submission.spec.js
+    │   ├── uc-04-performance.spec.js
+    │   └── uc-04-usability-protocol.md
     ├── unit/
     │   ├── models/
     │   └── controllers/
+    │       └── session-auth.spec.js
     └── coverage/
 ```
 
@@ -118,8 +135,8 @@ technical-context unknowns were resolved with documented alternatives.
 
 **Post-Phase 1 Gate Status**: PASS
 
-- [x] UC mapping remains explicit: FR-001..FR-014 -> UC-04.
-- [x] Acceptance mapping remains explicit: FR-001..FR-014 -> UC-04-AS.
+- [x] UC mapping remains explicit: FR-001..FR-015 -> UC-04.
+- [x] Acceptance mapping remains explicit: FR-001..FR-015 -> UC-04-AS.
 - [x] Stack remains HTML/CSS/JavaScript with MVC boundaries preserved.
 - [x] Contracts and data model keep model/controller/view responsibilities separate.
 - [x] Coverage strategy still targets 100% JS line coverage with remediation rule if below target.

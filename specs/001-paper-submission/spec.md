@@ -108,6 +108,7 @@ and verify submission is blocked with corrective feedback.
 | FR-012 | UC-04 | UC-04-AS | Upload retry behavior with active-session constraint |
 | FR-013 | UC-04 | UC-04-AS | Pre-submission malware/security scan enforcement |
 | FR-014 | UC-04 | UC-04-AS | Session-long preservation of retry data |
+| FR-015 | UC-04 | UC-04-AS | Invalid-session rejection and re-authentication gating |
 
 ### Edge Cases
 
@@ -168,6 +169,9 @@ and verify submission is blocked with corrective feedback.
   scanning before marking a paper as submitted.
 - **FR-014 (UC-04 / UC-04-AS)**: System MUST preserve entered metadata and valid uploaded files for
   the entire active session across retry attempts.
+- **FR-015 (UC-04 / UC-04-AS)**: System MUST reject create/upload/validate/submit/status requests
+  with `401` when the author session is invalid or expired, MUST preserve non-finalized submission
+  integrity, and MUST require re-authentication before retry.
 
 If a source requirement is ambiguous, implementation MUST pause and log a clarification request
 that cites exact `Use Cases/UC-04.md` and `Acceptance Tests/UC-04-AS.md` text.
@@ -180,7 +184,7 @@ that cites exact `Use Cases/UC-04.md` and `Acceptance Tests/UC-04-AS.md` text.
   abstract, and author list).
 - **Paper File**: Uploaded file associated with a submission and subject to configured file rules.
 - **Submission Outcome**: User-visible result of a submission attempt (`submitted`, `rejected`,
-  `retry-required`).
+  `retry_required`).
 
 ### Assumptions
 
@@ -223,3 +227,5 @@ that cites exact `Use Cases/UC-04.md` and `Acceptance Tests/UC-04-AS.md` text.
 - **SC-010**: In 100% of retry-flow tests within an active session, entered metadata and valid
   uploaded files remain available across retries; after session end, preserved retry data is not
   available.
+- **SC-011**: In 100% of invalid-session tests for create/upload/validate/submit/status endpoints,
+  the system returns `401` and no paper is marked as submitted.
