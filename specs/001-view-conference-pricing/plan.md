@@ -15,7 +15,7 @@ Implement UC-16 pricing-page behavior using HTML for page definition, CSS for st
 **Testing**: Execute `Acceptance Tests/UC-16-AS.md`, add unit tests for model/controller/view logic, run Playwright flow tests, enforce JavaScript line coverage via c8 with 100% target (document justification if below)
 **Target Platform**: Modern desktop and mobile browsers
 **Project Type**: web (MVC)
-**Performance Goals**: Meet SC-002 by rendering pricing or unavailable outcome within 2 seconds for at least 95% of configured-pricing visits
+**Performance Goals**: Meet SC-002 by rendering configured pricing details within 2 seconds for at least 95% of visits where pricing is configured
 **Constraints**: Scope limited to `Use Cases/UC-16.md` and `Acceptance Tests/UC-16-AS.md`; preserve MVC separation; no discount-rule evaluation; no auto-retry; WCAG 2.1 AA readability/contrast and screen-reader perceivability
 **Scale/Scope**: 1 public pricing page, 1 controller module, 1 model module, 1 view module, 1 API contract, and mapped tests for UC-16
 

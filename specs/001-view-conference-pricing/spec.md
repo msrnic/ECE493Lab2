@@ -129,13 +129,13 @@ If a source requirement is ambiguous, implementation MUST pause and log a clarif
 ### Measurable Outcomes
 
 - **SC-001**: 100% of scenarios in `UC-16-AS` pass without modifying acceptance suite text.
-- **SC-002**: At least 95% of public pricing page visits with configured pricing show pricing details within 2 seconds.
+- **SC-002**: In Playwright runs of `tests/acceptance/uc16-pricing.spec.js` with configured pricing, at least 19 of 20 runs MUST render the `pricing-displayed` list within 2.0 seconds, measured from navigation start to completed pricing-list DOM render.
 - **SC-003**: 100% of pricing page visits with missing pricing show the informational unavailable message.
-- **SC-004**: In usability checks, at least 90% of participants correctly identify whether pricing is available after a single page visit.
+- **SC-004**: In a scripted usability check with 10 participants using `specs/001-view-conference-pricing/checklists/usability-script.md`, at least 9 participants correctly identify whether pricing is available after one page visit.
 - **SC-005**: 0 previously passing acceptance suites regress after this feature is merged.
 - **SC-006**: Coverage evidence for in-scope project-owned feature logic is recorded at 100%, or has documented justification and approved exception when below 100% and never below 95% without approval.
 - **SC-007**: In test runs with discounted pricing configured, 100% of displayed discount amounts exactly match configured precomputed values.
 - **SC-008**: 100% of temporary pricing retrieval failures display the temporary-unavailability message and do not display the missing-pricing message.
 - **SC-009**: 100% of displayed price amounts use the configured conference currency with no user-specific currency conversion.
-- **SC-010**: 100% of pricing details and pricing-state informational messages pass WCAG 2.1 AA checks for contrast/readability and are announced by screen readers during validation.
+- **SC-010**: 100% of pricing details and pricing-state informational messages pass WCAG 2.1 AA checks for contrast/readability and pass scripted NVDA/VoiceOver announcement validation recorded in `specs/001-view-conference-pricing/checklists/screen-reader-validation.md`.
 - **SC-011**: 100% of temporary-unavailability states present a user-initiated retry action, and 0 automatic retries occur without explicit user action.
