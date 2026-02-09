@@ -15,7 +15,7 @@ Implement UC-06 and UC-07 with a browser-based MVC workflow where editors assign
 **Testing**: Acceptance validation for `Acceptance Tests/UC-06-AS.md` and `Acceptance Tests/UC-07-AS.md`, plus controller/model unit tests and coverage reporting for in-scope JavaScript
 **Target Platform**: Modern desktop and mobile browsers
 **Project Type**: web (MVC)
-**Performance Goals**: Meet SC-002 (>=95% assignment attempts with available reviewers complete in under 2 minutes from selection to confirmation); confirmation and validation responses <=500ms p95 under normal lab load
+**Performance Goals**: Meet SC-002 (>=95% assignment attempts with available reviewers complete in under 2 minutes from selection to confirmation).
 **Constraints**: Map all behavior to `Use Cases/UC-06.md` and `Use Cases/UC-07.md`; preserve strict MVC separation; enforce COI and availability blocking; preserve previous acceptance pass status
 **Scale/Scope**: 2 in-scope UCs (UC-06, UC-07), 2 acceptance suites (UC-06-AS, UC-07-AS), 1 assignment page flow, ~4 models, ~2 views, ~2 controllers
 
