@@ -97,6 +97,7 @@ An editor receives a clear outcome when decision saving does not succeed so no i
 | FR-011 | UC-11 | UC-11-AS | Authorization boundary for decision recording |
 | FR-012 | UC-11 | UC-11-AS | Allowed final decision outcomes |
 | FR-013 | UC-11 | UC-11-AS | Decision action audit logging |
+| FR-014 | UC-11 | UC-11-AS | Audit persistence failure handling for decision actions |
 
 ### Edge Cases
 
@@ -127,6 +128,7 @@ An editor receives a clear outcome when decision saving does not succeed so no i
 - **FR-011 (UC-11 / UC-11-AS)**: System MUST allow decision recording only for editors assigned to the paper or its track and MUST deny decision actions from unassigned editors.
 - **FR-012 (UC-11 / UC-11-AS)**: System MUST reject any attempted final decision value other than Accept, Reject, or Revise.
 - **FR-013 (UC-11 / UC-11-AS)**: System MUST create an audit entry for every successful and denied decision action, including editor identity, paper identity, action attempted, outcome, and timestamp.
+- **FR-014 (UC-11 / UC-11-AS)**: If audit persistence fails while processing a decision action, the system MUST treat the decision action as not recorded, return an explicit failure outcome, and allow retry.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -167,3 +169,4 @@ An editor receives a clear outcome when decision saving does not succeed so no i
 - **SC-010**: 100% of decision-recording attempts by unassigned editors are denied.
 - **SC-011**: 100% of saved final decisions use only Accept, Reject, or Revise, and 100% of other final values are rejected.
 - **SC-012**: 100% of successful and denied decision actions create an audit entry with editor, paper, action, outcome, and timestamp.
+- **SC-013**: 100% of simulated audit-write failures result in a reported "decision not recorded" outcome with retry available.
