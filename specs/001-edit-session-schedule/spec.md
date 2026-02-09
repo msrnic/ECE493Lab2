@@ -134,11 +134,11 @@ passes only if the editor receives a clear warning and can choose next steps.
 
 ### Measurable Outcomes
 
-- **SC-001**: At least 95% of editors in acceptance testing can complete a valid session schedule edit and save in under 2 minutes.
+- **SC-001**: In a timed acceptance run of at least 20 valid edit-save trials, at least 95% of trials (>=19/20) complete within 2 minutes, measured from first session field edit to visible save-success confirmation.
 - **SC-002**: 100% of save attempts with unresolved conflicts display a warning before any conflicting change is finalized.
 - **SC-003**: 0% of unresolved conflicts are silently persisted during acceptance testing.
-- **SC-004**: At least 98% of valid save attempts result in visible updated schedule state on immediate refresh.
-- **SC-005**: At least 85% of editors report that conflict warnings clearly explain what must be fixed before saving.
+- **SC-004**: In an acceptance run of at least 100 valid save attempts, at least 98% of attempts show the updated schedule state after an immediate refresh of the editor view.
+- **SC-005**: In a post-scenario usability survey with at least 20 Editor participants, at least 85% (>=17/20) must rate conflict-warning clarity as 4 or 5 on a 5-point Likert scale.
 - **SC-006**: 100% of save attempts with unresolved conflicts require explicit editor confirmation before conflicting changes are persisted.
 - **SC-007**: 100% of stale-state blocked saves preserve unsaved editor changes for immediate reapplication after reload.
 - **SC-008**: 100% of publish/finalization attempts on schedules with unresolved conflicts are blocked until conflicts are resolved.

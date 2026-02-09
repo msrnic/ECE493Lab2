@@ -17,7 +17,7 @@ Implement `UC-14` session schedule editing with save-time conflict validation, e
 **Project Type**: web (MVC)
 **Performance Goals**: Save validation response <= 2 seconds p95; conflict warning render <= 200 ms p95 after response; publish/finalization guard response <= 1 second p95
 **Constraints**: Must map behavior to `UC-14` and `UC-14-AS`, keep production behavior in HTML/CSS/JavaScript, separate MVC layers, require explicit override reason with audit metadata, and preserve previously passing acceptance suites
-**Scale/Scope**: One in-scope use case (`UC-14`), one schedule edit flow, three core model modules, three controller modules, two view modules, and three primary API actions (save attempt, override save, publish attempt)
+**Scale/Scope**: One in-scope use case (`UC-14`), one schedule edit flow, three core model modules, three controller modules, two view modules, and four primary API actions (schedule fetch, save attempt, override save, publish attempt)
 
 ### Phase 0 Research Inputs (Resolved)
 
@@ -50,7 +50,8 @@ Implement `UC-14` session schedule editing with save-time conflict validation, e
   - Models: `/home/m_srnic/ece493/lab2/ECE493Lab2/src/models/schedule-model.js`, `/home/m_srnic/ece493/lab2/ECE493Lab2/src/models/conflict-model.js`, `/home/m_srnic/ece493/lab2/ECE493Lab2/src/models/override-audit-model.js`
   - Views: `/home/m_srnic/ece493/lab2/ECE493Lab2/src/views/edit-schedule-view.js`, `/home/m_srnic/ece493/lab2/ECE493Lab2/src/views/conflict-warning-view.js`, `/home/m_srnic/ece493/lab2/ECE493Lab2/src/assets/css/edit-schedule.css`, `/home/m_srnic/ece493/lab2/ECE493Lab2/src/index.html`
   - Controllers: `/home/m_srnic/ece493/lab2/ECE493Lab2/src/controllers/edit-schedule-controller.js`, `/home/m_srnic/ece493/lab2/ECE493Lab2/src/controllers/save-attempt-controller.js`, `/home/m_srnic/ece493/lab2/ECE493Lab2/src/controllers/publish-guard-controller.js`
-- Regression safety: run previously passing acceptance suites before merge in addition to `UC-14-AS`.
+  - API routes/services: `/home/m_srnic/ece493/lab2/ECE493Lab2/backend/routes/schedules.js`, `/home/m_srnic/ece493/lab2/ECE493Lab2/backend/routes/saves.js`, `/home/m_srnic/ece493/lab2/ECE493Lab2/backend/routes/publish.js`, `/home/m_srnic/ece493/lab2/ECE493Lab2/backend/services/schedule-service.js`
+- Regression safety: run the previously passing acceptance suite baseline listed in `/home/m_srnic/ece493/lab2/ECE493Lab2/tests/acceptance/baseline-suites.md` before merge, in addition to `UC-14-AS`.
 
 ### Post-Phase 1 Gate Re-Check: PASS
 
@@ -81,6 +82,9 @@ Implement `UC-14` session schedule editing with save-time conflict validation, e
 /home/m_srnic/ece493/lab2/ECE493Lab2/
 ├── Use Cases/
 ├── Acceptance Tests/
+├── backend/
+│   ├── routes/
+│   └── services/
 ├── src/
 │   ├── models/
 │   ├── views/
@@ -95,7 +99,7 @@ Implement `UC-14` session schedule editing with save-time conflict validation, e
     └── unit/
 ```
 
-**Structure Decision**: Use a single web MVC module under `/home/m_srnic/ece493/lab2/ECE493Lab2/src` for client behavior, with controllers responsible for API orchestration defined in `/home/m_srnic/ece493/lab2/ECE493Lab2/specs/001-edit-session-schedule/contracts/openapi.yaml`. This preserves clear Model/View/Controller ownership while keeping traceability to `UC-14` and `UC-14-AS`.
+**Structure Decision**: Use a web MVC module under `/home/m_srnic/ece493/lab2/ECE493Lab2/src` for client behavior plus an Express API layer under `/home/m_srnic/ece493/lab2/ECE493Lab2/backend` that implements `/home/m_srnic/ece493/lab2/ECE493Lab2/specs/001-edit-session-schedule/contracts/openapi.yaml`. This preserves clear Model/View/Controller ownership while keeping traceability to `UC-14` and `UC-14-AS`.
 
 ## Complexity Tracking
 
