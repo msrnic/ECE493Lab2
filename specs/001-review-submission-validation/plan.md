@@ -66,10 +66,13 @@ Implement UC-09 review submission in strict MVC using HTML for definition, CSS f
 /home/m_srnic/ece493/lab2/ECE493Lab2/Use Cases/
 /home/m_srnic/ece493/lab2/ECE493Lab2/Acceptance Tests/
 /home/m_srnic/ece493/lab2/ECE493Lab2/src/
+├── app.js
+├── server.js
 ├── models/
 │   ├── review-submission-model.js
 │   ├── review-record-model.js
-│   └── validation-feedback-model.js
+│   ├── validation-feedback-model.js
+│   └── reviewer-paper-assignment-model.js
 ├── views/
 │   ├── review-form-view.js
 │   └── templates/
@@ -90,12 +93,41 @@ Implement UC-09 review submission in strict MVC using HTML for definition, CSS f
 │   └── uc-09-submit-review.acceptance.test.js
 ├── integration/
 │   └── review-submission-api.integration.test.js
+├── performance/
+│   └── review-submission.perf.test.js
+├── fixtures/
+│   └── review-submission-fixtures.js
 └── unit/
     ├── models/
     └── controllers/
 ```
 
 **Structure Decision**: Use a single web MVC layout where models encapsulate validation/state rules, views own HTML rendering and feedback display, and controllers orchestrate submit flow and endpoint interaction. CSS is isolated under `assets/css`, and API route handling remains separated from view logic to preserve constitution-mandated boundaries.
+
+## Bidirectional Traceability Matrix
+
+### UC/AS to Requirements, Modules, and Tasks
+
+| Source | Requirements | Acceptance Suite | Planned Modules | Task Range |
+|--------|--------------|------------------|-----------------|------------|
+| UC-09 | FR-001..FR-009, NFR-001..NFR-003 | UC-09-AS | `src/models/review-submission-model.js`, `src/models/review-record-model.js`, `src/models/validation-feedback-model.js`, `src/models/reviewer-paper-assignment-model.js`, `src/views/review-form-view.js`, `src/views/templates/review-form.html`, `src/controllers/review-submission-controller.js`, `src/api/review-submission-routes.js`, `src/assets/css/review-form.css`, `src/assets/js/review-form-page.js` | T001-T047 |
+
+### Requirements to UC/AS, Modules, and Verification
+
+| Requirement | Governing UC | Governing AS | Primary Modules | Verification Tasks |
+|-------------|--------------|--------------|-----------------|--------------------|
+| FR-001 | UC-09 | UC-09-AS | `src/views/templates/review-form.html`, `src/controllers/review-submission-controller.js` | T018, T020, T021 |
+| FR-002 | UC-09 | UC-09-AS | `src/models/review-submission-model.js` | T007, T024, T030 |
+| FR-003 | UC-09 | UC-09-AS | `src/models/review-submission-model.js`, `src/models/validation-feedback-model.js` | T024, T027, T029 |
+| FR-004 | UC-09 | UC-09-AS | `src/models/validation-feedback-model.js`, `src/views/review-form-view.js`, `src/api/review-submission-routes.js` | T025, T029, T030 |
+| FR-005 | UC-09 | UC-09-AS | `src/models/review-record-model.js`, `src/api/review-submission-routes.js` | T016, T021, T023 |
+| FR-006 | UC-09 | UC-09-AS | `src/controllers/review-submission-controller.js`, `src/views/review-form-view.js` | T028, T029, T032 |
+| FR-007 | UC-09 | UC-09-AS | `src/models/review-record-model.js`, `src/api/review-submission-routes.js` | T033, T037, T040 |
+| FR-008 | UC-09 | UC-09-AS | `src/api/review-submission-routes.js`, `src/models/review-record-model.js` | T025, T030, T032 |
+| FR-009 | UC-09 | UC-09-AS | `src/models/review-record-model.js`, `src/controllers/review-submission-controller.js` | T034, T038, T039 |
+| NFR-001 | UC-09 | UC-09-AS | `src/views/review-form-view.js`, `src/controllers/review-submission-controller.js` | T045, T047 |
+| NFR-002 | UC-09 | UC-09-AS | `src/api/review-submission-routes.js` | T045, T047 |
+| NFR-003 | UC-09 | UC-09-AS | in-scope JavaScript modules | T014, T042 |
 
 ## Complexity Tracking
 
