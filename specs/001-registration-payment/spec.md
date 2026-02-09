@@ -40,8 +40,8 @@ Payment declined * **2a1**: System prompts retry"
 
 ### User Story 1 - Complete Registration Payment (Priority: P1)
 
-As an attendee, I can submit valid payment details and receive immediate confirmation so my
-conference registration is completed.
+As an attendee, I can submit valid payment details and receive confirmation with non-pending
+submit-to-outcome latency meeting NFR-001 (<=2s p95) so my conference registration is completed.
 
 **Mapped Use Case(s)**: [UC-17]
 **Mapped Acceptance Suite(s)**: [UC-17-AS]
@@ -57,7 +57,8 @@ registration confirmation in one end-to-end flow.
 1. **Given** the attendee is logged in and has selected payment, **When** valid payment details
    are submitted and approved, **Then** the system confirms registration completion.
 2. **Given** valid payment details, **When** payment is processed successfully, **Then** the
-   attendee receives a clear confirmation outcome and registration is marked complete.
+   attendee receives an explicit approved/declined/pending outcome message with pending/decline
+   feedback meeting NFR-002 (<=1s p95), and registration is marked complete after approval.
 
 ---
 
@@ -98,14 +99,17 @@ prompt are shown, then submit corrected payment details successfully.
 | FR-009 | UC-17 | UC-17-AS | Pending outcome reconciliation before retry |
 | FR-010 | UC-17 | UC-17-AS | Retry limit and cooldown enforcement |
 | FR-011 | UC-17 | UC-17-AS | PCI DSS SAQ A scope compliance for payment handling |
+| NFR-001 | UC-17 | UC-17-AS | `tests/acceptance/uc17-performance-protocol.md`, `tests/acceptance/uc17-performance-results.md` |
+| NFR-002 | UC-17 | UC-17-AS | `tests/acceptance/uc17-performance-protocol.md`, `tests/acceptance/uc17-performance-results.md` |
+| NFR-003 | UC-17 | UC-17-AS | `tests/acceptance/uc17-performance-results.md`, `specs/001-registration-payment/traceability.md` |
 
 ### Edge Cases
 
 - Payment details are submitted in an invalid format; the system rejects the attempt and keeps
   registration incomplete.
-- The payment gateway does not return a result within expected interaction time; the attempt is
-  marked `pending`, the attendee receives a non-final message, and retry is gated until
-  reconciliation returns a final outcome.
+- If no final gateway outcome is available within NFR-001 thresholds, the attempt is marked
+  `pending`, the attendee receives a non-final message within NFR-002 thresholds, and retry is
+  gated until reconciliation returns a final outcome.
 - An attendee reaches 5 declined retries within 15 minutes for the same checkout session; the
   system enforces a 15-minute cooldown and blocks additional submissions until cooldown expiry.
 - An attendee refreshes or revisits the payment step after approval; the system shows registration
@@ -146,6 +150,14 @@ prompt are shown, then submit corrected payment details successfully.
 - **FR-007 (UC-17 / UC-17-AS)**: System MUST produce coverage evidence for in-scope
   payment-registration behavior, target 100%, and document remediation when below 100%; below 95%
   requires approved exception.
+
+### Non-Functional Requirements
+
+- **NFR-001 (UC-17 / UC-17-AS)**: Non-pending payment submit-to-outcome latency MUST be <=2s at
+  p95.
+- **NFR-002 (UC-17 / UC-17-AS)**: Pending/decline UI feedback latency MUST be <=1s at p95.
+- **NFR-003 (UC-17 / UC-17-AS)**: Performance evidence MUST be recorded with measurement method
+  and sample size.
 
 If a source requirement is ambiguous, implementation MUST pause and log a clarification request
 that cites exact `Use Cases/UC-17.md` and `Acceptance Tests/UC-17-AS.md` text.
@@ -202,3 +214,5 @@ that cites exact `Use Cases/UC-17.md` and `Acceptance Tests/UC-17-AS.md` text.
   15-minute cooldown expires.
 - **SC-008**: In compliance validation for this feature, 0 test cases show raw cardholder data
   stored, processed, or transmitted by this system.
+- **SC-009**: 100% of previously passing acceptance suites for UC-01 through UC-16 remain passing
+  after UC-17 changes.
