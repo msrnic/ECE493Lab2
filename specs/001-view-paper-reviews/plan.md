@@ -12,12 +12,12 @@ Implement UC-10 so assigned editors can view completed reviews for a selected pa
 **Language/Version**: HTML5, CSS3, JavaScript (ES2022), Node.js 20 LTS
 **Primary Dependencies**: Browser DOM APIs, Fetch API, Express 5 REST routing, Jest 29, Supertest, c8 coverage tooling
 **Storage**: Existing paper/review/editor-assignment persistence plus `review_access_audit` persistence with 365-day retention
-**Testing**: Execute `Acceptance Tests/UC-10-AS.md` verbatim, add MVC unit/integration tests, enforce line coverage evidence with c8 and a 100% in-scope JavaScript target
+**Testing**: Execute `Acceptance Tests/UC-10-AS.md` verbatim, add MVC unit/integration/performance tests, run scripted usability validation for SC-005, and enforce line coverage evidence with c8 and a 100% in-scope JavaScript target
 **Target Platform**: Modern desktop and mobile browsers for UI; Node.js Linux runtime for API/controller execution
 **Project Type**: web (MVC)
-**Performance Goals**: Meet SC-002 by returning either completed reviews or pending status for at least 95% of requests within 5 seconds during normal operations
+**Performance Goals**: Under 500 requests (70% authorized, 30% unavailable) with papers containing up to 100 reviews, keep `GET /api/papers/{paperId}/reviews` p95 latency at or below 5.0 seconds in CI
 **Constraints**: Scope restricted to `Use Cases/UC-10.md` and `Acceptance Tests/UC-10-AS.md`; production behavior must remain in HTML/CSS/JavaScript; MVC boundaries must remain explicit; unauthorized requests must receive only the generic unavailable response
-**Scale/Scope**: 1 editor review page, 1 review retrieval endpoint, 4 model modules, 2 controller modules, 1 HTML view, 1 CSS stylesheet, 1 client behavior script, and UC-10 acceptance plus regression coverage
+**Scale/Scope**: 1 editor review page, 1 review retrieval endpoint, 4 model modules, 2 controller modules, 1 HTML view, 1 CSS stylesheet, 1 client behavior script, and UC-10 acceptance/regression/performance/usability validation coverage
 
 ## Constitution Check
 
@@ -44,6 +44,9 @@ Implement UC-10 so assigned editors can view completed reviews for a selected pa
 ├── research.md
 ├── data-model.md
 ├── quickstart.md
+├── performance-report.md
+├── usability-protocol.md
+├── usability-results.md
 ├── contracts/
 │   └── review-visibility.openapi.yaml
 └── tasks.md
@@ -72,12 +75,16 @@ Implement UC-10 so assigned editors can view completed reviews for a selected pa
 │       └── js/
 │           └── editor-reviews.js
 └── tests/
+    ├── fixtures/
+    │   └── review-visibility-fixtures.js
     ├── acceptance/
     │   └── uc-10-view-reviews.acceptance.test.js
     ├── integration/
-    │   └── review-api-controller.test.js
+    │   ├── review-api-controller.test.js
+    │   └── review-api-performance.test.js
     └── unit/
         ├── review-model.test.js
+        ├── editor-assignment-model.test.js
         └── review-access-audit-model.test.js
 ```
 
@@ -95,6 +102,7 @@ Implement UC-10 so assigned editors can view completed reviews for a selected pa
 - `data-model.md` defines entities, field constraints, relationships, and status transitions.
 - `contracts/review-visibility.openapi.yaml` defines the review retrieval API contract for available, pending, and unavailable outcomes.
 - `quickstart.md` defines implementation bootstrap, test execution, and manual validation steps aligned with UC-10-AS.
+- `performance-report.md` and `usability-results.md` capture SC-002 and SC-005 validation evidence.
 
 ## Post-Design Constitution Check
 
