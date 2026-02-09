@@ -17,7 +17,7 @@ Implement UC-13 schedule generation using an HTML/CSS/JavaScript MVC web stack. 
 **Project Type**: web (MVC)
 **Performance Goals**: Satisfy SC-002 by completing >=95% of valid generation runs within 2 minutes at up to 300 accepted papers/100 session slots; return in-progress rejection responses in under 1 second p95
 **Constraints**: Scope limited to `Use Cases/UC-13.md` and `Acceptance Tests/UC-13-AS.md`; production behavior must remain HTML/CSS/JavaScript; strict MVC boundaries; no regressions in previously passing acceptance suites
-**Scale/Scope**: UC-13 only; 2 role-specific views (admin generation + editor violation review); 4 controllers (generation, run status, schedule retrieval, conflict retrieval); 5 core models (generation run, schedule version, session assignment, conflict flag, accepted paper input)
+**Scale/Scope**: UC-13 only; 2 role-specific views (admin generation + editor violation review); 3 controllers (generation, run status, schedule retrieval/conflict retrieval); 4 core models (generation run, schedule version, session assignment, conflict flag); plus shared repository/validation/service modules for accepted-paper and session-slot input handling
 
 ## Constitution Check
 
@@ -34,6 +34,15 @@ Implement UC-13 schedule generation using an HTML/CSS/JavaScript MVC web stack. 
 
 Pre-Phase 0 gate result: PASS.
 Post-Phase 1 design re-check result: PASS (no constitutional violations introduced by data model or API contracts).
+
+## Traceability Mapping
+
+| UC | FR | Acceptance | Code Modules |
+|----|----|------------|--------------|
+| UC-13 | FR-001, FR-011 | UC-13-AS (admin start, in-progress rejection) | `src/controllers/ScheduleGenerationController.js`, `src/controllers/middleware/authorizeRole.js` |
+| UC-13 | FR-002, FR-003, FR-013 | UC-13-AS (schedule generation/versioning) | `src/models/SessionAssignmentModel.js`, `src/models/GeneratedScheduleModel.js`, `src/controllers/ScheduleReviewController.js` |
+| UC-13 | FR-004, FR-005, FR-007, FR-008, FR-010, FR-012 | UC-13-AS (conflict detection/review) | `src/models/ConflictFlagModel.js`, `src/models/services/ScheduleGenerationEngine.js`, `src/controllers/ScheduleReviewController.js` |
+| UC-13 | FR-006, FR-009, NFR-001 | UC-13-AS (failure paths, evidence, and rejection-latency validation) | `src/models/services/GenerationPreconditionService.js`, `tests/acceptance/`, `tests/coverage/`, `tests/integration/performance/` |
 
 ## Project Structure
 
@@ -56,16 +65,31 @@ Post-Phase 1 design re-check result: PASS (no constitutional violations introduc
 /home/m_srnic/ece493/lab2/ECE493Lab2/
 ├── Use Cases/
 ├── Acceptance Tests/
+├── data/
+│   └── schedules.json
 ├── src/
+│   ├── app.js
+│   ├── server.js
 │   ├── models/
 │   │   ├── GenerationRunModel.js
 │   │   ├── GeneratedScheduleModel.js
 │   │   ├── SessionAssignmentModel.js
-│   │   └── ConflictFlagModel.js
+│   │   ├── ConflictFlagModel.js
+│   │   ├── repositories/
+│   │   │   └── ScheduleRepository.js
+│   │   ├── services/
+│   │   │   ├── ScheduleGenerationEngine.js
+│   │   │   └── GenerationPreconditionService.js
+│   │   └── validation/
+│   │       └── scheduleSchemas.js
 │   ├── controllers/
 │   │   ├── ScheduleGenerationController.js
 │   │   ├── ScheduleRunController.js
-│   │   └── ScheduleReviewController.js
+│   │   ├── ScheduleReviewController.js
+│   │   ├── middleware/
+│   │   │   └── authorizeRole.js
+│   │   └── http/
+│   │       └── responses.js
 │   ├── views/
 │   │   ├── admin/schedule-generation.html
 │   │   └── editor/schedule-conflicts.html
@@ -76,7 +100,10 @@ Post-Phase 1 design re-check result: PASS (no constitutional violations introduc
 └── tests/
     ├── acceptance/
     ├── integration/
-    └── unit/
+    │   └── setup/
+    ├── unit/
+    ├── fixtures/
+    └── coverage/
 ```
 
 **Structure Decision**: Use a JavaScript-only MVC layout where models encapsulate scheduling rules/state, controllers expose role-checked REST endpoints and flow orchestration, and views render admin/editor interfaces via HTML/CSS with behavior in JavaScript modules.
