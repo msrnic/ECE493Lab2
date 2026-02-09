@@ -90,6 +90,10 @@ As an administrator, I need unresolved notification failures recorded so missed 
 | FR-007 | UC-12 | UC-12-AS | Failure logging and follow-up visibility |
 | FR-008 | UC-12 | UC-12-AS | Duplicate-send prevention for a single decision |
 | FR-009 | UC-12 | UC-12-AS | Coverage evidence for scoped acceptance verification |
+| FR-010 | UC-12 | UC-12-AS | Unresolved failure record schema and persistence |
+| FR-011 | UC-12 | UC-12-AS | Email-only channel enforcement |
+| FR-012 | UC-12 | UC-12-AS | Admin authorization for failure log access |
+| FR-013 | UC-12 | UC-12-AS | Failure record retention policy (1 year) |
 
 ### Edge Cases
 
@@ -106,7 +110,7 @@ As an administrator, I need unresolved notification failures recorded so missed 
 - **FR-001 (UC-12 / UC-12-AS)**: System MUST start notification processing when a decision is finalized.
 - **FR-002 (UC-12 / UC-12-AS)**: System MUST generate an email notification tied to the finalized decision and intended author recipient.
 - **FR-003 (UC-12 / UC-12-AS)**: System MUST attempt to send each generated email notification to the author.
-- **FR-004 (UC-12 / UC-12-AS)**: System MUST indicate successful completion when the author receives the decision message.
+- **FR-004 (UC-12 / UC-12-AS)**: System MUST mark notification as delivered only when the email adapter reports provider acceptance for the message (for example, a provider message ID is returned).
 - **FR-005 (UC-12 / UC-12-AS)**: System MUST detect failed notification delivery attempts.
 - **FR-006 (UC-12 / UC-12-AS)**: System MUST automatically perform exactly one retry delivery attempt after an initial failed attempt.
 - **FR-007 (UC-12 / UC-12-AS)**: System MUST record notification failure when delivery remains unsuccessful after the single retry attempt.
@@ -116,6 +120,13 @@ As an administrator, I need unresolved notification failures recorded so missed 
 - **FR-011 (UC-12 / UC-12-AS)**: System MUST scope delivery in this feature to email notifications only.
 - **FR-012 (UC-12 / UC-12-AS)**: System MUST restrict viewing of unresolved notification failure records to administrators only.
 - **FR-013 (UC-12 / UC-12-AS)**: System MUST retain unresolved notification failure records for 1 year from creation.
+
+### Non-Functional Requirements
+
+- **NFR-001 (UC-12 / UC-12-AS)**: System MUST start the initial delivery attempt within 30 seconds at p95 from decision finalization.
+- **NFR-002 (UC-12 / UC-12-AS)**: System MUST start the retry delivery attempt within 60 seconds at p95 after initial failure detection.
+- **NFR-003 (UC-12 / UC-12-AS)**: System MUST serve administrator unresolved-failure list queries in under 300ms at p95 for 1-year retained records at default page size.
+- **NFR-004 (UC-12 / UC-12-AS)**: Normal operating conditions for SC-002 MUST mean SMTP health checks are passing and notification-queue processing lag remains at or below 60 seconds at p95 during the measurement window.
 
 If source requirements are ambiguous, implementation MUST pause and log a clarification request that cites exact `Use Cases/UC-12.md` and `Acceptance Tests/UC-12-AS.md` text.
 
@@ -148,7 +159,7 @@ If source requirements are ambiguous, implementation MUST pause and log a clarif
 ### Measurable Outcomes
 
 - **SC-001**: 100% of scenarios in `Acceptance Tests/UC-12-AS.md` pass without edits.
-- **SC-002**: At least 98% of finalized decisions result in author receipt of a decision message within 5 minutes under normal operating conditions.
+- **SC-002**: Under normal operating conditions defined by NFR-004, at least 98% of finalized decisions reach provider-accepted delivery within 5 minutes of decision finalization.
 - **SC-003**: 100% of initial delivery failures trigger exactly one automatic retry attempt.
 - **SC-004**: 100% of delivery cases that remain unsuccessful after retry are logged with timestamp, submission ID, author ID, failure reason, attempt number, and final delivery status.
 - **SC-005**: 0% of finalized decisions generate more than one delivered decision message to the same author.

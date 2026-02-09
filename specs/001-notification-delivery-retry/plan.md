@@ -17,7 +17,7 @@ Implement UC-12 notification delivery in an MVC web architecture using HTML/CSS/
 **Project Type**: web (MVC)
 **Performance Goals**: Initial send attempt started within 30s of decision finalization; retry started within 60s of initial failure; admin unresolved-failure list queries p95 <300ms for 1-year retained records
 **Constraints**: Map all behavior to `Use Cases/UC-12.md`; satisfy `Acceptance Tests/UC-12-AS.md`; email-only channel; exactly one automatic retry; unresolved logs visible to administrators only; HTML/CSS/JavaScript with strict MVC separation
-**Scale/Scope**: UC-12 only; 1 notification per finalized decision/author; up to 2 delivery attempts per notification; 4 core models, 2 controllers, and 2 views (admin failure list/detail)
+**Scale/Scope**: UC-12 only; 1 notification per finalized decision/author; up to 2 delivery attempts per notification; 4 core models, 2 controllers, 3 views (admin failure list/detail plus notification email template), 2 middleware modules, and 2 route modules
 
 ## Constitution Check
 
@@ -34,6 +34,36 @@ Implement UC-12 notification delivery in an MVC web architecture using HTML/CSS/
 - [x] Any expected coverage below 100% includes measured baseline, line-level rationale, and remediation plan.
 - [x] Coverage below 95% is blocked unless a documented exception is approved in compliance review.
 - [x] Regression plan preserves passing status of previously completed UC acceptance suites.
+
+## Traceability Mapping
+
+### Use Case to Requirements, Implementation, and Verification
+
+| Use Case | Requirements | Acceptance Suite | Planned Code Modules | Planned Tasks |
+|----------|--------------|------------------|----------------------|---------------|
+| UC-12 | FR-001..FR-013, NFR-001..NFR-004 | UC-12-AS | `src/models/finalized-decision-model.js`, `src/models/decision-notification-model.js`, `src/models/delivery-attempt-model.js`, `src/models/unresolved-failure-model.js`, `src/controllers/notification-controller.js`, `src/controllers/admin-failure-log-controller.js`, `src/services/email-delivery-service.js`, `src/services/retry-scheduler-service.js`, `src/routes/notification-routes.js`, `src/routes/admin-routes.js`, `src/middleware/internal-service-auth.js`, `src/middleware/admin-role-auth.js`, `src/views/notification-email-template.html`, `src/views/admin-failure-list.html`, `src/views/admin-failure-detail.html`, `public/css/admin-failures.css`, `public/js/admin-failures-controller.js` | T001..T056 |
+
+### Requirement to Use Case, Modules, and Verification
+
+| Requirement | Use Case | Acceptance Suite | Modules | Verification Tasks |
+|-------------|----------|------------------|---------|--------------------|
+| FR-001 | UC-12 | UC-12-AS | `src/controllers/notification-controller.js` | T018 |
+| FR-002 | UC-12 | UC-12-AS | `src/models/decision-notification-model.js`, `src/views/notification-email-template.html` | T016, T020 |
+| FR-003 | UC-12 | UC-12-AS | `src/controllers/notification-controller.js`, `src/services/email-delivery-service.js` | T018, T021 |
+| FR-004 | UC-12 | UC-12-AS | `src/services/email-delivery-service.js`, `src/controllers/notification-controller.js` | T013, T021, T023 |
+| FR-005 | UC-12 | UC-12-AS | `src/models/delivery-attempt-model.js`, `src/controllers/notification-controller.js` | T027, T029 |
+| FR-006 | UC-12 | UC-12-AS | `src/services/retry-scheduler-service.js`, `src/controllers/notification-controller.js` | T028, T029 |
+| FR-007 | UC-12 | UC-12-AS | `src/services/email-delivery-service.js`, `src/models/unresolved-failure-model.js` | T031, T037, T046 |
+| FR-008 | UC-12 | UC-12-AS | `src/models/decision-notification-model.js`, `src/controllers/notification-controller.js` | T022, T032 |
+| FR-009 | UC-12 | UC-12-AS | `tests/acceptance/`, `tests/coverage/` | T012, T013, T014, T024, T025, T026, T034, T035, T036, T049 |
+| FR-010 | UC-12 | UC-12-AS | `src/models/unresolved-failure-model.js` | T035, T037, T046 |
+| FR-011 | UC-12 | UC-12-AS | `src/models/decision-notification-model.js` | T016 |
+| FR-012 | UC-12 | UC-12-AS | `src/middleware/admin-role-auth.js`, `src/routes/admin-routes.js` | T009, T034, T040 |
+| FR-013 | UC-12 | UC-12-AS | `src/models/unresolved-failure-model.js` | T037, T045, T046 |
+| NFR-001 | UC-12 | UC-12-AS | `src/services/retry-scheduler-service.js` | T053, T054 |
+| NFR-002 | UC-12 | UC-12-AS | `src/services/retry-scheduler-service.js` | T053, T054 |
+| NFR-003 | UC-12 | UC-12-AS | `src/controllers/admin-failure-log-controller.js` | T038, T055 |
+| NFR-004 | UC-12 | UC-12-AS | `src/services/retry-scheduler-service.js` | T053, T056 |
 
 ## Project Structure
 
@@ -65,7 +95,11 @@ Implement UC-12 notification delivery in an MVC web architecture using HTML/CSS/
 │   ├── controllers/
 │   │   ├── notification-controller.js
 │   │   └── admin-failure-log-controller.js
+│   ├── middleware/
+│   │   ├── internal-service-auth.js
+│   │   └── admin-role-auth.js
 │   ├── views/
+│   │   ├── notification-email-template.html
 │   │   ├── admin-failure-list.html
 │   │   └── admin-failure-detail.html
 │   ├── services/
@@ -85,7 +119,7 @@ Implement UC-12 notification delivery in an MVC web architecture using HTML/CSS/
     └── unit/
 ```
 
-**Structure Decision**: Keep all production code in a single MVC web application rooted at `/home/m_srnic/ece493/lab2/ECE493Lab2/src`, with HTML views in `/home/m_srnic/ece493/lab2/ECE493Lab2/src/views`, CSS in `/home/m_srnic/ece493/lab2/ECE493Lab2/public/css`, JavaScript behavior in controllers/services and `/home/m_srnic/ece493/lab2/ECE493Lab2/public/js`, and acceptance/unit/integration verification under `/home/m_srnic/ece493/lab2/ECE493Lab2/tests`.
+**Structure Decision**: Keep all production code in a single MVC web application rooted at `/home/m_srnic/ece493/lab2/ECE493Lab2/src`, with HTML views in `/home/m_srnic/ece493/lab2/ECE493Lab2/src/views`, CSS in `/home/m_srnic/ece493/lab2/ECE493Lab2/public/css`, JavaScript behavior in controllers/services and `/home/m_srnic/ece493/lab2/ECE493Lab2/public/js`, access-control logic in `/home/m_srnic/ece493/lab2/ECE493Lab2/src/middleware`, and acceptance/unit/integration verification under `/home/m_srnic/ece493/lab2/ECE493Lab2/tests`.
 
 ## Complexity Tracking
 
