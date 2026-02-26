@@ -4,6 +4,8 @@ Auto-generated from all feature plans. Last updated: 2026-02-08
 
 ## Active Technologies
 
+- HTML5, CSS3, JavaScript (ES2022) + Browser File API, Fetch API, FormData, Node.js 20 LTS + Express 4, (001-paper-submission)
+- Relational persistence for submission metadata/status + object storage for uploaded files + (001-paper-submission)
 - HTML5, CSS3, JavaScript (ES2020 modules) + Browser DOM and Fetch APIs; Node.js 20 + npm scripts; Jest + c8 coverage; Playwright acceptance automation (001-change-password)
 - HTML5, CSS3, JavaScript (ES2022, Node.js 20 runtime for server-side JavaScript) + Browser DOM APIs, Fetch API, Express 4.x auth endpoints, `express-session` for session state, `bcrypt` for password verification, Jest + Supertest + c8 for testing and line coverage (001-user-login)
 - Registered account records from project-owned account storage, server-side session store for authentication state, and failed-attempt tracker keyed by normalized email with `blockedUntil` timestamp (001-user-login)
