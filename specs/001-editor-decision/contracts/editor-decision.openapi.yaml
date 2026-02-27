@@ -1,0 +1,273 @@
+openapi: 3.1.0
+info:
+  title: Editor Decision Workflow API
+  version: 1.0.0
+  description: REST contracts for UC-11 (Make Paper Decision) and UC-11-AS verification.
+servers:
+  - url: /api
+tags:
+  - name: DecisionWorkflow
+  - name: DecisionWrite
+paths:
+  /papers/{paperId}/decision-workflow:
+    get:
+      tags: [DecisionWorkflow]
+      summary: Load evaluations and current paper decision state for an editor
+      operationId: getDecisionWorkflow
+      parameters:
+        - $ref: '#/components/parameters/PaperId'
+      responses:
+        '200':
+          description: Workflow context loaded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecisionWorkflowResponse'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /papers/{paperId}/decisions:
+    post:
+      tags: [DecisionWrite]
+      summary: Save a deferred or final decision for a paper
+      operationId: savePaperDecision
+      parameters:
+        - $ref: '#/components/parameters/PaperId'
+        - in: header
+          name: Idempotency-Key
+          required: false
+          schema:
+            type: string
+            maxLength: 128
+          description: Optional key for safely retrying repeated submissions.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionSaveRequest'
+      responses:
+        '200':
+          description: Decision action stored
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DecisionSaveResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          description: Editor is not assigned to paper or track
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                unassigned:
+                  value:
+                    code: DENIED_UNASSIGNED
+                    message: Editor is not authorized to record a decision for this paper.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Final decision already exists or concurrency version conflict
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                immutable:
+                  value:
+                    code: DENIED_IMMUTABLE
+                    message: Final decision already saved. Use override workflow for changes.
+                    overrideWorkflowUrl: /override/papers/PAPER-123
+                conflict:
+                  value:
+                    code: DENIED_CONFLICT
+                    message: Decision version mismatch. Reload paper and retry.
+        '412':
+          description: Required evaluations are not available at save time
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                precondition:
+                  value:
+                    code: DENIED_PRECONDITION
+                    message: Required reviews are not available.
+        '422':
+          description: Invalid final outcome value or payload shape
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                invalidOutcome:
+                  value:
+                    code: DENIED_INVALID
+                    message: Final outcome must be ACCEPT, REJECT, or REVISE.
+components:
+  parameters:
+    PaperId:
+      name: paperId
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Unique identifier for the target paper.
+  responses:
+    BadRequest:
+      description: Malformed request body
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Authenticated user is not allowed to access this resource
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Paper not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    DecisionWorkflowResponse:
+      type: object
+      required:
+        - paperId
+        - decisionStatus
+        - decisionVersion
+        - reviewsAvailable
+        - authorized
+        - evaluations
+      properties:
+        paperId:
+          type: string
+        decisionStatus:
+          type: string
+          enum: [UNDECIDED, FINAL]
+        finalOutcome:
+          type: string
+          enum: [ACCEPT, REJECT, REVISE]
+          nullable: true
+        decisionVersion:
+          type: integer
+          minimum: 1
+        reviewsAvailable:
+          type: boolean
+        authorized:
+          type: boolean
+        overrideWorkflowUrl:
+          type: string
+          nullable: true
+        evaluations:
+          type: array
+          items:
+            $ref: '#/components/schemas/EvaluationSummary'
+    EvaluationSummary:
+      type: object
+      required:
+        - evaluationId
+        - reviewerId
+        - recommendation
+        - submittedAt
+      properties:
+        evaluationId:
+          type: string
+        reviewerId:
+          type: string
+        recommendation:
+          type: string
+        submittedAt:
+          type: string
+          format: date-time
+    DecisionSaveRequest:
+      oneOf:
+        - $ref: '#/components/schemas/DeferDecisionRequest'
+        - $ref: '#/components/schemas/FinalDecisionRequest'
+      discriminator:
+        propertyName: action
+        mapping:
+          DEFER: '#/components/schemas/DeferDecisionRequest'
+          FINAL: '#/components/schemas/FinalDecisionRequest'
+    DeferDecisionRequest:
+      type: object
+      required: [action, expectedVersion]
+      properties:
+        action:
+          type: string
+          const: DEFER
+        expectedVersion:
+          type: integer
+          minimum: 1
+    FinalDecisionRequest:
+      type: object
+      required: [action, finalOutcome, expectedVersion]
+      properties:
+        action:
+          type: string
+          const: FINAL
+        finalOutcome:
+          type: string
+          enum: [ACCEPT, REJECT, REVISE]
+        expectedVersion:
+          type: integer
+          minimum: 1
+    DecisionSaveResponse:
+      type: object
+      required:
+        - paperId
+        - decisionStatus
+        - decisionVersion
+        - saved
+        - auditId
+        - timestamp
+      properties:
+        paperId:
+          type: string
+        decisionStatus:
+          type: string
+          enum: [UNDECIDED, FINAL]
+        finalOutcome:
+          type: string
+          enum: [ACCEPT, REJECT, REVISE]
+          nullable: true
+        decisionVersion:
+          type: integer
+          minimum: 1
+        saved:
+          type: boolean
+          const: true
+        message:
+          type: string
+        auditId:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        overrideWorkflowUrl:
+          type: string
+          nullable: true

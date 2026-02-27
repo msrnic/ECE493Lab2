@@ -114,6 +114,12 @@ A reviewer cannot create invalid review state through unauthorized or duplicate 
 - **FR-008 (UC-09 / UC-09-AS)**: Failed validation MUST NOT create or update a persistent draft review record.
 - **FR-009 (UC-09 / UC-09-AS)**: For concurrent valid submission attempts on the same reviewer-paper assignment, system MUST accept the first successful completion and reject all other concurrent attempts without modifying the saved completed review.
 
+### Non-Functional Requirements
+
+- **NFR-001 (UC-09 / UC-09-AS)**: Missing-field feedback after a submit attempt MUST be delivered in under 100ms p95 in local verification runs.
+- **NFR-002 (UC-09 / UC-09-AS)**: Submit endpoint responses (success or failure) MUST complete in under 500ms p95 in local verification runs.
+- **NFR-003 (UC-09 / UC-09-AS)**: In-scope project-owned JavaScript MUST maintain 100% line coverage, or include measured uncovered-line evidence and remediation while staying >=95% with approved exception.
+
 ### Key Entities *(include if feature involves data)*
 
 - **Review Submission**: Reviewer-provided evaluation content for a specific paper, including required and optional fields, before completion.
@@ -133,7 +139,7 @@ A reviewer cannot create invalid review state through unauthorized or duplicate 
 - **SC-001**: 100% of scenarios in `UC-09-AS` pass without scenario changes.
 - **SC-002**: 100% of submission attempts with missing required fields are blocked from being saved.
 - **SC-003**: 100% of valid submission attempts result in exactly one completed review record for the reviewer-paper assignment.
-- **SC-004**: At least 95% of reviewers in acceptance testing complete review submission in one attempt when all required fields are filled.
-- **SC-005**: At least 90% of pilot reviewers rate completion-request feedback as clear (4 or 5 on a 5-point scale).
+- **SC-004**: In a staged usability run with N=20 assigned reviewers using the UC-09 form, at least 19/20 complete submission in one attempt when required fields are pre-filled correctly.
+- **SC-005**: In the same N=20 run, at least 18/20 reviewers rate missing-field feedback clarity as 4 or 5 on a 5-point Likert question: "The completion guidance clearly identified what I needed to fix."
 - **SC-006**: 0 failed-validation attempts create persistent review records.
 - **SC-007**: In concurrent submit test scenarios, exactly one completion is stored per reviewer-paper assignment and all duplicate concurrent attempts are rejected.
