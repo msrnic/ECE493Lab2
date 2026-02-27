@@ -1,0 +1,308 @@
+openapi: 3.0.3
+info:
+  title: UC-17 Registration Payment API
+  version: 0.1.0
+  description: >
+    Contracts for tokenized registration payment processing, retry handling,
+    idempotency, and pending reconciliation.
+servers:
+  - url: https://api.conference.local
+tags:
+  - name: RegistrationPayment
+  - name: GatewayWebhook
+paths:
+  /api/registration-sessions/{sessionId}/payment-attempts:
+    post:
+      tags:
+        - RegistrationPayment
+      summary: Submit a tokenized registration payment attempt
+      operationId: createPaymentAttempt
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentAttemptSubmitRequest'
+      responses:
+        '201':
+          description: New payment attempt accepted and processed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentAttemptResponse'
+        '200':
+          description: Idempotent replay returning existing attempt result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentAttemptResponse'
+        '409':
+          description: Retry blocked due to pending reconciliation or cooldown
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation failure for token/inputs
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/registration-sessions/{sessionId}/payment-attempts/{attemptId}:
+    get:
+      tags:
+        - RegistrationPayment
+      summary: Get current outcome and retry status for one payment attempt
+      operationId: getPaymentAttempt
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: attemptId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Attempt status found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentAttemptResponse'
+        '404':
+          description: Session or attempt not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/registration-sessions/{sessionId}:
+    get:
+      tags:
+        - RegistrationPayment
+      summary: Get registration status for a checkout session
+      operationId: getRegistrationSession
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Registration session state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationSessionResponse'
+        '404':
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/payments/webhooks/gateway:
+    post:
+      tags:
+        - GatewayWebhook
+      summary: Reconcile pending payment attempts from gateway callbacks
+      operationId: receiveGatewayWebhook
+      parameters:
+        - name: X-Gateway-Signature
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GatewayWebhookEvent'
+      responses:
+        '202':
+          description: Event accepted for reconciliation processing
+        '401':
+          description: Signature validation failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    PaymentAttemptSubmitRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - paymentToken
+        - gatewaySessionId
+      properties:
+        paymentToken:
+          type: string
+          description: Tokenized payment reference from hosted gateway fields
+          minLength: 8
+          maxLength: 255
+        gatewaySessionId:
+          type: string
+          description: Gateway checkout/session reference
+          minLength: 1
+          maxLength: 255
+    PaymentAttemptResponse:
+      type: object
+      required:
+        - attemptId
+        - sessionId
+        - outcome
+        - registrationStatus
+        - isIdempotentReplay
+        - retryPolicy
+      properties:
+        attemptId:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+          format: uuid
+        outcome:
+          type: string
+          enum:
+            - approved
+            - declined
+            - pending
+        registrationStatus:
+          type: string
+          enum:
+            - incomplete
+            - complete
+        declineReasonCode:
+          type: string
+          nullable: true
+        isIdempotentReplay:
+          type: boolean
+        submittedAt:
+          type: string
+          format: date-time
+        finalizedAt:
+          type: string
+          format: date-time
+          nullable: true
+        retryPolicy:
+          $ref: '#/components/schemas/RetryPolicyStatus'
+    RetryPolicyStatus:
+      type: object
+      required:
+        - declinedRetriesInWindow
+        - retriesRemaining
+        - retryAllowed
+      properties:
+        declinedRetriesInWindow:
+          type: integer
+          minimum: 0
+          maximum: 5
+        retriesRemaining:
+          type: integer
+          minimum: 0
+          maximum: 5
+        retryAllowed:
+          type: boolean
+        cooldownExpiresAt:
+          type: string
+          format: date-time
+          nullable: true
+        blockedReason:
+          type: string
+          nullable: true
+          enum:
+            - pending_reconciliation
+            - cooldown_active
+    RegistrationSessionResponse:
+      type: object
+      required:
+        - sessionId
+        - attendeeId
+        - registrationStatus
+        - updatedAt
+      properties:
+        sessionId:
+          type: string
+          format: uuid
+        attendeeId:
+          type: string
+          format: uuid
+        registrationStatus:
+          type: string
+          enum:
+            - incomplete
+            - complete
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+    GatewayWebhookEvent:
+      type: object
+      additionalProperties: true
+      required:
+        - eventId
+        - attemptId
+        - outcome
+        - occurredAt
+      properties:
+        eventId:
+          type: string
+        attemptId:
+          type: string
+          format: uuid
+        outcome:
+          type: string
+          enum:
+            - approved
+            - declined
+        occurredAt:
+          type: string
+          format: date-time
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+          additionalProperties: true
