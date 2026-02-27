@@ -58,6 +58,8 @@ As a registered user, I receive a clear error when credentials are invalid so I 
 
 1. **Given** a registered user is logged out, **When** invalid credentials are submitted, **Then** access is denied and an error message is displayed.
 2. **Given** a registered user receives an invalid-credentials error, **When** corrected valid credentials are submitted, **Then** login succeeds and dashboard access is granted.
+3. **Given** an account has reached 5 failed login attempts, **When** login is attempted before 10 minutes have passed, **Then** access is denied and a temporary-block message is displayed.
+4. **Given** an account has prior failed login attempts, **When** valid credentials are submitted, **Then** login succeeds and the failed-attempt counter is reset immediately.
 
 ## Traceability Matrix *(mandatory)*
 
@@ -127,8 +129,8 @@ that cites exact `Use Cases/UC-02.md` and `Acceptance Tests/UC-02-AS.md` text.
 - **SC-001**: 100% of UC-02 acceptance scenarios pass exactly as written in UC-02-AS.
 - **SC-002**: In acceptance and usability testing, at least 95% of valid login attempts reach dashboard access in 10 seconds or less from submission.
 - **SC-003**: In 100% of invalid-credential test attempts, dashboard access is denied and the generic error message "Invalid email or password." is shown.
-- **SC-004**: At least 90% of registered users in usability testing complete login successfully on their first attempt without external assistance.
-- **SC-005**: In negative-path testing for invalid credentials, unauthorized dashboard access occurs in 0 test cases.
+- **SC-004**: In a moderated usability run with 20 registered users (desktop Chrome/Firefox, current major version), at least 18/20 users (90%) complete login successfully on their first attempt without facilitator assistance.
+- **SC-005**: In 100% of negative-path tests (invalid credentials and direct unauthenticated dashboard navigation), protected dashboard content is not exposed.
 - **SC-006**: In 100% of test runs where an account reaches 5 failed login attempts, additional attempts are blocked for 10 minutes and a temporary-block message is displayed.
 - **SC-007**: In 100% of in-scope login tests, successful authentication requires only valid email and password without an additional authentication step.
 - **SC-008**: In 100% of test runs where login succeeds after prior failures, the failed-attempt counter for that account is reset immediately.

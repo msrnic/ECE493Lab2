@@ -34,13 +34,14 @@ A reviewer opens an assigned paper after login so they can start evaluating the 
 
 **Why this priority**: Access to assigned paper files is the core value of this feature and is required before any review work can begin.
 
-**Independent Test**: Can be fully tested by logging in as an assigned reviewer, selecting a paper, and confirming paper files are displayed.
+**Independent Test**: Can be fully tested by logging in as an assigned reviewer, selecting a paper, confirming paper files are displayed, validating session-expiry handling on request, and verifying p95 selection-to-render time is <= 3 seconds.
 
 **Acceptance Scenarios**:
 
 1. **Given** the reviewer accepted the assignment and is logged in, **When** the reviewer selects the assigned paper, **Then** the system displays the paper files.
 2. **Given** the reviewer has access to multiple assigned papers, **When** one assigned paper is selected, **Then** only that paper's files are displayed.
 3. **Given** the reviewer is authorized but paper files are temporarily unavailable, **When** the reviewer requests the paper files, **Then** the system shows a temporary unavailability outcome, allows an immediate retry, and throttles additional repeated requests to at most one request every 5 seconds per reviewer-paper.
+4. **Given** the reviewer session expires before file retrieval, **When** the reviewer requests the paper files, **Then** the system requires re-authentication and does not display protected files.
 
 ---
 
@@ -94,6 +95,7 @@ Paper editors and support/admin staff can review access outcomes so approved acc
 | FR-009 | UC-08 | UC-08-AS | Temporary paper-file unavailability handling |
 | FR-010 | UC-08 | UC-08-AS | Revocation behavior during active viewing |
 | FR-011 | UC-08 | UC-08-AS | Temporary-outage retry throttling |
+| FR-012 | UC-08 | UC-08-AS | Session-expiry handling for file and access-record requests |
 
 ### Edge Cases
 
@@ -115,12 +117,13 @@ Paper editors and support/admin staff can review access outcomes so approved acc
 - **FR-003 (UC-08 / UC-08-AS)**: System MUST validate reviewer assignment and access entitlement on every paper file access request.
 - **FR-004 (UC-08 / UC-08-AS)**: If access has been revoked, system MUST deny all new paper file access requests.
 - **FR-005 (UC-08 / UC-08-AS)**: When access is denied due to revocation, system MUST present a clear denial outcome to the reviewer.
-- **FR-006 (UC-08 / UC-08-AS)**: System MUST record successful access and denied access outcomes with enough context to support support-team troubleshooting and audit review.
+- **FR-006 (UC-08 / UC-08-AS)**: System MUST record successful and denied access outcomes with at least: attemptId, reviewerId, paperId, optional fileId, outcome, reasonCode, occurredAt, requestId, and viewerRoleSnapshot.
 - **FR-007 (UC-08 / UC-08-AS)**: System MUST generate coverage evidence for in-scope project-owned feature logic and target 100% line coverage; if below 100%, uncovered lines MUST be justified with remediation steps; coverage below 95% MUST include an approved exception.
 - **FR-008 (UC-08 / UC-08-AS)**: System MUST restrict viewing of paper access records to users who are either editors of the related paper or in support/admin roles.
 - **FR-009 (UC-08 / UC-08-AS)**: If paper files are temporarily unavailable for an otherwise authorized reviewer, system MUST present a temporary unavailability outcome and allow immediate retry without marking access as revoked.
 - **FR-010 (UC-08 / UC-08-AS)**: If revocation occurs while paper content is already displayed, system MUST keep already displayed content visible but deny every subsequent paper file request immediately.
 - **FR-011 (UC-08 / UC-08-AS)**: During temporary file unavailability, system MUST allow one immediate retry and throttle additional repeated requests to no more than one request every 5 seconds per reviewer-paper.
+- **FR-012 (UC-08 / UC-08-AS)**: If a session is expired or invalid at paper-file or access-record request time, system MUST return an authentication-required outcome and MUST NOT display protected files or records.
 
 If a source requirement is ambiguous, implementation MUST pause and log a clarification request that cites exact `Use Cases/UC-08.md` and `Acceptance Tests/UC-08-AS.md` text.
 
@@ -129,6 +132,7 @@ If a source requirement is ambiguous, implementation MUST pause and log a clarif
 - **Reviewer Access Entitlement**: The current permission state tying a reviewer to an assigned paper, including whether access is active or revoked.
 - **Paper File Bundle**: The set of files associated with a selected paper that may be displayed to authorized reviewers.
 - **Paper Access Attempt**: A record of a reviewer request to open a paper, including outcome (`granted`, `denied-revoked`, `temporarily-unavailable`, or `throttled`) and reason context.
+- **Outage Retry Window**: Per reviewer-paper retry state used to allow one immediate retry and throttle additional temporary-outage retries to one request every 5 seconds.
 
 ## Assumptions
 
@@ -147,7 +151,7 @@ If a source requirement is ambiguous, implementation MUST pause and log a clarif
 ### Measurable Outcomes
 
 - **SC-001**: 100% of scenarios in `UC-08-AS` pass without modifying acceptance suite text.
-- **SC-002**: At least 95% of authorized reviewer paper selections display paper files within 3 seconds.
+- **SC-002**: In a run of at least 100 authorized reviewer paper selections, the 95th-percentile time from paper selection to visible file-list render is 3 seconds or less.
 - **SC-003**: 100% of revoked-access attempts are denied at access time.
 - **SC-004**: 100% of access denials provide reviewers with a clear access-revoked outcome message.
 - **SC-005**: 100% of successful and denied access attempts are captured in access records visible to paper editors and support/admin staff.
@@ -158,3 +162,4 @@ If a source requirement is ambiguous, implementation MUST pause and log a clarif
 - **SC-010**: 100% of authorized requests during temporary file outages return a temporary unavailability outcome (not access denial) and include an immediate retry path.
 - **SC-011**: 100% of post-revocation paper file requests are denied even when revocation occurs during active viewing, while already displayed content remains visible.
 - **SC-012**: 100% of repeated temporary-outage requests beyond the immediate retry are throttled to no more than one request every 5 seconds per reviewer-paper.
+- **SC-013**: 100% of paper-file and access-record requests with expired or invalid sessions return an authentication-required outcome and display no protected content.
