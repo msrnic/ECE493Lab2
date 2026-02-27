@@ -4,6 +4,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-08
 
 ## Active Technologies
 
+- HTML5, CSS3, JavaScript (ES2022) + Browser DOM APIs, Fetch API, server-side JavaScript HTTP handlers, JSON payload validation (001-editor-decision)
 - HTML5, CSS3, JavaScript (ES2022), Node.js 20 LTS + Browser DOM APIs, Fetch API, Express 5 REST routing, Jest 29, Supertest, c8 coverage tooling (001-view-paper-reviews)
 - HTML5, CSS3, JavaScript (ES2022), Node.js 20 + Express 4 (API routing), Vanilla DOM APIs (view rendering/events), Ajv 8 (shared validation schema), Vitest + Supertest + c8 (unit/integration/coverage) (001-review-submission-validation)
 - HTML5, CSS3, JavaScript (ES2022 modules) + Browser DOM APIs, Fetch API, FormData API, Node.js `node:test` for automated tests, Istanbul/c8-compatible line-coverage reporting (001-reviewer-paper-access)
@@ -35,6 +36,7 @@ HTML5, CSS3, JavaScript (ES2022), Node.js 20 LTS: Follow standard conventions
 
 ## Recent Changes
 
+- 001-editor-decision: Added HTML5, CSS3, JavaScript (ES2022) + Browser DOM APIs, Fetch API, server-side JavaScript HTTP handlers, JSON payload validation
 - 001-view-paper-reviews: Added HTML5, CSS3, JavaScript (ES2022), Node.js 20 LTS + Browser DOM APIs, Fetch API, Express 5 REST routing, Jest 29, Supertest, c8 coverage tooling
 - 001-review-submission-validation: Added HTML5, CSS3, JavaScript (ES2022), Node.js 20 + Express 4 (API routing), Vanilla DOM APIs (view rendering/events), Ajv 8 (shared validation schema), Vitest + Supertest + c8 (unit/integration/coverage)
 - 001-reviewer-paper-access: Added HTML5, CSS3, JavaScript (ES2022 modules) + Browser DOM APIs, Fetch API, FormData API, Node.js `node:test` for automated tests, Istanbul/c8-compatible line-coverage reporting
