@@ -4,6 +4,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-08
 
 ## Active Technologies
 
+- HTML5, CSS3, JavaScript (ES2020+; Node.js 20 LTS runtime for server-side JavaScript) + Browser DOM APIs, Fetch API, Node.js HTTP runtime, Express.js routing, JSON schema validation for request payloads (001-generate-session-schedule)
 - HTML5, CSS3, JavaScript (ES2022 for browser + Node.js 20 LTS runtime) + Node.js runtime, Express-style routing/controllers, SMTP email adapter (Nodemailer-compatible), server-rendered HTML views with static CSS/JS assets (001-notification-delivery-retry)
 - HTML5, CSS3, JavaScript (ES2022) + Browser DOM APIs, Fetch API, server-side JavaScript HTTP handlers, JSON payload validation (001-editor-decision)
 - HTML5, CSS3, JavaScript (ES2022), Node.js 20 LTS + Browser DOM APIs, Fetch API, Express 5 REST routing, Jest 29, Supertest, c8 coverage tooling (001-view-paper-reviews)
@@ -37,6 +38,7 @@ HTML5, CSS3, JavaScript (ES2022), Node.js 20 LTS: Follow standard conventions
 
 ## Recent Changes
 
+- 001-generate-session-schedule: Added HTML5, CSS3, JavaScript (ES2020+; Node.js 20 LTS runtime for server-side JavaScript) + Browser DOM APIs, Fetch API, Node.js HTTP runtime, Express.js routing, JSON schema validation for request payloads
 - 001-notification-delivery-retry: Added HTML5, CSS3, JavaScript (ES2022 for browser + Node.js 20 LTS runtime) + Node.js runtime, Express-style routing/controllers, SMTP email adapter (Nodemailer-compatible), server-rendered HTML views with static CSS/JS assets
 - 001-editor-decision: Added HTML5, CSS3, JavaScript (ES2022) + Browser DOM APIs, Fetch API, server-side JavaScript HTTP handlers, JSON payload validation
 - 001-view-paper-reviews: Added HTML5, CSS3, JavaScript (ES2022), Node.js 20 LTS + Browser DOM APIs, Fetch API, Express 5 REST routing, Jest 29, Supertest, c8 coverage tooling
