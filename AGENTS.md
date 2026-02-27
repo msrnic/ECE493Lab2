@@ -4,6 +4,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-08
 
 ## Active Technologies
 
+- HTML5, CSS3, JavaScript (ES2020+) + Browser DOM APIs, Fetch API, FormData API, and the draft REST contract at `/home/m_srnic/ece493/lab2/ECE493Lab2/specs/002-save-submission-draft/contracts/draft-api.openapi.yaml` (002-save-submission-draft)
 - HTML5, CSS3, JavaScript (ES2022) + Browser File API, Fetch API, FormData, Node.js 20 LTS + Express 4, (001-paper-submission)
 - Relational persistence for submission metadata/status + object storage for uploaded files + (001-paper-submission)
 - HTML5, CSS3, JavaScript (ES2020 modules) + Browser DOM and Fetch APIs; Node.js 20 + npm scripts; Jest + c8 coverage; Playwright acceptance automation (001-change-password)
@@ -25,14 +26,14 @@ npm test && npm run lint
 
 ## Code Style
 
-HTML5, CSS3, JavaScript (ES2020 modules): Follow standard conventions
+HTML5, CSS3, JavaScript (ES2020+): Follow standard conventions
 
 ## Recent Changes
 
+- 002-save-submission-draft: Added HTML5, CSS3, JavaScript (ES2020+) + Browser DOM APIs, Fetch API, FormData API, and the draft REST contract at `/home/m_srnic/ece493/lab2/ECE493Lab2/specs/002-save-submission-draft/contracts/draft-api.openapi.yaml`
 - 001-change-password: Added HTML5, CSS3, JavaScript (ES2020 modules) + Browser DOM and Fetch APIs; Node.js 20 + npm scripts; Jest + c8 coverage; Playwright acceptance automation
 HTML5, CSS3, JavaScript (ES2020+): Follow standard conventions
 - 001-user-login: Added HTML5, CSS3, JavaScript (ES2022, Node.js 20 runtime for server-side JavaScript) + Browser DOM APIs, Fetch API, Express 4.x auth endpoints, `express-session` for session state, `bcrypt` for password verification, Jest + Supertest + c8 for testing and line coverage
 - 001-user-registration: Added HTML5, CSS3, JavaScript (ES2020+) + Browser DOM APIs, Fetch API, Node.js/Express HTTP layer, email provider adapter
-
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->
