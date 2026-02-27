@@ -1,0 +1,346 @@
+openapi: 3.1.0
+info:
+  title: UC-13 Schedule Generation API
+  version: 0.1.0
+  description: >-
+    REST contract for administrator-triggered conference schedule generation,
+    conflict flag review, and schedule version retrieval.
+servers:
+  - url: https://cms.local
+    description: Example local environment
+
+tags:
+  - name: ScheduleRuns
+  - name: Schedules
+  - name: Conflicts
+
+security:
+  - bearerAuth: []
+
+paths:
+  /api/schedule-runs:
+    post:
+      tags: [ScheduleRuns]
+      summary: Start a schedule generation run
+      description: >-
+        Admin-only action. Rejects when another run is already in progress.
+      operationId: createScheduleRun
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateScheduleRunRequest'
+      responses:
+        '202':
+          description: Generation accepted and running
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationRun'
+        '403':
+          description: Caller is not authorized to initiate generation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: A generation run is already in progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Generation cannot start due to missing prerequisites
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/schedule-runs/{runId}:
+    get:
+      tags: [ScheduleRuns]
+      summary: Get schedule generation run status
+      operationId: getScheduleRun
+      parameters:
+        - name: runId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Run status payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerationRunStatusResponse'
+        '403':
+          description: Caller cannot access this run
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Run not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/schedules:
+    get:
+      tags: [Schedules]
+      summary: List generated schedule versions
+      operationId: listSchedules
+      parameters:
+        - name: activeOnly
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: Schedule versions
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ScheduleVersionSummary'
+        '403':
+          description: Caller cannot access schedules
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/schedules/{scheduleId}:
+    get:
+      tags: [Schedules]
+      summary: Get one generated schedule version
+      operationId: getSchedule
+      parameters:
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schedule details and assignment list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ScheduleVersionDetail'
+        '403':
+          description: Caller cannot access this schedule
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Schedule version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/schedules/{scheduleId}/conflicts:
+    get:
+      tags: [Conflicts]
+      summary: List conflict flags for one schedule version
+      description: Admins and editors can access full conflict details.
+      operationId: listScheduleConflicts
+      parameters:
+        - name: scheduleId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conflict flags for the schedule version
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConflictFlag'
+        '403':
+          description: Caller is not authorized to view conflicts
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Schedule version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    CreateScheduleRunRequest:
+      type: object
+      properties:
+        requestedByUserId:
+          type: string
+          description: Authenticated admin user ID
+        notes:
+          type: string
+          maxLength: 500
+
+    GenerationRun:
+      type: object
+      required:
+        - runId
+        - status
+        - requestedAt
+      properties:
+        runId:
+          type: string
+        status:
+          type: string
+          enum: [requested, in_progress, completed, failed, rejected]
+        requestedAt:
+          type: string
+          format: date-time
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+        failureReason:
+          type: string
+        inProgressMessage:
+          type: string
+
+    GenerationRunStatusResponse:
+      allOf:
+        - $ref: '#/components/schemas/GenerationRun'
+        - type: object
+          properties:
+            schedule:
+              $ref: '#/components/schemas/ScheduleVersionSummary'
+
+    ScheduleVersionSummary:
+      type: object
+      required:
+        - scheduleId
+        - versionNumber
+        - isActive
+        - createdAt
+        - assignmentCount
+        - conflictCount
+      properties:
+        scheduleId:
+          type: string
+        runId:
+          type: string
+        versionNumber:
+          type: integer
+          minimum: 1
+        isActive:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        assignmentCount:
+          type: integer
+          minimum: 0
+        conflictCount:
+          type: integer
+          minimum: 0
+
+    ScheduleVersionDetail:
+      allOf:
+        - $ref: '#/components/schemas/ScheduleVersionSummary'
+        - type: object
+          required: [assignments]
+          properties:
+            assignments:
+              type: array
+              items:
+                $ref: '#/components/schemas/SessionAssignment'
+
+    SessionAssignment:
+      type: object
+      required:
+        - assignmentId
+        - paperId
+        - sessionSlotId
+      properties:
+        assignmentId:
+          type: string
+        paperId:
+          type: string
+        sessionSlotId:
+          type: string
+        orderInSlot:
+          type: integer
+          minimum: 1
+
+    ConflictFlag:
+      type: object
+      required:
+        - conflictFlagId
+        - violationType
+        - details
+        - paperId
+      properties:
+        conflictFlagId:
+          type: string
+        violationType:
+          type: string
+          enum:
+            - assignment_conflict
+            - optimization_mismatch
+            - preference_mismatch
+            - metadata_violation
+        ruleId:
+          type: string
+        paperId:
+          type: string
+        sessionSlotId:
+          type: string
+        details:
+          type: string
+        severity:
+          type: string
+          enum: [info, warning, critical]
+        dedupKey:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          examples:
+            - GENERATION_IN_PROGRESS
+            - NO_ACCEPTED_PAPERS
+            - FORBIDDEN
+            - NOT_FOUND
+        message:
+          type: string

@@ -1,8 +1,8 @@
-# Specification Quality Checklist: Save Paper Draft
+# Specification Quality Checklist: Change Account Password
 
-**Purpose**: Validate specification completeness and quality before proceeding to planning  
-**Created**: 2026-02-07  
-**Feature**: [`specs/001-save-submission-draft/spec.md`](../spec.md)
+**Purpose**: Validate specification completeness and quality before proceeding to planning
+**Created**: 2026-02-07
+**Feature**: [spec.md](../spec.md)
 
 ## Content Quality
 
@@ -31,5 +31,4 @@
 
 ## Notes
 
-- Validation iteration 1 completed with all checklist items passing.
-- No unresolved issues remain; specification is ready for `/speckit.plan` (or `/speckit.clarify` if process requires an explicit clarify step).
+- Validation completed in one iteration; all checklist items passed.
