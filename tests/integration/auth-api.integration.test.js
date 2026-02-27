@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { createApp } from '../../src/app.js';
 import { hashPassword } from '../../src/models/user-account-model.js';
 import { invokeHandler } from '../helpers/http-harness.js';
@@ -42,6 +43,30 @@ function getRouteHandler(app, method, path) {
 }
 
 describe('integration: auth api', () => {
+  it('serves browser module dependencies needed for login-page redirects', async () => {
+    const app = createApp();
+    const servesPath = (requestPath) =>
+      app.router.stack.some(
+        (layer) => !layer.route && layer.name === 'serveStatic' && layer.match(requestPath)
+      );
+
+    expect(servesPath('/assets/js/app.js')).toBe(true);
+    expect(servesPath('/controllers/login-controller.js')).toBe(true);
+    expect(servesPath('/controllers/session-controller.js')).toBe(true);
+    expect(servesPath('/controllers/password-change-form-controller.js')).toBe(true);
+
+    const appModuleSource = readFileSync(new URL('../../src/assets/js/app.js', import.meta.url), 'utf8');
+    expect(appModuleSource).toContain('bootstrapLoginPage');
+    expect(appModuleSource).toContain('password-change-form-controller.js');
+    expect(appModuleSource).not.toContain('password-change-controller.js');
+
+    const passwordChangeFormSource = readFileSync(
+      new URL('../../src/controllers/password-change-form-controller.js', import.meta.url),
+      'utf8'
+    );
+    expect(passwordChangeFormSource).not.toContain('password-change-model.js');
+  });
+
   it('authenticates a newly registered account after confirmation', async () => {
     const app = createApp();
     const registrationHandler = getRouteHandler(app, 'post', '/api/registrations');
@@ -111,6 +136,30 @@ describe('integration: auth api', () => {
     expect(sessionResponse.statusCode).toBe(200);
     expect(sessionResponse.body.authenticated).toBe(true);
     expect(sessionResponse.body.user.email).toBe('user@example.com');
+
+    const logoutResponse = await invokeHandler(app.locals.authController.logout, {
+      headers: {
+        cookie: getSessionCookieHeader(loginResponse)
+      }
+    });
+
+    expect(logoutResponse.statusCode).toBe(200);
+    expect(logoutResponse.body).toEqual({
+      authenticated: false,
+      redirectUrl: '/'
+    });
+    expect(String(logoutResponse.headers['Set-Cookie'])).toContain('Max-Age=0');
+
+    const sessionAfterLogout = await invokeHandler(app.locals.authController.getSession, {
+      headers: {
+        cookie: getSessionCookieHeader(loginResponse)
+      }
+    });
+    expect(sessionAfterLogout.statusCode).toBe(401);
+
+    const logoutWithoutSession = await invokeHandler(app.locals.authController.logout);
+    expect(logoutWithoutSession.statusCode).toBe(200);
+    expect(logoutWithoutSession.body.authenticated).toBe(false);
   });
 
   it('returns generic invalid credentials response and keeps session unauthenticated', async () => {

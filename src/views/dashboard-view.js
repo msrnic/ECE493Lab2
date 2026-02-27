@@ -19,6 +19,10 @@ export function renderDashboardPage({ email } = {}) {
     <main>
       <h1>Dashboard</h1>
       <p data-dashboard-user>Signed in as ${escapeHtml(email ?? 'unknown user')}.</p>
+      <p><a href="/account/password-change">Change password</a></p>
+      <form method="post" action="/logout">
+        <button type="submit" data-dashboard-logout>Log Out</button>
+      </form>
     </main>
   </body>
 </html>`;

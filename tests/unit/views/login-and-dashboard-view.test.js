@@ -46,6 +46,9 @@ describe('login and dashboard views', () => {
   it('renders dashboard page and escapes user email', () => {
     const html = renderDashboardPage({ email: '<script>alert(1)</script>' });
     expect(html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;');
+    expect(html).toContain('href="/account/password-change"');
+    expect(html).toContain('action="/logout"');
+    expect(html).toContain('data-dashboard-logout');
 
     const fallback = renderDashboardPage();
     expect(fallback).toContain('unknown user');

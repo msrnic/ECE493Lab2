@@ -63,6 +63,17 @@ describe('repository', () => {
     repository.createConfirmationToken({ tokenHash: 'hash' });
     repository.createRegistrationAttempt({ emailNormalized: 'test@example.com' });
     repository.createEmailDeliveryJob({ nextAttemptAt: '2026-01-01T00:00:00.000Z' });
+    repository.createSecurityNotification({
+      userId: 'usr-1',
+      status: 'queued',
+      queuedAt: '2026-01-01T00:00:00.000Z'
+    });
+    repository.createSecurityAuditEntry({
+      attemptId: 'attempt-1',
+      userId: 'usr-1',
+      outcome: 'updated',
+      recordedAt: '2026-01-01T00:00:00.000Z'
+    });
 
     repository.reset();
 
@@ -70,5 +81,28 @@ describe('repository', () => {
     expect(repository.listConfirmationTokens()).toHaveLength(0);
     expect(repository.listRegistrationAttempts()).toHaveLength(0);
     expect(repository.listEmailDeliveryJobs()).toHaveLength(0);
+    expect(repository.listSecurityNotifications()).toHaveLength(0);
+    expect(repository.listSecurityAuditEntries()).toHaveLength(0);
+  });
+
+  it('stores and lists security notifications and audit entries', () => {
+    const repository = createInMemoryRepository({ idGenerator: () => 'generated-id' });
+
+    const notification = repository.createSecurityNotification({
+      userId: 'usr-1',
+      status: 'queued',
+      queuedAt: '2026-01-01T00:00:00.000Z'
+    });
+    const audit = repository.createSecurityAuditEntry({
+      attemptId: 'attempt-1',
+      userId: 'usr-1',
+      outcome: 'updated',
+      recordedAt: '2026-01-01T00:00:00.000Z'
+    });
+
+    expect(notification.id).toBe('generated-id');
+    expect(audit.id).toBe('generated-id');
+    expect(repository.listSecurityNotifications()).toHaveLength(1);
+    expect(repository.listSecurityAuditEntries()).toHaveLength(1);
   });
 });

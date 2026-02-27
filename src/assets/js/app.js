@@ -1,4 +1,5 @@
 import { enhanceLoginForm } from '../../controllers/login-controller.js';
+import { enhancePasswordChangeForm } from '../../controllers/password-change-form-controller.js';
 import { redirectAuthenticatedUser } from '../../controllers/session-controller.js';
 
 export async function bootstrapLoginPage({
@@ -27,5 +28,19 @@ export async function bootstrapLoginPage({
   return {
     enhanced: true,
     redirected: redirectResult.redirected
+  };
+}
+
+export function bootstrapPasswordChangePage({
+  documentRef = globalThis.document,
+  fetchImpl = globalThis.fetch
+} = {}) {
+  const enhanced = enhancePasswordChangeForm({
+    documentRef,
+    fetchImpl
+  });
+
+  return {
+    enhanced: Boolean(enhanced)
   };
 }

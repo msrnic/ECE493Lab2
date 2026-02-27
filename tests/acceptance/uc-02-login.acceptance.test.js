@@ -41,6 +41,23 @@ function getSessionCookieHeader(response) {
 }
 
 describe('UC-02-AS acceptance suite', () => {
+  it('Given the login page is opened, When browser assets are requested, Then login bootstrap dependencies are available', async () => {
+    const app = createApp();
+    const loginPageHandler = getRouteHandler(app, 'get', '/login');
+    const loginPage = await invokeHandler(loginPageHandler);
+    expect(loginPage.statusCode).toBe(200);
+    expect(loginPage.text).toContain('/assets/js/app.js');
+
+    const servesPath = (requestPath) =>
+      app.router.stack.some(
+        (layer) => !layer.route && layer.name === 'serveStatic' && layer.match(requestPath)
+      );
+
+    expect(servesPath('/assets/js/app.js')).toBe(true);
+    expect(servesPath('/controllers/login-controller.js')).toBe(true);
+    expect(servesPath('/controllers/session-controller.js')).toBe(true);
+  });
+
   it('Given valid credentials, When the user logs in, Then the user is authenticated and redirected to dashboard', async () => {
     const app = createApp();
     seedActiveAccount(app);
@@ -65,6 +82,43 @@ describe('UC-02-AS acceptance suite', () => {
 
     expect(dashboardResponse.statusCode).toBe(200);
     expect(dashboardResponse.text).toContain('Dashboard');
+  });
+
+  it('Given an authenticated dashboard session, When the user logs out, Then the user is redirected to the first page and dashboard access is revoked', async () => {
+    const app = createApp();
+    seedActiveAccount(app);
+
+    const loginResponse = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'user@example.com',
+        password: 'StrongPass!2026'
+      }
+    });
+    expect(loginResponse.statusCode).toBe(200);
+
+    const logoutHandler = getRouteHandler(app, 'post', '/logout');
+    const logoutResponse = await invokeHandler(logoutHandler, {
+      headers: {
+        cookie: getSessionCookieHeader(loginResponse)
+      }
+    });
+
+    expect(logoutResponse.statusCode).toBe(302);
+    expect(logoutResponse.redirectLocation).toBe('/');
+
+    const homeHandler = getRouteHandler(app, 'get', '/');
+    const homeResponse = await invokeHandler(homeHandler);
+    expect(homeResponse.statusCode).toBe(200);
+    expect(homeResponse.text).toContain('Conference Management System');
+
+    const dashboardHandler = getRouteHandler(app, 'get', '/dashboard');
+    const dashboardAfterLogout = await invokeHandler(dashboardHandler, {
+      headers: {
+        cookie: getSessionCookieHeader(loginResponse)
+      }
+    });
+    expect(dashboardAfterLogout.statusCode).toBe(302);
+    expect(dashboardAfterLogout.redirectLocation).toBe('/login');
   });
 
   it('allows a newly registered user to login after confirmation', async () => {

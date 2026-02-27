@@ -10,6 +10,7 @@ const SESSION_COOKIE_NAME = 'cms_session';
 const INVALID_CREDENTIALS_MESSAGE = 'Invalid email or password.';
 const BLOCKED_MESSAGE = 'Too many failed login attempts. Try again later.';
 const DASHBOARD_URL = '/dashboard';
+const HOME_URL = '/';
 
 export function createAuthSessionStore({
   sessionIdFactory = () => randomUUID(),
@@ -17,6 +18,47 @@ export function createAuthSessionStore({
   ttlMs = 60 * 60 * 1000
 } = {}) {
   const sessions = new Map();
+  const sessionsByUser = new Map();
+
+  function toEpochMs(value) {
+    if (value instanceof Date) {
+      return value.getTime();
+    }
+
+    return Number(value);
+  }
+
+  function addSessionToUserIndex(userId, sessionId) {
+    const current = sessionsByUser.get(userId) ?? new Set();
+    current.add(sessionId);
+    sessionsByUser.set(userId, current);
+  }
+
+  function removeSessionFromUserIndex(userId, sessionId) {
+    const current = sessionsByUser.get(userId);
+    if (!current) {
+      return;
+    }
+
+    current.delete(sessionId);
+    if (current.size === 0) {
+      sessionsByUser.delete(userId);
+    }
+  }
+
+  function removeSession(sessionId) {
+    const session = sessions.get(sessionId);
+    if (!session) {
+      return false;
+    }
+
+    sessions.delete(sessionId);
+    if (session.user?.id) {
+      removeSessionFromUserIndex(session.user.id, sessionId);
+    }
+
+    return true;
+  }
 
   function createSession({ user }) {
     const createdAt = nowFn();
@@ -29,6 +71,10 @@ export function createAuthSessionStore({
     };
 
     sessions.set(session.sessionId, session);
+    if (user?.id) {
+      addSessionToUserIndex(user.id, session.sessionId);
+    }
+
     return session;
   }
 
@@ -42,21 +88,49 @@ export function createAuthSessionStore({
       return null;
     }
 
-    if (new Date(session.expiresAt).getTime() <= now.getTime()) {
-      sessions.delete(sessionId);
+    if (new Date(session.expiresAt).getTime() <= toEpochMs(now)) {
+      removeSession(sessionId);
       return null;
     }
 
     return session;
   }
 
+  function listActiveSessionsByUser(userId, now = nowFn()) {
+    const indexedSessionIds = Array.from(sessionsByUser.get(userId) ?? []);
+    return indexedSessionIds
+      .map((sessionId) => getSession(sessionId, now))
+      .filter(Boolean);
+  }
+
+  function invalidateOtherSessions(userId, currentSessionId, now = nowFn()) {
+    const activeSessions = listActiveSessionsByUser(userId, now);
+    let invalidatedCount = 0;
+
+    for (const session of activeSessions) {
+      if (session.sessionId === currentSessionId) {
+        continue;
+      }
+
+      if (removeSession(session.sessionId)) {
+        invalidatedCount += 1;
+      }
+    }
+
+    return invalidatedCount;
+  }
+
   function clear() {
     sessions.clear();
+    sessionsByUser.clear();
   }
 
   return {
     createSession,
     getSession,
+    listActiveSessionsByUser,
+    invalidateOtherSessions,
+    destroySession: removeSession,
     clear
   };
 }
@@ -115,6 +189,22 @@ function createSessionCookieValue(sessionId, { secure } = {}) {
   return attributes.join('; ');
 }
 
+function createExpiredSessionCookieValue({ secure } = {}) {
+  const attributes = [
+    `${SESSION_COOKIE_NAME}=`,
+    'Path=/',
+    'HttpOnly',
+    'SameSite=Lax',
+    'Max-Age=0'
+  ];
+
+  if (secure) {
+    attributes.push('Secure');
+  }
+
+  return attributes.join('; ');
+}
+
 function blockedPayload(state) {
   return {
     error: 'LOGIN_TEMPORARILY_BLOCKED',
@@ -140,6 +230,17 @@ export function createAuthController({
   sessionStore = createAuthSessionStore({ nowFn, ttlMs: sessionStoreTtlMs }),
   nodeEnv = process.env.NODE_ENV
 }) {
+  function clearSession(req) {
+    const cookies = parseCookieHeader(req.headers?.cookie ?? '');
+    const sessionId = cookies[SESSION_COOKIE_NAME];
+
+    if (!sessionId) {
+      return;
+    }
+
+    sessionStore.destroySession(sessionId);
+  }
+
   function getAuthenticatedSession(req) {
     const cookies = parseCookieHeader(req.headers?.cookie ?? '');
     const sessionId = cookies[SESSION_COOKIE_NAME];
@@ -220,9 +321,41 @@ export function createAuthController({
     });
   }
 
+  async function logout(req, res) {
+    clearSession(req);
+
+    res
+      .set(
+        'Set-Cookie',
+        createExpiredSessionCookieValue({
+          secure: shouldUseSecureCookie(req, nodeEnv)
+        })
+      )
+      .status(200)
+      .json({
+        authenticated: false,
+        redirectUrl: HOME_URL
+      });
+  }
+
+  async function logoutAndRedirect(req, res) {
+    clearSession(req);
+
+    res
+      .set(
+        'Set-Cookie',
+        createExpiredSessionCookieValue({
+          secure: shouldUseSecureCookie(req, nodeEnv)
+        })
+      )
+      .redirect(HOME_URL);
+  }
+
   return {
     login,
     getSession,
+    logout,
+    logoutAndRedirect,
     getAuthenticatedSession,
     failedLoginTracker,
     sessionStore

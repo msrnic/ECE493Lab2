@@ -5,9 +5,18 @@ import express from 'express';
 import { createAuthController } from './controllers/auth-controller.js';
 import { createConfirmationController } from './controllers/confirmation-controller.js';
 import { createEmailDeliveryService } from './controllers/email-delivery-service.js';
+import {
+  createPasswordChangeApiController,
+  createPasswordChangePageController
+} from './controllers/password-change-controller.js';
 import { getRegistrationPage } from './controllers/registration-page-controller.js';
 import { createRegistrationController } from './controllers/registration-controller.js';
+import { createAuditLogModel } from './models/audit-log-model.js';
+import { createAttemptThrottleModel } from './models/attempt-throttle-model.js';
+import { createNotificationModel } from './models/notification-model.js';
+import { createPasswordChangeModel } from './models/password-change-model.js';
 import { createInMemoryRepository } from './models/repository.js';
+import { createSessionModel } from './models/session-model.js';
 import { createAuthRoutes } from './routes/auth-routes.js';
 import { renderDashboardPage } from './views/dashboard-view.js';
 import { renderLoginPage } from './views/login-view.js';
@@ -42,9 +51,41 @@ export function createApp({
     nodeEnv,
     sessionStoreTtlMs: authSessionTtlMs
   });
+  const attemptThrottleModel = createAttemptThrottleModel({ nowFn });
+  const sessionModel = createSessionModel({
+    sessionStore: authController.sessionStore,
+    nowFn
+  });
+  const notificationModel = createNotificationModel({
+    repository,
+    nowFn
+  });
+  const auditLogModel = createAuditLogModel({
+    repository,
+    nowFn
+  });
+  const passwordChangeModel = createPasswordChangeModel({
+    repository,
+    nowFn,
+    hashPasswordFn,
+    attemptThrottleModel,
+    sessionModel,
+    notificationModel,
+    auditLogModel
+  });
+  const passwordChangeApiController = createPasswordChangeApiController({
+    authController,
+    passwordChangeModel
+  });
+  const passwordChangePageController = createPasswordChangePageController({
+    authController
+  });
 
   app.use(express.json());
   app.use('/assets', express.static(path.join(__dirname, 'assets')));
+  app.use('/controllers', express.static(path.join(__dirname, 'controllers')));
+  app.use('/models', express.static(path.join(__dirname, 'models')));
+  app.use('/views', express.static(path.join(__dirname, 'views')));
 
   app.get('/', (_req, res) => {
     res.status(200).type('html').send(indexPageHtml);
@@ -54,6 +95,8 @@ export function createApp({
   app.get('/login', (_req, res) => {
     res.status(200).type('html').send(renderLoginPage());
   });
+  app.post('/logout', authController.logoutAndRedirect);
+  app.get('/account/password-change', passwordChangePageController);
   app.get('/dashboard', (req, res) => {
     const session = authController.getAuthenticatedSession(req);
     if (!session) {
@@ -75,6 +118,7 @@ export function createApp({
     })
   );
   app.get('/api/registrations/confirm', createConfirmationController({ repository, nowFn }));
+  app.post('/api/v1/account/password-change', passwordChangeApiController);
   app.use('/api/auth', createAuthRoutes({ authController }));
 
   app.use((error, _req, res, _next) => {
@@ -88,6 +132,10 @@ export function createApp({
   app.locals.repository = repository;
   app.locals.emailDeliveryService = emailDeliveryService;
   app.locals.authController = authController;
+  app.locals.passwordChangeModel = passwordChangeModel;
+  app.locals.attemptThrottleModel = attemptThrottleModel;
+  app.locals.notificationModel = notificationModel;
+  app.locals.auditLogModel = auditLogModel;
 
   return app;
 }

@@ -9,7 +9,9 @@ export function createInMemoryRepository({ idGenerator = randomUUID } = {}) {
     userAccounts: [],
     confirmationTokens: [],
     registrationAttempts: [],
-    emailDeliveryJobs: []
+    emailDeliveryJobs: [],
+    securityNotifications: [],
+    securityAuditEntries: []
   };
 
   function addId(record) {
@@ -31,6 +33,8 @@ export function createInMemoryRepository({ idGenerator = randomUUID } = {}) {
       state.confirmationTokens = [];
       state.registrationAttempts = [];
       state.emailDeliveryJobs = [];
+      state.securityNotifications = [];
+      state.securityAuditEntries = [];
     },
 
     createUserAccount(account) {
@@ -129,6 +133,26 @@ export function createInMemoryRepository({ idGenerator = randomUUID } = {}) {
       return state.emailDeliveryJobs
         .filter((item) => new Date(item.nextAttemptAt).getTime() <= nowMs)
         .map((item) => cloneRecord(item));
+    },
+
+    createSecurityNotification(notification) {
+      const persisted = addId(notification);
+      state.securityNotifications.push(cloneRecord(persisted));
+      return cloneRecord(persisted);
+    },
+
+    listSecurityNotifications() {
+      return state.securityNotifications.map((item) => cloneRecord(item));
+    },
+
+    createSecurityAuditEntry(entry) {
+      const persisted = addId(entry);
+      state.securityAuditEntries.push(cloneRecord(persisted));
+      return cloneRecord(persisted);
+    },
+
+    listSecurityAuditEntries() {
+      return state.securityAuditEntries.map((item) => cloneRecord(item));
     }
   };
 }
