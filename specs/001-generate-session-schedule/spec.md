@@ -41,6 +41,7 @@ As an administrator, I can initiate schedule generation so accepted papers are o
 1. **Given** accepted papers exist, **When** the administrator initiates schedule generation, **Then** the system assigns sessions and produces a schedule.
 2. **Given** a generation request is completed, **When** the administrator opens schedule results, **Then** the generated schedule is available for review.
 3. **Given** a generation run is already in progress, **When** an administrator initiates another generation request, **Then** the new request is rejected with a clear in-progress message.
+4. **Given** a non-administrator user, **When** schedule generation is initiated, **Then** the request is rejected as unauthorized.
 
 ---
 
@@ -91,6 +92,9 @@ As an administrator, I need clear failure feedback when schedule generation cann
 | FR-007 | UC-13 | UC-13-AS | Conflict visibility for administrator review |
 | FR-008 | UC-13 | UC-13-AS | Duplicate conflict flag prevention |
 | FR-009 | UC-13 | UC-13-AS | Coverage and acceptance evidence |
+| FR-010 | UC-13 | UC-13-AS | Conflict-inclusive schedule generation output |
+| FR-011 | UC-13 | UC-13-AS | In-progress generation request rejection |
+| FR-012 | UC-13 | UC-13-AS | Editor-visible conflict detail retrieval |
 | FR-013 | UC-13 | UC-13-AS | Schedule version history and active designation |
 
 ### Edge Cases
@@ -119,6 +123,10 @@ As an administrator, I need clear failure feedback when schedule generation cann
 - **FR-011 (UC-13 / UC-13-AS)**: System MUST reject a new schedule-generation request when a generation run is already in progress and MUST return a clear in-progress message.
 - **FR-012 (UC-13 / UC-13-AS)**: System MUST allow editors to view full scheduling rule-violation details for generated schedules.
 - **FR-013 (UC-13 / UC-13-AS)**: System MUST retain each successful generation output as a schedule version and MUST mark exactly one latest active schedule.
+
+### Non-Functional Requirements
+
+- **NFR-001 (UC-13 / UC-13-AS)**: System MUST return in-progress rejection responses (`409`) within 1 second at p95 under normal conference load.
 
 If source requirements are ambiguous, implementation MUST pause and log a clarification request that cites exact `Use Cases/UC-13.md` and `Acceptance Tests/UC-13-AS.md` text.
 
@@ -162,3 +170,4 @@ If source requirements are ambiguous, implementation MUST pause and log a clarif
 - **SC-008**: 100% of generation requests submitted during an active run are rejected with a clear in-progress message.
 - **SC-009**: 100% of generated schedules expose full scheduling rule-violation details to authorized editors.
 - **SC-010**: 100% of successful generation runs create a new schedule version, and exactly one schedule version is marked latest active at any time.
+- **SC-011**: At least 95% of in-progress rejection responses (`409`) are returned within 1 second.

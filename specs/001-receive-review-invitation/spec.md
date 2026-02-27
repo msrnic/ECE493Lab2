@@ -91,6 +91,8 @@ Paper editors and support/admin staff can review delivery failure records so unr
 | FR-009 | UC-07 | UC-07-AS | Role-based access control for failure logs |
 | FR-010 | UC-07 | UC-07-AS | Cancellation behavior on assignment removal |
 | FR-011 | UC-07 | UC-07-AS | Invitation uniqueness enforcement |
+| NFR-001 | UC-07 | UC-07-AS | Invitation delivery latency measurement and threshold enforcement |
+| NFR-002 | UC-07 | UC-07-AS | Retry scheduler drift tolerance measurement and threshold enforcement |
 
 ### Edge Cases
 
@@ -116,6 +118,11 @@ Paper editors and support/admin staff can review delivery failure records so unr
 - **FR-009 (UC-07 / UC-07-AS)**: System MUST restrict viewing of invitation delivery failure logs to users who are either editors of the related paper or in support/admin roles.
 - **FR-010 (UC-07 / UC-07-AS)**: If reviewer assignment is removed while an invitation is pending or retrying, system MUST stop all further retries immediately and mark the invitation as canceled.
 - **FR-011 (UC-07 / UC-07-AS)**: System MUST maintain exactly one active invitation record per reviewer-paper assignment and reuse that record for retries and status transitions.
+
+### Non-Functional Requirements
+
+- **NFR-001 (UC-07 / UC-07-AS)**: At least 95% of invitation deliveries MUST complete within 2 minutes of assignment confirmation, measured from assignment confirmation timestamp to invitation `delivered` timestamp.
+- **NFR-002 (UC-07 / UC-07-AS)**: Retry execution MUST start within 15 seconds of each scheduled retry time under normal operating conditions.
 
 If a source requirement is ambiguous, implementation MUST pause and log a clarification request that cites exact `Use Cases/UC-07.md` and `Acceptance Tests/UC-07-AS.md` text.
 
@@ -152,3 +159,4 @@ If a source requirement is ambiguous, implementation MUST pause and log a clarif
 - **SC-009**: 100% of attempts by unauthorized authenticated users to view invitation failure logs are denied.
 - **SC-010**: 100% of invitations tied to removed assignments stop retrying and transition to `canceled` before any additional delivery attempt occurs.
 - **SC-011**: 100% of reviewer-paper assignments have no more than one active invitation record at any point in time.
+- **SC-012**: 100% of executed retry attempts start no later than 15 seconds after their scheduled retry time under normal operating conditions.
