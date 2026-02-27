@@ -97,6 +97,11 @@ As an author, I can reopen a saved draft later and continue editing from where I
 | FR-009 | UC-05 | UC-05-AS | Draft version history and restore behavior |
 | FR-010 | UC-05 | UC-05-AS | Draft version retention lifecycle |
 | FR-011 | UC-05 | UC-05-AS | Draft version access control |
+| NFR-001 | UC-05 | UC-05-AS | Save operation performance instrumentation and reporting |
+| NFR-002 | UC-05 | UC-05-AS | Draft load/list/restore performance instrumentation and reporting |
+| NFR-003 | UC-05 | UC-05-AS | Save reliability measurement and reporting workflow |
+| NFR-004 | UC-05 | UC-05-AS | Usability validation protocol and reporting workflow |
+| NFR-005 | UC-05 | UC-05-AS | Coverage enforcement and evidence generation |
 
 ### Edge Cases
 
@@ -116,15 +121,23 @@ As an author, I can reopen a saved draft later and continue editing from where I
 
 - **FR-001 (UC-05 / UC-05-AS)**: The system MUST allow an author with an in-progress submission to trigger a save action at any point before final submission.
 - **FR-002 (UC-05 / UC-05-AS)**: When save succeeds, the system MUST preserve all current submission draft content for later editing, including entered metadata and uploaded files.
-- **FR-003 (UC-05 / UC-05-AS)**: After each successful save, the system MUST provide clear confirmation that the draft was saved.
-- **FR-004 (UC-05 / UC-05-AS)**: If a system error occurs during save, the system MUST indicate that the draft was not saved and instruct the author to retry.
-- **FR-005 (UC-05 / UC-05-AS)**: A failed save attempt MUST NOT overwrite or corrupt the most recent previously saved draft.
+- **FR-003 (UC-05 / UC-05-AS)**: After each successful save, the system MUST provide confirmation containing the saved revision number, save timestamp, and a success message.
+- **FR-004 (UC-05 / UC-05-AS)**: If a system error occurs during save, the system MUST present an explicit failure message including retry guidance and MUST NOT present success confirmation.
+- **FR-005 (UC-05 / UC-05-AS)**: Any non-success save outcome (`FAILED_SYSTEM`, `FAILED_STALE`, `FAILED_AUTH`) MUST NOT mutate `latestVersionId`, `latestRevision`, or stored draft content.
 - **FR-006 (UC-05 / UC-05-AS)**: The system MUST allow the author to reopen and continue editing from the latest successfully saved draft state by default.
 - **FR-007 (UC-05 / UC-05-AS)**: Delivery evidence MUST include passing results for `UC-05-AS` and coverage evidence that meets constitution thresholds for in-scope project-owned JavaScript.
 - **FR-008 (UC-05 / UC-05-AS)**: If the draft has been updated elsewhere since the author loaded it, the system MUST reject the stale save attempt and require reloading the latest draft before saving again.
 - **FR-009 (UC-05 / UC-05-AS)**: The system MUST retain draft version history across repeated saves and allow the author to restore a selected prior version.
 - **FR-010 (UC-05 / UC-05-AS)**: The system MUST retain all draft versions while a submission is in progress and, once final submission is completed, retain only the latest draft version.
 - **FR-011 (UC-05 / UC-05-AS)**: The system MUST allow only the submission owner and conference administrators to view or restore draft versions, and MUST deny these actions for all other users.
+
+### Non-Functional Requirements
+
+- **NFR-001 (UC-05 / UC-05-AS)**: Draft save confirmation latency MUST meet p95 <= 2s for metadata-only saves and p95 <= 5s for saves with attachments up to 25MB.
+- **NFR-002 (UC-05 / UC-05-AS)**: Latest draft load, version list, and restore operations MUST meet p95 <= 1s, measured as server processing time from request receipt to response commit (excluding network transfer and client rendering), using at least 200 successful requests per operation in a controlled test run.
+- **NFR-003 (UC-05 / UC-05-AS)**: Save reliability MUST be measured over a rolling 30-day window with at least 200 author-initiated save attempts, excluding planned maintenance and client-side validation failures.
+- **NFR-004 (UC-05 / UC-05-AS)**: Usability validation MUST use at least 20 representative authors executing save and resume tasks without facilitator intervention.
+- **NFR-005 (UC-05 / UC-05-AS)**: In-scope project-owned JavaScript MUST target 100% line coverage, and coverage below 95% requires a documented and approved exception.
 
 ### Assumptions
 
@@ -152,10 +165,10 @@ As an author, I can reopen a saved draft later and continue editing from where I
 ### Measurable Outcomes
 
 - **SC-001**: 100% of scenarios in `Acceptance Tests/UC-05-AS.md` pass without modifications.
-- **SC-002**: At least 95% of author-initiated save attempts complete successfully during normal system operation.
+- **SC-002**: At least 95% of author-initiated save attempts complete successfully, measured per `NFR-003`.
 - **SC-003**: 100% of failed save attempts show an explicit message that the draft was not saved.
 - **SC-004**: 100% of successfully saved drafts can be reopened later with preserved submission state.
-- **SC-005**: At least 90% of authors in validation testing can save and later resume a partial submission without assistance.
+- **SC-005**: At least 90% of participants in the usability protocol defined by `NFR-004` can save and later resume a partial submission without assistance.
 - **SC-006**: 100% of stale save attempts in concurrent-edit scenarios are rejected without overwriting newer draft state.
 - **SC-007**: 100% of restored draft versions match the selected saved version content at restore time.
 - **SC-008**: 100% of in-progress submissions retain complete draft version history, and 100% of finalized submissions retain only the latest draft version.

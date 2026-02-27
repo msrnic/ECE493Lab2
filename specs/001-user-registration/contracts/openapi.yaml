@@ -1,0 +1,226 @@
+openapi: 3.0.3
+info:
+  title: Public User Registration API
+  version: 1.0.0
+  description: >-
+    Contracts for UC-01 registration flow in
+    /home/m_srnic/ece493/lab2/ECE493Lab2/specs/001-user-registration/spec.md.
+servers:
+  - url: https://cms.example.com
+paths:
+  /register:
+    get:
+      summary: Display registration page
+      description: Returns the public HTML registration view.
+      operationId: getRegistrationPage
+      responses:
+        '200':
+          description: Registration form HTML rendered.
+          content:
+            text/html:
+              schema:
+                type: string
+
+  /api/registrations:
+    post:
+      summary: Submit new registration
+      description: >-
+        Validates input, enforces duplicate-email and throttling constraints,
+        creates pending account, and dispatches confirmation email.
+      operationId: createRegistration
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationCreateRequest'
+      responses:
+        '201':
+          description: >-
+            Account created in pending state. Confirmation email sent or queued
+            for retry.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationCreateResponse'
+        '409':
+          description: Duplicate email rejected.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: EMAIL_ALREADY_REGISTERED
+                message: Email already registered
+                actions:
+                  - login
+                  - reset_password
+        '422':
+          description: Missing or invalid fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationErrorResponse'
+        '429':
+          description: Throttle limit exceeded for email.
+          headers:
+            Retry-After:
+              schema:
+                type: integer
+                minimum: 1
+              description: Seconds until next allowed submission.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                code: REGISTRATION_TEMPORARILY_BLOCKED
+                message: Too many registration attempts. Please try again later.
+
+  /api/registrations/confirm:
+    get:
+      summary: Confirm account email
+      description: Validates confirmation token and activates pending account.
+      operationId: confirmRegistration
+      parameters:
+        - name: token
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 32
+      responses:
+        '200':
+          description: Account activated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationConfirmationResponse'
+              example:
+                accountId: 07cf89cb-5ae3-4db3-ab99-999e6cdf68ec
+                status: active
+                message: Account confirmed successfully
+        '400':
+          description: Invalid token format or signature.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '410':
+          description: Token expired or already consumed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    RegistrationCreateRequest:
+      type: object
+      required:
+        - fullName
+        - email
+        - password
+        - confirmPassword
+      properties:
+        fullName:
+          type: string
+          minLength: 1
+          maxLength: 120
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        password:
+          type: string
+          minLength: 12
+          description: Must include uppercase, lowercase, number, and symbol.
+        confirmPassword:
+          type: string
+          minLength: 12
+
+    RegistrationCreateResponse:
+      type: object
+      required:
+        - accountId
+        - status
+        - emailDelivery
+        - message
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [pending]
+        emailDelivery:
+          type: string
+          enum: [sent, queued_retry]
+        message:
+          type: string
+          example: Registration successful. Please check your email to confirm your account.
+
+    RegistrationConfirmationResponse:
+      type: object
+      required:
+        - accountId
+        - status
+        - message
+      properties:
+        accountId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [active]
+        message:
+          type: string
+
+    ValidationError:
+      type: object
+      required:
+        - field
+        - code
+        - message
+      properties:
+        field:
+          type: string
+          enum: [fullName, email, password, confirmPassword, global]
+        code:
+          type: string
+        message:
+          type: string
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+        - errors
+      properties:
+        code:
+          type: string
+          example: VALIDATION_FAILED
+        message:
+          type: string
+          example: One or more fields are invalid.
+        errors:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ValidationError'
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        actions:
+          type: array
+          items:
+            type: string
