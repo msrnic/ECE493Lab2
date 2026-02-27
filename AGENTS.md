@@ -4,6 +4,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-08
 
 ## Active Technologies
 
+- HTML5, CSS3, JavaScript (ES2023 modules) + Browser DOM APIs, Fetch API, `Intl.DateTimeFormat` for time-zone formatting, Node.js 20 test tooling (`vitest`, `jsdom`, `c8`) (001-unpublished-schedule-notice)
 - HTML5, CSS3, JavaScript (ES2022) + Browser DOM APIs, Fetch API, Node.js 20 runtime, Express.js 5 API layer, Jest + c8 for JavaScript coverage reporting (001-edit-session-schedule)
 - HTML5, CSS3, JavaScript (ES2020+; Node.js 20 LTS runtime for server-side JavaScript) + Browser DOM APIs, Fetch API, Node.js HTTP runtime, Express.js routing, JSON schema validation for request payloads (001-generate-session-schedule)
 - HTML5, CSS3, JavaScript (ES2022 for browser + Node.js 20 LTS runtime) + Node.js runtime, Express-style routing/controllers, SMTP email adapter (Nodemailer-compatible), server-rendered HTML views with static CSS/JS assets (001-notification-delivery-retry)
@@ -39,6 +40,7 @@ HTML5, CSS3, JavaScript (ES2022), Node.js 20 LTS: Follow standard conventions
 
 ## Recent Changes
 
+- 001-unpublished-schedule-notice: Added HTML5, CSS3, JavaScript (ES2023 modules) + Browser DOM APIs, Fetch API, `Intl.DateTimeFormat` for time-zone formatting, Node.js 20 test tooling (`vitest`, `jsdom`, `c8`)
 - 001-edit-session-schedule: Added HTML5, CSS3, JavaScript (ES2022) + Browser DOM APIs, Fetch API, Node.js 20 runtime, Express.js 5 API layer, Jest + c8 for JavaScript coverage reporting
 - 001-generate-session-schedule: Added HTML5, CSS3, JavaScript (ES2020+; Node.js 20 LTS runtime for server-side JavaScript) + Browser DOM APIs, Fetch API, Node.js HTTP runtime, Express.js routing, JSON schema validation for request payloads
 - 001-notification-delivery-retry: Added HTML5, CSS3, JavaScript (ES2022 for browser + Node.js 20 LTS runtime) + Node.js runtime, Express-style routing/controllers, SMTP email adapter (Nodemailer-compatible), server-rendered HTML views with static CSS/JS assets
