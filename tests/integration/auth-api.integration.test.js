@@ -1,0 +1,240 @@
+import { describe, expect, it } from 'vitest';
+import { createApp } from '../../src/app.js';
+import { hashPassword } from '../../src/models/user-account-model.js';
+import { invokeHandler } from '../helpers/http-harness.js';
+import { createClock } from '../helpers/test-support.js';
+
+function seedActiveAccount(repository, {
+  id = 'usr-1',
+  email = 'user@example.com',
+  password = 'StrongPass!2026'
+} = {}) {
+  return repository.createUserAccount({
+    id,
+    fullName: 'User Example',
+    emailNormalized: email,
+    passwordHash: hashPassword(password),
+    status: 'active',
+    createdAt: '2026-02-01T00:00:00.000Z',
+    activatedAt: '2026-02-01T00:00:00.000Z'
+  });
+}
+
+function getSessionCookieHeader(response) {
+  const setCookie = response.headers['Set-Cookie'];
+  if (!setCookie) {
+    return '';
+  }
+
+  return String(setCookie).split(';')[0];
+}
+
+describe('integration: auth api', () => {
+  it('authenticates with valid credentials and returns session state', async () => {
+    const clock = createClock('2026-02-01T00:00:00.000Z');
+    const app = createApp({ nowFn: clock.now });
+    seedActiveAccount(app.locals.repository);
+
+    const loginResponse = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: '  USER@example.com  ',
+        password: 'StrongPass!2026'
+      }
+    });
+
+    expect(loginResponse.statusCode).toBe(200);
+    expect(loginResponse.body).toEqual({
+      authenticated: true,
+      user: {
+        id: 'usr-1',
+        email: 'user@example.com'
+      },
+      dashboardUrl: '/dashboard'
+    });
+    expect(loginResponse.body.challenge).toBeUndefined();
+    expect(String(loginResponse.headers['Set-Cookie'])).toContain('cms_session=');
+    expect(String(loginResponse.headers['Set-Cookie'])).toContain('HttpOnly');
+
+    const sessionResponse = await invokeHandler(app.locals.authController.getSession, {
+      headers: {
+        cookie: getSessionCookieHeader(loginResponse)
+      }
+    });
+
+    expect(sessionResponse.statusCode).toBe(200);
+    expect(sessionResponse.body.authenticated).toBe(true);
+    expect(sessionResponse.body.user.email).toBe('user@example.com');
+  });
+
+  it('returns generic invalid credentials response and keeps session unauthenticated', async () => {
+    const clock = createClock('2026-02-01T00:00:00.000Z');
+    const app = createApp({ nowFn: clock.now });
+    seedActiveAccount(app.locals.repository);
+
+    const invalid = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'user@example.com',
+        password: 'WrongPassword!2026'
+      }
+    });
+
+    expect(invalid.statusCode).toBe(401);
+    expect(invalid.body).toEqual({
+      error: 'INVALID_CREDENTIALS',
+      message: 'Invalid email or password.'
+    });
+
+    const sessionResponse = await invokeHandler(app.locals.authController.getSession, {
+      headers: {
+        cookie: getSessionCookieHeader(invalid)
+      }
+    });
+
+    expect(sessionResponse.statusCode).toBe(401);
+    expect(sessionResponse.body).toEqual({ authenticated: false });
+  });
+
+  it('blocks additional attempts after five failures and returns retry metadata', async () => {
+    const clock = createClock('2026-02-01T00:00:00.000Z');
+    const app = createApp({ nowFn: clock.now });
+    seedActiveAccount(app.locals.repository);
+
+    for (let i = 0; i < 5; i += 1) {
+      const response = await invokeHandler(app.locals.authController.login, {
+        body: {
+          email: 'user@example.com',
+          password: 'WrongPassword!2026'
+        }
+      });
+
+      expect(response.statusCode).toBe(401);
+    }
+
+    const blocked = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'user@example.com',
+        password: 'WrongPassword!2026'
+      }
+    });
+
+    expect(blocked.statusCode).toBe(429);
+    expect(blocked.body.error).toBe('LOGIN_TEMPORARILY_BLOCKED');
+    expect(blocked.body.retryAfterSeconds).toBeGreaterThan(0);
+    expect(blocked.body.blockedUntil).toBeDefined();
+    expect(Number(blocked.headers['Retry-After'])).toBeGreaterThan(0);
+
+    clock.advanceMs(10 * 60 * 1000 + 1);
+
+    const unblocked = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'user@example.com',
+        password: 'StrongPass!2026'
+      }
+    });
+
+    expect(unblocked.statusCode).toBe(200);
+  });
+
+  it('resets failed-attempt counters immediately after successful login', async () => {
+    const clock = createClock('2026-02-01T00:00:00.000Z');
+    const app = createApp({ nowFn: clock.now });
+    seedActiveAccount(app.locals.repository);
+
+    for (let i = 0; i < 4; i += 1) {
+      await invokeHandler(app.locals.authController.login, {
+        body: {
+          email: 'user@example.com',
+          password: 'WrongPassword!2026'
+        }
+      });
+    }
+
+    const success = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'user@example.com',
+        password: 'StrongPass!2026'
+      }
+    });
+
+    expect(success.statusCode).toBe(200);
+
+    const invalidAfterReset = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'user@example.com',
+        password: 'WrongPassword!2026'
+      }
+    });
+
+    expect(invalidAfterReset.statusCode).toBe(401);
+  });
+
+  it('keeps non-active accounts and malformed submissions denied', async () => {
+    const app = createApp();
+    app.locals.repository.createUserAccount({
+      id: 'usr-pending',
+      fullName: 'Pending User',
+      emailNormalized: 'pending@example.com',
+      passwordHash: hashPassword('StrongPass!2026'),
+      status: 'pending',
+      createdAt: '2026-02-01T00:00:00.000Z',
+      activatedAt: null
+    });
+
+    const pendingResponse = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'pending@example.com',
+        password: 'StrongPass!2026'
+      }
+    });
+    expect(pendingResponse.statusCode).toBe(401);
+
+    const malformed = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: '   '
+      }
+    });
+    expect(malformed.statusCode).toBe(401);
+  });
+
+  it('uses secure auth cookies in production mode', async () => {
+    const app = createApp({ authNodeEnv: 'production' });
+    seedActiveAccount(app.locals.repository);
+
+    const response = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'user@example.com',
+        password: 'StrongPass!2026'
+      }
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(String(response.headers['Set-Cookie'])).toContain('Secure');
+  });
+
+  it('expires old sessions by ttl when clock advances', async () => {
+    const clock = createClock('2026-02-01T00:00:00.000Z');
+    const app = createApp({
+      nowFn: clock.now,
+      authSessionTtlMs: 500
+    });
+    seedActiveAccount(app.locals.repository);
+
+    const login = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'user@example.com',
+        password: 'StrongPass!2026'
+      }
+    });
+    expect(login.statusCode).toBe(200);
+
+    clock.advanceMs(500);
+
+    const session = await invokeHandler(app.locals.authController.getSession, {
+      headers: {
+        cookie: getSessionCookieHeader(login)
+      }
+    });
+
+    expect(session.statusCode).toBe(401);
+  });
+});

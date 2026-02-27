@@ -1,11 +1,15 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
+import { createAuthController } from './controllers/auth-controller.js';
 import { createConfirmationController } from './controllers/confirmation-controller.js';
 import { createEmailDeliveryService } from './controllers/email-delivery-service.js';
 import { getRegistrationPage } from './controllers/registration-page-controller.js';
 import { createRegistrationController } from './controllers/registration-controller.js';
 import { createInMemoryRepository } from './models/repository.js';
+import { createAuthRoutes } from './routes/auth-routes.js';
+import { renderDashboardPage } from './views/dashboard-view.js';
+import { renderLoginPage } from './views/login-view.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -18,13 +22,22 @@ export function createApp({
   sendEmail = defaultSendEmail,
   nowFn = () => new Date(),
   tokenTtlMs,
-  hashPasswordFn
+  hashPasswordFn,
+  authSessionTtlMs,
+  authNodeEnv
 } = {}) {
   const app = express();
   const emailDeliveryService = createEmailDeliveryService({
     repository,
     sendEmail,
     nowFn
+  });
+  const authController = createAuthController({
+    repository,
+    nowFn,
+    hashPasswordFn,
+    nodeEnv: authNodeEnv,
+    sessionStoreTtlMs: authSessionTtlMs
   });
 
   app.use(express.json());
@@ -35,6 +48,18 @@ export function createApp({
   });
 
   app.get('/register', getRegistrationPage);
+  app.get('/login', (_req, res) => {
+    res.status(200).type('html').send(renderLoginPage());
+  });
+  app.get('/dashboard', (req, res) => {
+    const session = authController.getAuthenticatedSession(req);
+    if (!session) {
+      res.status(302).redirect('/login');
+      return;
+    }
+
+    res.status(200).type('html').send(renderDashboardPage({ email: session.user.email }));
+  });
   app.post(
     '/api/registrations',
     createRegistrationController({
@@ -46,6 +71,7 @@ export function createApp({
     })
   );
   app.get('/api/registrations/confirm', createConfirmationController({ repository, nowFn }));
+  app.use('/api/auth', createAuthRoutes({ authController }));
 
   app.use((error, _req, res, _next) => {
     void error;
@@ -57,6 +83,7 @@ export function createApp({
 
   app.locals.repository = repository;
   app.locals.emailDeliveryService = emailDeliveryService;
+  app.locals.authController = authController;
 
   return app;
 }

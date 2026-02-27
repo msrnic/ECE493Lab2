@@ -38,15 +38,18 @@ describe('app bootstrap', () => {
       expect.arrayContaining([
         { path: '/', methods: ['get'] },
         { path: '/register', methods: ['get'] },
+        { path: '/login', methods: ['get'] },
+        { path: '/dashboard', methods: ['get'] },
         { path: '/api/registrations', methods: ['post'] },
         { path: '/api/registrations/confirm', methods: ['get'] }
       ])
     );
   });
 
-  it('executes root redirect route and registration route through app handlers', async () => {
+  it('executes root redirect route and registration/login routes through app handlers', async () => {
     const app = createApp();
     const rootHandler = getRouteHandler(app, 'get', '/');
+    const loginPageHandler = getRouteHandler(app, 'get', '/login');
     const registrationHandler = getRouteHandler(app, 'post', '/api/registrations');
 
     const rootResponse = {
@@ -65,6 +68,11 @@ describe('app bootstrap', () => {
     rootHandler({}, rootResponse);
     expect(rootResponse.statusCode).toBe(302);
     expect(rootResponse.location).toBe('/register');
+
+    const loginResponse = await invokeHandler(loginPageHandler);
+    expect(loginResponse.statusCode).toBe(200);
+    expect(loginResponse.contentType).toBe('html');
+    expect(loginResponse.text).toContain('data-login-form');
 
     const registrationResponse = await invokeHandler(registrationHandler, {
       body: validRegistrationPayload({ email: 'app-route@example.com' })

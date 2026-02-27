@@ -37,9 +37,39 @@ See `lab2/.specify/memory/constitution.md` for full governance and delivery rule
 - Integration contracts: `tests/integration/*.test.js`
 - Unit: `tests/unit/*.test.js`
 
+## Login Feature (UC-02)
+
+### MVC Module Ownership
+
+- Models (`src/models/`): Credential normalization, authentication session state, and failed-login tracking.
+- Views (`src/views/`): Login page rendering, dashboard page rendering, and login error-message resolution.
+- Controllers (`src/controllers/`): Login request/session flow (browser), plus auth API handlers (server).
+- Browser assets (`src/assets/`): Login bootstrap logic and styling.
+
+### Entry Points
+
+- Login page: `GET /login`
+- Dashboard page (authenticated): `GET /dashboard`
+- Login API: `POST /api/auth/login`
+- Session API: `GET /api/auth/session`
+
+### Test Layout
+
+- Acceptance: `tests/acceptance/uc-02-login.acceptance.test.js`
+- Integration contract: `tests/integration/auth-api.integration.test.js`
+- Performance profile: `tests/integration/auth-api.performance.test.js`
+- Unit:
+  - `tests/unit/models/*.test.js`
+  - `tests/unit/controllers/*.test.js`
+  - `tests/unit/views/*.test.js`
+  - `tests/unit/assets/*.test.js`
+
 ### Validation Commands
 
 ```bash
 npm test
 npm run lint
+npm run test:acceptance:uc02
+npm run test:integration:auth
+npm run test:performance:auth
 ```

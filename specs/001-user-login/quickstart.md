@@ -17,8 +17,8 @@ Implement and verify UC-02 login behavior using HTML/CSS/JavaScript with MVC sep
 ```bash
 cd /home/m_srnic/ece493/lab2/ECE493Lab2
 mkdir -p src/views src/controllers src/models src/assets/css src/assets/js
-mkdir -p server/routes server/controllers server/models
-mkdir -p tests/acceptance tests/integration tests/unit/models tests/unit/controllers
+mkdir -p src/routes
+mkdir -p tests/acceptance tests/integration tests/unit/models tests/unit/controllers tests/unit/views tests/unit/assets
 ```
 
 ## 2. Implement View Layer (HTML + CSS)
@@ -33,8 +33,8 @@ mkdir -p tests/acceptance tests/integration tests/unit/models tests/unit/control
   - `src/models/credential-submission-model.js`
   - `src/models/auth-session-model.js`
 - Server models:
-  - `server/models/user-account-model.js`
-  - `server/models/failed-login-tracker-model.js`
+  - `src/models/user-account-model.js`
+  - `src/models/failed-login-tracker-model.js`
 - Enforce:
   - normalized email handling
   - lockout after 5 failed attempts for 10 minutes
@@ -46,11 +46,13 @@ mkdir -p tests/acceptance tests/integration tests/unit/models tests/unit/control
   - `src/controllers/login-controller.js`
   - `src/controllers/session-controller.js`
 - Server controllers/routes:
-  - `server/controllers/auth-controller.js`
-  - `server/routes/auth-routes.js`
+  - `src/controllers/auth-controller.js`
+  - `src/routes/auth-routes.js`
 - Wire these endpoints:
   - `POST /api/auth/login`
   - `GET /api/auth/session`
+  - `GET /login`
+  - `GET /dashboard`
 
 ## 5. Enforce Requirement-Critical Responses
 
@@ -62,12 +64,15 @@ mkdir -p tests/acceptance tests/integration tests/unit/models tests/unit/control
 
 - Implement acceptance tests for both scenarios in `Acceptance Tests/UC-02-AS.md`.
 - Add unit and integration tests for model/controller logic and endpoint behaviors.
-- Run tests and coverage (example command set once scripts exist):
+- Run tests and coverage:
 
 ```bash
 cd /home/m_srnic/ece493/lab2/ECE493Lab2
 npm test
-npx c8 --reporter=text --reporter=lcov npm test
+npm run test:acceptance:uc02
+npm run test:integration:auth
+npm run test:performance:auth
+npm run lint
 ```
 
 ## 7. Compliance Checklist Before Merge
