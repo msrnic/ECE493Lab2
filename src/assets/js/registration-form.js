@@ -3,6 +3,27 @@ const LOWERCASE_PATTERN = /[a-z]/;
 const NUMBER_PATTERN = /\d/;
 const SYMBOL_PATTERN = /[^A-Za-z0-9]/;
 
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#39;');
+}
+
+function renderSuccessStatus(statusNode, payload) {
+  const message = String(payload?.message ?? 'Registration successful.');
+  const confirmationUrl = payload?.confirmationUrl;
+
+  if (typeof confirmationUrl === 'string' && confirmationUrl.length > 0) {
+    statusNode.innerHTML = `${escapeHtml(message)} <a href="${escapeHtml(confirmationUrl)}">Confirm account</a>`;
+    return;
+  }
+
+  statusNode.textContent = message;
+}
+
 function nowMs(nowFn) {
   return typeof nowFn === 'function' ? nowFn() : Date.now();
 }
@@ -127,7 +148,7 @@ export function enhanceRegistrationForm({
 
     const result = await submitRegistrationRequest(values, { fetchImpl });
     if (result.ok) {
-      statusNode.textContent = result.payload.message;
+      renderSuccessStatus(statusNode, result.payload);
       form.reset();
       return;
     }

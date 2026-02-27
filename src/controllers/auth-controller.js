@@ -83,8 +83,21 @@ export function parseCookieHeader(cookieHeader = '') {
     }, {});
 }
 
-function isSecureEnvironment(nodeEnv) {
-  return nodeEnv === 'production';
+function requestUsesHttps(req) {
+  if (req?.secure === true) {
+    return true;
+  }
+
+  const forwardedProto = String(req?.headers?.['x-forwarded-proto'] ?? '')
+    .split(',')[0]
+    .trim()
+    .toLowerCase();
+
+  return forwardedProto === 'https';
+}
+
+function shouldUseSecureCookie(req, nodeEnv) {
+  return nodeEnv === 'production' && requestUsesHttps(req);
 }
 
 function createSessionCookieValue(sessionId, { secure } = {}) {
@@ -182,7 +195,7 @@ export function createAuthController({
       .set(
         'Set-Cookie',
         createSessionCookieValue(session.sessionId, {
-          secure: isSecureEnvironment(nodeEnv)
+          secure: shouldUseSecureCookie(req, nodeEnv)
         })
       )
       .status(200)

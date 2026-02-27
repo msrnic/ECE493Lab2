@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import express from 'express';
 import { createAuthController } from './controllers/auth-controller.js';
 import { createConfirmationController } from './controllers/confirmation-controller.js';
@@ -26,7 +27,9 @@ export function createApp({
   authSessionTtlMs,
   authNodeEnv
 } = {}) {
+  const nodeEnv = authNodeEnv ?? process.env.NODE_ENV;
   const app = express();
+  const indexPageHtml = readFileSync(path.join(__dirname, 'index.html'), 'utf8');
   const emailDeliveryService = createEmailDeliveryService({
     repository,
     sendEmail,
@@ -36,7 +39,7 @@ export function createApp({
     repository,
     nowFn,
     hashPasswordFn,
-    nodeEnv: authNodeEnv,
+    nodeEnv,
     sessionStoreTtlMs: authSessionTtlMs
   });
 
@@ -44,7 +47,7 @@ export function createApp({
   app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
   app.get('/', (_req, res) => {
-    res.status(302).redirect('/register');
+    res.status(200).type('html').send(indexPageHtml);
   });
 
   app.get('/register', getRegistrationPage);
@@ -67,7 +70,8 @@ export function createApp({
       emailDeliveryService,
       nowFn,
       tokenTtlMs,
-      hashPasswordFn
+      hashPasswordFn,
+      includeConfirmationUrl: nodeEnv !== 'production'
     })
   );
   app.get('/api/registrations/confirm', createConfirmationController({ repository, nowFn }));

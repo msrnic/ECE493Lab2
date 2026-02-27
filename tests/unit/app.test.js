@@ -46,28 +46,17 @@ describe('app bootstrap', () => {
     );
   });
 
-  it('executes root redirect route and registration/login routes through app handlers', async () => {
+  it('executes root index route and registration/login routes through app handlers', async () => {
     const app = createApp();
     const rootHandler = getRouteHandler(app, 'get', '/');
     const loginPageHandler = getRouteHandler(app, 'get', '/login');
     const registrationHandler = getRouteHandler(app, 'post', '/api/registrations');
-
-    const rootResponse = {
-      statusCode: 0,
-      location: '',
-      status(code) {
-        this.statusCode = code;
-        return this;
-      },
-      redirect(location) {
-        this.location = location;
-        return this;
-      }
-    };
-
-    rootHandler({}, rootResponse);
-    expect(rootResponse.statusCode).toBe(302);
-    expect(rootResponse.location).toBe('/register');
+    const rootResponse = await invokeHandler(rootHandler);
+    expect(rootResponse.statusCode).toBe(200);
+    expect(rootResponse.contentType).toBe('html');
+    expect(rootResponse.text).toContain('Conference Management System');
+    expect(rootResponse.text).toContain('href="/register"');
+    expect(rootResponse.text).toContain('href="/login"');
 
     const loginResponse = await invokeHandler(loginPageHandler);
     expect(loginResponse.statusCode).toBe(200);
@@ -79,6 +68,19 @@ describe('app bootstrap', () => {
     });
     expect(registrationResponse.statusCode).toBe(201);
     expect(registrationResponse.body.emailDelivery).toBe('sent');
+    expect(registrationResponse.body.confirmationUrl).toContain('/api/registrations/confirm?token=');
+  });
+
+  it('omits registration confirmationUrl in production mode', async () => {
+    const app = createApp({ authNodeEnv: 'production' });
+    const registrationHandler = getRouteHandler(app, 'post', '/api/registrations');
+
+    const registrationResponse = await invokeHandler(registrationHandler, {
+      body: validRegistrationPayload({ email: 'prod-route@example.com' })
+    });
+
+    expect(registrationResponse.statusCode).toBe(201);
+    expect(registrationResponse.body.confirmationUrl).toBeUndefined();
   });
 
   it('executes app error middleware', () => {

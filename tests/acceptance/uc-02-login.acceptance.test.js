@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { hashPassword } from '../../src/models/user-account-model.js';
 import { invokeHandler } from '../helpers/http-harness.js';
-import { createClock } from '../helpers/test-support.js';
+import {
+  createClock,
+  extractTokenFromConfirmationUrl,
+  validRegistrationPayload
+} from '../helpers/test-support.js';
 
 function seedActiveAccount(app, {
   email = 'user@example.com',
@@ -61,6 +65,45 @@ describe('UC-02-AS acceptance suite', () => {
 
     expect(dashboardResponse.statusCode).toBe(200);
     expect(dashboardResponse.text).toContain('Dashboard');
+  });
+
+  it('allows a newly registered user to login after confirmation', async () => {
+    const app = createApp();
+    const registrationHandler = getRouteHandler(app, 'post', '/api/registrations');
+    const confirmationHandler = getRouteHandler(app, 'get', '/api/registrations/confirm');
+    const dashboardHandler = getRouteHandler(app, 'get', '/dashboard');
+
+    const registrationResponse = await invokeHandler(registrationHandler, {
+      body: validRegistrationPayload({
+        email: 'new.user@example.com'
+      })
+    });
+
+    expect(registrationResponse.statusCode).toBe(201);
+    expect(typeof registrationResponse.body.confirmationUrl).toBe('string');
+
+    const token = extractTokenFromConfirmationUrl(registrationResponse.body.confirmationUrl);
+    const confirmationResponse = await invokeHandler(confirmationHandler, {
+      headers: { accept: 'text/html' },
+      query: { token }
+    });
+    expect(confirmationResponse.statusCode).toBe(302);
+    expect(confirmationResponse.redirectLocation).toBe('/login?confirmed=1');
+
+    const loginResponse = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'new.user@example.com',
+        password: 'StrongPass!2026'
+      }
+    });
+    expect(loginResponse.statusCode).toBe(200);
+
+    const dashboardResponse = await invokeHandler(dashboardHandler, {
+      headers: {
+        cookie: getSessionCookieHeader(loginResponse)
+      }
+    });
+    expect(dashboardResponse.statusCode).toBe(200);
   });
 
   it('Given invalid credentials, When login is attempted, Then access is denied and an error message is shown', async () => {

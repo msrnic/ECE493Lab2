@@ -6,7 +6,7 @@ import {
 } from '../../../src/controllers/auth-controller.js';
 import { createInMemoryRepository } from '../../../src/models/repository.js';
 import { hashPassword } from '../../../src/models/user-account-model.js';
-import { invokeHandler } from '../../helpers/http-harness.js';
+import { createMockResponse, invokeHandler } from '../../helpers/http-harness.js';
 
 describe('auth-controller helpers', () => {
   it('parses cookie headers', () => {
@@ -74,5 +74,38 @@ describe('auth-controller helpers', () => {
       }
     });
     expect(success.statusCode).toBe(200);
+  });
+
+  it('marks cookies secure for production requests flagged as secure', async () => {
+    const repository = createInMemoryRepository();
+    repository.createUserAccount({
+      id: 'usr-secure',
+      fullName: 'Secure User',
+      emailNormalized: 'secure@example.com',
+      passwordHash: hashPassword('StrongPass!2026'),
+      status: 'active',
+      createdAt: '2026-02-01T00:00:00.000Z',
+      activatedAt: '2026-02-01T00:00:00.000Z'
+    });
+
+    const controller = createAuthController({
+      repository,
+      nodeEnv: 'production'
+    });
+
+    const req = {
+      secure: true,
+      headers: {},
+      body: {
+        email: 'secure@example.com',
+        password: 'StrongPass!2026'
+      }
+    };
+    const res = createMockResponse();
+
+    await controller.login(req, res);
+
+    expect(res.statusCode).toBe(200);
+    expect(String(res.headers['Set-Cookie'])).toContain('Secure');
   });
 });

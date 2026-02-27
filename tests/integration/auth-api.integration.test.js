@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { hashPassword } from '../../src/models/user-account-model.js';
 import { invokeHandler } from '../helpers/http-harness.js';
-import { createClock } from '../helpers/test-support.js';
+import {
+  createClock,
+  extractTokenFromConfirmationUrl,
+  validRegistrationPayload
+} from '../helpers/test-support.js';
 
 function seedActiveAccount(repository, {
   id = 'usr-1',
@@ -29,7 +33,50 @@ function getSessionCookieHeader(response) {
   return String(setCookie).split(';')[0];
 }
 
+function getRouteHandler(app, method, path) {
+  const layer = app.router.stack.find(
+    (entry) => entry.route && entry.route.path === path && entry.route.methods[method]
+  );
+
+  return layer.route.stack[0].handle;
+}
+
 describe('integration: auth api', () => {
+  it('authenticates a newly registered account after confirmation', async () => {
+    const app = createApp();
+    const registrationHandler = getRouteHandler(app, 'post', '/api/registrations');
+    const confirmationHandler = getRouteHandler(app, 'get', '/api/registrations/confirm');
+
+    const registrationResponse = await invokeHandler(registrationHandler, {
+      body: validRegistrationPayload({
+        email: 'integration.fresh@example.com'
+      })
+    });
+
+    expect(registrationResponse.statusCode).toBe(201);
+    expect(typeof registrationResponse.body.confirmationUrl).toBe('string');
+
+    const token = extractTokenFromConfirmationUrl(registrationResponse.body.confirmationUrl);
+    const confirmationResponse = await invokeHandler(confirmationHandler, {
+      headers: { accept: 'text/html' },
+      query: { token }
+    });
+
+    expect(confirmationResponse.statusCode).toBe(302);
+    expect(confirmationResponse.redirectLocation).toBe('/login?confirmed=1');
+
+    const loginResponse = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'integration.fresh@example.com',
+        password: 'StrongPass!2026'
+      }
+    });
+
+    expect(loginResponse.statusCode).toBe(200);
+    expect(loginResponse.body.authenticated).toBe(true);
+    expect(loginResponse.body.user.email).toBe('integration.fresh@example.com');
+  });
+
   it('authenticates with valid credentials and returns session state', async () => {
     const clock = createClock('2026-02-01T00:00:00.000Z');
     const app = createApp({ nowFn: clock.now });
@@ -201,6 +248,9 @@ describe('integration: auth api', () => {
     seedActiveAccount(app.locals.repository);
 
     const response = await invokeHandler(app.locals.authController.login, {
+      headers: {
+        'x-forwarded-proto': 'https'
+      },
       body: {
         email: 'user@example.com',
         password: 'StrongPass!2026'
@@ -209,6 +259,21 @@ describe('integration: auth api', () => {
 
     expect(response.statusCode).toBe(200);
     expect(String(response.headers['Set-Cookie'])).toContain('Secure');
+  });
+
+  it('does not force secure auth cookies on non-https production requests', async () => {
+    const app = createApp({ authNodeEnv: 'production' });
+    seedActiveAccount(app.locals.repository);
+
+    const response = await invokeHandler(app.locals.authController.login, {
+      body: {
+        email: 'user@example.com',
+        password: 'StrongPass!2026'
+      }
+    });
+
+    expect(response.statusCode).toBe(200);
+    expect(String(response.headers['Set-Cookie'])).not.toContain('Secure');
   });
 
   it('expires old sessions by ttl when clock advances', async () => {

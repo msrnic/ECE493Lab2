@@ -162,7 +162,10 @@ describe('registration-form asset', () => {
       .mockResolvedValueOnce({
         ok: true,
         status: 201,
-        json: async () => ({ message: 'Registration successful.' })
+        json: async () => ({
+          message: 'Registration successful.',
+          confirmationUrl: '/api/registrations/confirm?token=abc123'
+        })
       })
       .mockResolvedValueOnce({
         ok: false,
@@ -203,7 +206,8 @@ describe('registration-form asset', () => {
     await enhanced.onSubmit(submitEvent);
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect(statusNode.textContent).toBe('Registration successful.');
+    expect(statusNode.textContent).toContain('Registration successful.');
+    expect(statusNode.querySelector('a').getAttribute('href')).toBe('/api/registrations/confirm?token=abc123');
 
     form.querySelector('[name="fullName"]').value = 'User';
     form.querySelector('[name="email"]').value = 'user@example.com';
@@ -235,7 +239,7 @@ describe('registration-form asset', () => {
     const fetchImpl = vi.fn().mockResolvedValue({
       ok: true,
       status: 201,
-      json: async () => ({ message: 'ok' })
+      json: async () => ({})
     });
 
     const enhanced = enhanceRegistrationForm({ documentRef: document, fetchImpl });
@@ -248,5 +252,6 @@ describe('registration-form asset', () => {
 
     expect(fetchImpl).toHaveBeenCalledTimes(1);
     expect(enhanced.form.dataset.validationDurationMs).toBeDefined();
+    expect(enhanced.statusNode.textContent).toBe('Registration successful.');
   });
 });

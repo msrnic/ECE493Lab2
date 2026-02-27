@@ -9,7 +9,26 @@ import {
 import { extractTokenFromConfirmationUrl } from '../helpers/test-support.js';
 
 describe('contract: GET /api/registrations/confirm', () => {
-  it('returns 200 for valid token', async () => {
+  it('returns 302 redirect to /login for valid token on html requests', async () => {
+    const { registrationController, confirmationController, repository, sentEmails, validRegistrationPayload } =
+      createHttpIntegrationContext();
+
+    await invokeHandler(registrationController, {
+      body: validRegistrationPayload()
+    });
+    const token = extractTokenFromConfirmationUrl(sentEmails[0].confirmationUrl);
+
+    const response = await invokeHandler(confirmationController, {
+      headers: { accept: 'text/html' },
+      query: { token }
+    });
+
+    expect(response.statusCode).toBe(302);
+    expect(response.redirectLocation).toBe('/login?confirmed=1');
+    expect(repository.listUserAccounts()[0].status).toBe('active');
+  });
+
+  it('returns 200 json for valid token on api requests', async () => {
     const { registrationController, confirmationController, sentEmails, validRegistrationPayload } =
       createHttpIntegrationContext();
 
@@ -19,6 +38,7 @@ describe('contract: GET /api/registrations/confirm', () => {
     const token = extractTokenFromConfirmationUrl(sentEmails[0].confirmationUrl);
 
     const response = await invokeHandler(confirmationController, {
+      headers: { accept: 'application/json' },
       query: { token }
     });
 

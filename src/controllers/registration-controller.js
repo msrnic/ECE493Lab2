@@ -15,7 +15,8 @@ export function createRegistrationController({
   emailDeliveryService,
   nowFn = () => new Date(),
   hashPasswordFn = hashPassword,
-  tokenTtlMs
+  tokenTtlMs,
+  includeConfirmationUrl = false
 }) {
   return async function createRegistration(req, res) {
     const now = nowFn();
@@ -97,11 +98,17 @@ export function createRegistrationController({
       now
     });
 
-    res.status(201).json({
+    const responseBody = {
       accountId: account.id,
       status: account.status,
       emailDelivery: deliveryResult.emailDelivery,
       message: getRegistrationStatusMessage(deliveryResult.emailDelivery)
-    });
+    };
+
+    if (includeConfirmationUrl) {
+      responseBody.confirmationUrl = `/api/registrations/confirm?token=${tokenPair.token}`;
+    }
+
+    res.status(201).json(responseBody);
   };
 }

@@ -1,11 +1,31 @@
 import { describe, expect, it } from 'vitest';
+import { createApp } from '../../src/app.js';
 import {
   createHttpIntegrationContext,
   invokeHandler
 } from '../helpers/http-harness.js';
 import { extractTokenFromConfirmationUrl } from '../helpers/test-support.js';
 
+function getRouteHandler(app, method, path) {
+  const layer = app.router.stack.find(
+    (entry) => entry.route && entry.route.path === path && entry.route.methods[method]
+  );
+
+  return layer.route.stack[0].handle;
+}
+
 describe('UC-01-AS acceptance suite', () => {
+  it('shows an initial index page where users can choose register or login', async () => {
+    const app = createApp();
+    const rootHandler = getRouteHandler(app, 'get', '/');
+    const response = await invokeHandler(rootHandler);
+
+    expect(response.statusCode).toBe(200);
+    expect(response.contentType).toBe('html');
+    expect(response.text).toContain('href="/register"');
+    expect(response.text).toContain('href="/login"');
+  });
+
   it('creates pending account and sends or queues confirmation email for valid registration', async () => {
     const { registrationController, repository, sentEmails, validRegistrationPayload } =
       createHttpIntegrationContext();
@@ -35,7 +55,7 @@ describe('UC-01-AS acceptance suite', () => {
     expect(repository.listUserAccounts()).toHaveLength(0);
   });
 
-  it('transitions pending account to active with a valid confirmation token', async () => {
+  it('transitions pending account to active and redirects to login with a valid confirmation token', async () => {
     const { registrationController, confirmationController, repository, sentEmails, validRegistrationPayload } =
       createHttpIntegrationContext();
 
@@ -45,13 +65,14 @@ describe('UC-01-AS acceptance suite', () => {
     const token = extractTokenFromConfirmationUrl(sentEmails[0].confirmationUrl);
 
     const response = await invokeHandler(confirmationController, {
+      headers: { accept: 'text/html' },
       query: { token }
     });
 
-    expect(response.statusCode).toBe(200);
-    expect(response.body.status).toBe('active');
+    expect(response.statusCode).toBe(302);
+    expect(response.redirectLocation).toBe('/login?confirmed=1');
 
-    const account = repository.findUserById(response.body.accountId);
+    const account = repository.listUserAccounts()[0];
     expect(account.status).toBe('active');
   });
 

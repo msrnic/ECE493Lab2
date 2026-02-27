@@ -5,6 +5,11 @@ import {
 } from '../models/email-confirmation-token-model.js';
 import { activateUserAccount } from '../models/user-account-model.js';
 
+function shouldRedirectToLogin(req) {
+  const acceptHeader = String(req?.headers?.accept ?? '').toLowerCase();
+  return acceptHeader.includes('text/html');
+}
+
 export function createConfirmationController({ repository, nowFn = () => new Date() }) {
   return function confirmRegistration(req, res) {
     const token = req.query.token;
@@ -47,6 +52,11 @@ export function createConfirmationController({ repository, nowFn = () => new Dat
     const activatedAccount = activateUserAccount(account, now);
     repository.updateUserAccount(activatedAccount.id, activatedAccount);
     repository.updateConfirmationToken(tokenRecord.id, consumeConfirmationToken(tokenRecord, now));
+
+    if (shouldRedirectToLogin(req)) {
+      res.status(302).redirect('/login?confirmed=1');
+      return;
+    }
 
     res.status(200).json({
       accountId: activatedAccount.id,

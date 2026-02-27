@@ -8,6 +8,19 @@ info:
 servers:
   - url: https://cms.example.com
 paths:
+  /:
+    get:
+      summary: Display entry page
+      description: Returns the public HTML entry view with registration and login choices.
+      operationId: getEntryPage
+      responses:
+        '200':
+          description: Entry page HTML rendered.
+          content:
+            text/html:
+              schema:
+                type: string
+
   /register:
     get:
       summary: Display registration page
@@ -90,8 +103,15 @@ paths:
             type: string
             minLength: 32
       responses:
+        '302':
+          description: HTML client redirected to login after successful confirmation.
+          headers:
+            Location:
+              schema:
+                type: string
+                example: /login?confirmed=1
         '200':
-          description: Account activated.
+          description: Account activated for API clients.
           content:
             application/json:
               schema:
