@@ -146,3 +146,11 @@ technical-context unknowns were resolved with documented alternatives.
 ## Complexity Tracking
 
 No constitution violations or exception requests were identified in planning/design.
+
+## MVC Boundary Audit Outcomes
+
+- Models (`src/models/*`) contain validation rules, state transitions, and deduplication logic only.
+- Controllers (`src/controllers/*`) orchestrate HTTP request flow and map model outcomes to responses.
+- Views (`src/views/*`, `src/assets/js/*`) handle rendering/form serialization/status messaging only.
+- No view modules import repositories or services directly.
+- No controller stores business rules that duplicate model validation logic.

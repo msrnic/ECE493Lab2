@@ -58,3 +58,16 @@ to implement:
   - Models own rules/state
   - Views own rendering
   - Controllers own interaction flow
+
+## 7. Run UC-04 Verification Commands
+
+```bash
+npm run test:acceptance:uc04
+npm run test:integration:submission
+npm run test:acceptance:uc04:performance
+npm test
+```
+
+Expected outcomes:
+- UC-04 acceptance, integration, and performance suites pass.
+- Global JavaScript coverage reports 100% statements/branches/functions/lines.

@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Submit Paper</title>
+    <link rel="stylesheet" href="/assets/css/submit-paper.css" />
+  </head>
+  <body>
+    <main class="submit-paper-shell">
+      <h1>Submit Paper</h1>
+      <section class="submit-paper-account" data-submit-paper-account>
+        <p data-submit-paper-user>Signed in as __SUBMIT_USER_EMAIL__.</p>
+        <p data-submit-paper-role>Current role: __SUBMIT_USER_ROLE__.</p>
+        <form method="post" action="/account/role" class="submit-paper-role-form" data-submit-paper-role-form>
+          <label>
+            Active role
+            <select name="role" data-submit-paper-role-select>
+              __SUBMIT_ROLE_OPTIONS__
+            </select>
+          </label>
+          <button type="submit" data-submit-paper-role-submit>Change role</button>
+        </form>
+        <p>
+          Need to switch roles?
+          <a href="/dashboard" data-submit-paper-role-change>Open dashboard role settings</a>.
+        </p>
+      </section>
+      <form data-submit-paper-form novalidate>
+        <label>
+          Session ID
+          <input
+            name="sessionId"
+            data-field
+            data-submit-paper-session-id
+            type="text"
+            required
+            readonly
+            value="__SUBMIT_SESSION_ID__"
+          />
+          <small class="submit-paper-hint">Auto-filled from your active sign-in session.</small>
+        </label>
+
+        <label>
+          Action Sequence ID
+          <input
+            name="actionSequenceId"
+            data-field
+            data-submit-paper-action-sequence-id
+            type="text"
+            required
+            readonly
+            value="__SUBMIT_ACTION_SEQUENCE_ID__"
+          />
+          <small class="submit-paper-hint">Auto-generated for this submission attempt.</small>
+        </label>
+
+        <label>
+          Title
+          <input name="title" data-field type="text" required />
+        </label>
+
+        <label>
+          Abstract
+          <textarea name="abstract" data-field required></textarea>
+        </label>
+
+        <label>
+          Authors (comma-separated)
+          <input name="authorList" data-field type="text" required />
+        </label>
+
+        <label>
+          Keywords (comma-separated)
+          <input name="keywords" data-field type="text" />
+        </label>
+
+        <label>
+          Manuscript file
+          <input name="manuscript" data-field type="file" accept=".pdf,.txt,application/pdf,text/plain" />
+        </label>
+
+        <button type="submit">Submit Paper</button>
+      </form>
+
+      <p class="submit-paper-status" aria-live="polite" data-submit-paper-status></p>
+      <p><a href="/dashboard">Back to dashboard</a></p>
+    </main>
+
+    <script type="module">
+      import { bootstrapSubmitPaperPage } from '/assets/js/submit-paper-page.js';
+      bootstrapSubmitPaperPage();
+    </script>
+  </body>
+</html>

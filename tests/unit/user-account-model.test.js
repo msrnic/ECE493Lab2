@@ -2,7 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   activateUserAccount,
   createPendingUserAccount,
-  hashPassword
+  hashPassword,
+  normalizeUserRole,
+  updateUserAccountRole,
+  USER_ROLES
 } from '../../src/models/user-account-model.js';
 
 describe('user-account-model', () => {
@@ -17,6 +20,7 @@ describe('user-account-model', () => {
 
     expect(account.fullName).toBe('Alice Example');
     expect(account.status).toBe('pending');
+    expect(account.role).toBe('author');
     expect(account.activatedAt).toBeNull();
     expect(account.createdAt).toBe(now.toISOString());
   });
@@ -49,5 +53,26 @@ describe('user-account-model', () => {
     expect(hashPassword('StrongPass!2026')).toMatch(/^[a-f0-9]{64}$/);
     expect(hashPassword('StrongPass!2026')).toBe(hashPassword('StrongPass!2026'));
     expect(hashPassword('StrongPass!2026')).not.toBe(hashPassword('DifferentPass!2026'));
+  });
+
+  it('normalizes and updates user roles with fallback behavior', () => {
+    expect(USER_ROLES).toEqual(['author', 'editor', 'reviewer']);
+    expect(normalizeUserRole('EDITOR')).toBe('editor');
+    expect(normalizeUserRole('unknown')).toBe('author');
+    expect(normalizeUserRole(null)).toBe('author');
+    expect(normalizeUserRole('unknown', { fallbackRole: 'editor' })).toBe('editor');
+
+    expect(
+      updateUserAccountRole(
+        {
+          id: 'usr-role',
+          role: 'author'
+        },
+        'reviewer'
+      )
+    ).toEqual({
+      id: 'usr-role',
+      role: 'reviewer'
+    });
   });
 });

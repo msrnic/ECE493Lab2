@@ -1,5 +1,9 @@
 node_modules/
+dist/
+build/
 coverage/
+database/
+uploads/
 tests/
 specs/
 Use Cases/
@@ -8,3 +12,5 @@ Acceptance Tests/
 .env*
 .vscode/
 .idea/
+.DS_Store
+Thumbs.db

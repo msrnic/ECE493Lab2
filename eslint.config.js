@@ -5,6 +5,8 @@ export default [
       'dist/',
       'build/',
       'coverage/',
+      'database/',
+      'uploads/',
       '*.min.js'
     ]
   },

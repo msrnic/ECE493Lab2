@@ -1,22 +1,47 @@
 import { createHash } from 'node:crypto';
 
+export const USER_ROLES = Object.freeze(['author', 'editor', 'reviewer']);
+const DEFAULT_USER_ROLE = 'author';
+
 export function hashPassword(password) {
   return createHash('sha256').update(password).digest('hex');
+}
+
+export function normalizeUserRole(role, { fallbackRole = DEFAULT_USER_ROLE } = {}) {
+  if (typeof role !== 'string') {
+    return fallbackRole;
+  }
+
+  const normalized = role.trim().toLowerCase();
+  if (USER_ROLES.includes(normalized)) {
+    return normalized;
+  }
+
+  return fallbackRole;
 }
 
 export function createPendingUserAccount({
   fullName,
   emailNormalized,
   passwordHash,
+  role = DEFAULT_USER_ROLE,
   now = new Date()
 }) {
   return {
     fullName: fullName.trim(),
     emailNormalized,
     passwordHash,
+    role: normalizeUserRole(role),
     status: 'pending',
     createdAt: now.toISOString(),
     activatedAt: null
+  };
+}
+
+export function updateUserAccountRole(account, role) {
+  return {
+    ...account,
+    role: normalizeUserRole(role)
   };
 }
 

@@ -7,7 +7,50 @@ function escapeHtml(value) {
     .replaceAll("'", '&#39;');
 }
 
-export function renderDashboardPage({ email } = {}) {
+function titleCaseRole(role) {
+  const normalized = String(role).trim().toLowerCase();
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+export function resolveRoleUpdateMessage(roleUpdated) {
+  if (roleUpdated === 'updated') {
+    return 'Role updated successfully.';
+  }
+
+  if (roleUpdated === 'unchanged') {
+    return 'Role unchanged.';
+  }
+
+  if (roleUpdated === 'invalid') {
+    return 'Invalid role selected.';
+  }
+
+  if (roleUpdated === 'author_required') {
+    return 'Only author accounts can access paper submission. Change your role to author.';
+  }
+
+  return '';
+}
+
+function renderRoleOptions(role) {
+  const normalizedRole = String(role).trim().toLowerCase();
+  const options = ['author', 'editor', 'reviewer'];
+
+  return options
+    .map((option) => {
+      const selected = option === normalizedRole ? ' selected' : '';
+      return `<option value="${option}"${selected}>${titleCaseRole(option)}</option>`;
+    })
+    .join('');
+}
+
+export function renderDashboardPage({ email, role = 'author', roleUpdated } = {}) {
+  const roleMessage = resolveRoleUpdateMessage(roleUpdated);
+  const normalizedRole = String(role).trim().toLowerCase() || 'author';
+  const submitSection = normalizedRole === 'author'
+    ? '<p><a href="/submit-paper" data-dashboard-submit-paper>Submit paper</a></p>'
+    : '<p data-dashboard-submit-paper-disabled>Switch your role to author to submit a paper.</p>';
+
   return `<!doctype html>
 <html lang="en">
   <head>
@@ -19,6 +62,18 @@ export function renderDashboardPage({ email } = {}) {
     <main>
       <h1>Dashboard</h1>
       <p data-dashboard-user>Signed in as ${escapeHtml(email ?? 'unknown user')}.</p>
+      <p data-dashboard-role>Current role: ${escapeHtml(titleCaseRole(normalizedRole))}</p>
+      <form method="post" action="/account/role" data-dashboard-role-form>
+        <label>
+          Active role
+          <select name="role" data-dashboard-role-select>
+            ${renderRoleOptions(normalizedRole)}
+          </select>
+        </label>
+        <button type="submit" data-dashboard-role-submit>Change role</button>
+      </form>
+      <p data-dashboard-role-status>${escapeHtml(roleMessage)}</p>
+      ${submitSection}
       <p><a href="/account/password-change">Change password</a></p>
       <form method="post" action="/logout">
         <button type="submit" data-dashboard-logout>Log Out</button>

@@ -46,14 +46,72 @@ export function createMockResponse() {
   };
 }
 
-export async function invokeHandler(handler, { body, query, headers } = {}) {
-  const request = {
+export async function invokeHandler(handler, { body, query, headers, params, file, request } = {}) {
+  const requestShape = {
     body,
     query: query ?? {},
-    headers: headers ?? {}
+    headers: headers ?? {},
+    params: params ?? {},
+    file
+  };
+  const requestWithOverrides = {
+    ...requestShape,
+    ...(request ?? {})
   };
   const response = createMockResponse();
-  await handler(request, response);
+  await handler(requestWithOverrides, response);
+  return response;
+}
+
+export async function invokeAppRoute(
+  app,
+  { method, path, body, query, headers, params, file, request } = {}
+) {
+  const routeLayer = app.router.stack.find(
+    (entry) => entry.route && entry.route.path === path && entry.route.methods[method]
+  );
+
+  if (!routeLayer) {
+    throw new Error(`Route not found: ${method.toUpperCase()} ${path}`);
+  }
+
+  const requestShape = {
+    body,
+    query: query ?? {},
+    headers: headers ?? {},
+    params: params ?? {},
+    file
+  };
+  const requestWithOverrides = {
+    ...requestShape,
+    ...(request ?? {})
+  };
+  const response = createMockResponse();
+
+  for (const handlerLayer of routeLayer.route.stack) {
+    let nextCalled = false;
+    let nextError = null;
+
+    if (handlerLayer.handle.length >= 3) {
+      await handlerLayer.handle(requestWithOverrides, response, (error) => {
+        nextCalled = true;
+        nextError = error ?? null;
+      });
+
+      if (nextError) {
+        throw nextError;
+      }
+
+      if (!nextCalled) {
+        break;
+      }
+
+      continue;
+    }
+
+    await handlerLayer.handle(requestWithOverrides, response);
+  }
+
   return response;
 }
 

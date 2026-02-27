@@ -2,6 +2,12 @@ node_modules/
 dist/
 build/
 coverage/
+!tests/coverage/
+!tests/coverage/*.md
+database/*
+!database/.gitkeep
+uploads/*
+!uploads/.gitkeep
 *.log
 .env*
 .DS_Store
