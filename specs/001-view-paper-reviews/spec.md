@@ -94,7 +94,7 @@ An editor selects a paper with no submitted reviews and immediately sees that re
 - **FR-003 (UC-10 / UC-10-AS)**: System MUST distinguish completed reviews from non-completed review states so only completed reviews are shown as completed results.
 - **FR-004 (UC-10 / UC-10-AS)**: System MUST display a pending review status when no completed reviews exist for the selected paper.
 - **FR-005 (UC-10 / UC-10-AS)**: System MUST present a clear outcome for every review request as either completed reviews available or reviews pending.
-- **FR-006 (UC-10 / UC-10-AS)**: System MUST preserve traceability of the editor review request outcome for validation against UC-10 and UC-10-AS.
+- **FR-006 (UC-10 / UC-10-AS)**: System MUST maintain a traceability record for each review request outcome in `specs/001-view-paper-reviews/traceability.md`, including `requestId`, `editorId`, `paperId`, `outcome` (`available`, `pending`, or `unavailable`), timestamp, `UC-10`, and `UC-10-AS`.
 - **FR-007 (UC-10 / UC-10-AS)**: System MUST allow review visibility only to editors assigned to the selected paper or its track and deny access to other editors.
 - **FR-008 (UC-10 / UC-10-AS)**: System MUST display the reviewer identity with each completed review for authorized editors.
 - **FR-009 (UC-10 / UC-10-AS)**: System MUST record an audit entry for every successful review-view access that includes editor identity, selected paper identity, and access timestamp.
@@ -131,10 +131,10 @@ An editor selects a paper with no submitted reviews and immediately sees that re
 ### Measurable Outcomes
 
 - **SC-001**: 100% of scenarios in `Acceptance Tests/UC-10-AS.md` pass without modifying acceptance suite wording.
-- **SC-002**: At least 95% of editor review requests return a visible outcome (reviews displayed or pending status) within 5 seconds during normal operations.
+- **SC-002**: Under a workload of 500 requests (70% authorized, 30% unavailable), with papers containing up to 100 reviews, p95 latency for `GET /api/papers/{paperId}/reviews` is at most 5.0 seconds in the CI test environment.
 - **SC-003**: 100% of papers with one or more completed reviews display all completed reviews to the editor.
 - **SC-004**: 100% of papers with no completed reviews display a pending status instead of empty or ambiguous output.
-- **SC-005**: In stakeholder validation, at least 90% of editors report that review availability status is clear on first view.
+- **SC-005**: In a scripted usability check with 10 editors, at least 9 correctly identify review state (`available` or `pending`) within 10 seconds on first view.
 - **SC-006**: 0 previously passing acceptance suites regress after this feature is merged.
 - **SC-007**: 100% of review visibility requests from editors not assigned to the selected paper or track are denied.
 - **SC-008**: 100% of completed reviews displayed to authorized editors include the reviewer identity.
