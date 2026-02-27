@@ -1,0 +1,133 @@
+openapi: 3.0.3
+info:
+  title: Conference Pricing Public API
+  version: 1.0.0
+  description: |
+    Contracts for UC-16 pricing-page behavior.
+    Supports initial pricing-page load and user-initiated retry using the same read endpoint.
+servers:
+  - url: https://conference.example.com
+paths:
+  /pricing:
+    get:
+      tags: [PricingPage]
+      summary: Return the public pricing page HTML shell
+      operationId: getPricingPage
+      responses:
+        "200":
+          description: Pricing page shell
+          content:
+            text/html:
+              schema:
+                type: string
+  /api/public/pricing:
+    get:
+      tags: [Pricing]
+      summary: Retrieve current pricing outcome for display or retry
+      description: |
+        Used by controller for both first page load and explicit Try Again actions.
+        No automatic retry behavior is implied by this contract.
+      operationId: getPricingOutcome
+      responses:
+        "200":
+          description: Pricing is displayed or missing
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/PricingDisplayedOutcome"
+                  - $ref: "#/components/schemas/PricingMissingOutcome"
+        "503":
+          description: Temporary pricing retrieval failure
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PricingTemporarilyUnavailableOutcome"
+components:
+  schemas:
+    PricingDisplayedOutcome:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - currencyCode
+        - items
+      properties:
+        status:
+          type: string
+          enum: [pricing-displayed]
+        currencyCode:
+          type: string
+          pattern: "^[A-Z]{3}$"
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/PricingItem"
+    PricingItem:
+      type: object
+      additionalProperties: false
+      required:
+        - itemId
+        - label
+        - attendeeType
+        - amountMinor
+        - amountDisplay
+      properties:
+        itemId:
+          type: string
+        label:
+          type: string
+        attendeeType:
+          type: string
+          enum: [standard, student, other]
+        amountMinor:
+          type: integer
+          minimum: 0
+        amountDisplay:
+          type: string
+        discount:
+          $ref: "#/components/schemas/DiscountDisplay"
+    DiscountDisplay:
+      type: object
+      additionalProperties: false
+      required:
+        - label
+        - amountMinor
+        - amountDisplay
+      properties:
+        label:
+          type: string
+        amountMinor:
+          type: integer
+          minimum: 0
+        amountDisplay:
+          type: string
+    PricingMissingOutcome:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - message
+      properties:
+        status:
+          type: string
+          enum: [pricing-missing]
+        message:
+          type: string
+    PricingTemporarilyUnavailableOutcome:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - message
+        - retryAllowed
+      properties:
+        status:
+          type: string
+          enum: [pricing-temporarily-unavailable]
+        message:
+          type: string
+        retryAllowed:
+          type: boolean
+          enum: [true]

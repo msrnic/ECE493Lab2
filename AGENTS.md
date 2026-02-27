@@ -4,6 +4,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-08
 
 ## Active Technologies
 
+- HTML5, CSS3, JavaScript (ES2020+) + Browser DOM APIs, Fetch API, `Intl.NumberFormat`, WAI-ARIA attributes, Node.js tooling with Vitest, Playwright, c8, and axe-core (001-view-conference-pricing)
 - HTML5, CSS3, JavaScript (ES2023 modules) + Browser DOM APIs, Fetch API, `Intl.DateTimeFormat` for time-zone formatting, Node.js 20 test tooling (`vitest`, `jsdom`, `c8`) (001-unpublished-schedule-notice)
 - HTML5, CSS3, JavaScript (ES2022) + Browser DOM APIs, Fetch API, Node.js 20 runtime, Express.js 5 API layer, Jest + c8 for JavaScript coverage reporting (001-edit-session-schedule)
 - HTML5, CSS3, JavaScript (ES2020+; Node.js 20 LTS runtime for server-side JavaScript) + Browser DOM APIs, Fetch API, Node.js HTTP runtime, Express.js routing, JSON schema validation for request payloads (001-generate-session-schedule)
@@ -40,6 +41,7 @@ HTML5, CSS3, JavaScript (ES2022), Node.js 20 LTS: Follow standard conventions
 
 ## Recent Changes
 
+- 001-view-conference-pricing: Added HTML5, CSS3, JavaScript (ES2020+) + Browser DOM APIs, Fetch API, `Intl.NumberFormat`, WAI-ARIA attributes, Node.js tooling with Vitest, Playwright, c8, and axe-core
 - 001-unpublished-schedule-notice: Added HTML5, CSS3, JavaScript (ES2023 modules) + Browser DOM APIs, Fetch API, `Intl.DateTimeFormat` for time-zone formatting, Node.js 20 test tooling (`vitest`, `jsdom`, `c8`)
 - 001-edit-session-schedule: Added HTML5, CSS3, JavaScript (ES2022) + Browser DOM APIs, Fetch API, Node.js 20 runtime, Express.js 5 API layer, Jest + c8 for JavaScript coverage reporting
 - 001-generate-session-schedule: Added HTML5, CSS3, JavaScript (ES2020+; Node.js 20 LTS runtime for server-side JavaScript) + Browser DOM APIs, Fetch API, Node.js HTTP runtime, Express.js routing, JSON schema validation for request payloads
