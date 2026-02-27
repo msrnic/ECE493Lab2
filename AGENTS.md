@@ -4,6 +4,7 @@ Auto-generated from all feature plans. Last updated: 2026-02-08
 
 ## Active Technologies
 
+- HTML5, CSS3, JavaScript (ES2022), Node.js 20 + Express 4 (API routing), Vanilla DOM APIs (view rendering/events), Ajv 8 (shared validation schema), Vitest + Supertest + c8 (unit/integration/coverage) (001-review-submission-validation)
 - HTML5, CSS3, JavaScript (ES2022 modules) + Browser DOM APIs, Fetch API, FormData API, Node.js `node:test` for automated tests, Istanbul/c8-compatible line-coverage reporting (001-reviewer-paper-access)
 - HTML5, CSS3, JavaScript (ES2022; Node.js 20 for server-side controllers/jobs) + Vanilla JS modules, browser Fetch/DOM APIs, Node.js timers for retry scheduling, OpenAPI 3.1 for API contracts (001-receive-review-invitation)
 - HTML5, CSS3, JavaScript (ES2022 modules) + Browser DOM APIs, Fetch API, server-side JavaScript REST services, JSON over HTTP (001-assign-reviewers)
@@ -33,6 +34,7 @@ HTML5, CSS3, JavaScript (ES2022; Node.js 20 for server-side controllers/jobs): F
 
 ## Recent Changes
 
+- 001-review-submission-validation: Added HTML5, CSS3, JavaScript (ES2022), Node.js 20 + Express 4 (API routing), Vanilla DOM APIs (view rendering/events), Ajv 8 (shared validation schema), Vitest + Supertest + c8 (unit/integration/coverage)
 - 001-reviewer-paper-access: Added HTML5, CSS3, JavaScript (ES2022 modules) + Browser DOM APIs, Fetch API, FormData API, Node.js `node:test` for automated tests, Istanbul/c8-compatible line-coverage reporting
 - 001-receive-review-invitation: Added HTML5, CSS3, JavaScript (ES2022; Node.js 20 for server-side controllers/jobs) + Vanilla JS modules, browser Fetch/DOM APIs, Node.js timers for retry scheduling, OpenAPI 3.1 for API contracts
 - 001-assign-reviewers: Added HTML5, CSS3, JavaScript (ES2022 modules) + Browser DOM APIs, Fetch API, server-side JavaScript REST services, JSON over HTTP
