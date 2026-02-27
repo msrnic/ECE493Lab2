@@ -1,0 +1,10 @@
+node_modules/
+coverage/
+tests/
+specs/
+Use Cases/
+Acceptance Tests/
+*.log
+.env*
+.vscode/
+.idea/

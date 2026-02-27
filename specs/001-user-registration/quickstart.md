@@ -75,16 +75,34 @@ block messaging.
 Use confirmation token URL from email job. Expected: account transitions from `pending` to
 `active`.
 
-## 4. Execute Acceptance + Coverage
+## 4. Run Implementation and Test Commands
 
-1. Implement acceptance test file:
-   `/home/m_srnic/ece493/lab2/ECE493Lab2/tests/acceptance/uc-01-registration.acceptance.test.js`
-2. Execute acceptance assertions exactly matching:
-   `/home/m_srnic/ece493/lab2/ECE493Lab2/Acceptance Tests/UC-01-AS.md`
-3. Run unit + acceptance suites with coverage enabled for in-scope project-owned JavaScript.
-4. Target 100% line coverage for this feature; below 95% is non-compliant without approved exception.
+```bash
+npm install
+npm test
+npm run lint
+```
 
-## 5. Regression Safety
+- `npm test` executes unit, integration, and acceptance suites with enforced 100% branch coverage.
+- `npm run lint` must pass with zero errors before merge.
+
+## 5. Endpoint Contract Verification
+
+- `tests/integration/register-page.contract.test.js` verifies `GET /register`.
+- `tests/integration/create-registration.contract.test.js` verifies `POST /api/registrations` (`201/409/422/429`).
+- `tests/integration/confirm-registration.contract.test.js` verifies `GET /api/registrations/confirm` (`200/400/410`).
+- `tests/integration/registration-latency.test.js` verifies server p95 (`<=1000ms`) and client validation p95 (`<=200ms`).
+
+## 6. Usability Protocol (SC-004, SC-005)
+
+1. Recruit at least 10 first-time participants who have not seen the registration flow before.
+2. Provide one task only: create an account using the registration page without assistance.
+3. Measure:
+   - First-attempt completion success (target: at least 90%).
+   - Completion time from form-visible to successful `201` response (target: at least 90% of successful attempts in 2 minutes or less).
+4. Record participant-level outcomes in `specs/001-user-registration/checklists/registration.md`.
+
+## 7. Regression Safety
 
 - Re-run previously passing acceptance suites after UC-01 changes.
 - Reject merge on any regression unless behavior was formally amended.

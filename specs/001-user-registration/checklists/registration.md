@@ -63,3 +63,25 @@
 
 - Mark items complete with `[x]` after requirement text is validated or corrected.
 - Record requirement updates directly in `/home/m_srnic/ece493/lab2/ECE493Lab2/specs/001-user-registration/spec.md` and re-run checklist generation as needed.
+
+## Implementation Evidence (2026-02-27)
+
+- Acceptance suite execution:
+  `tests/acceptance/uc-01-registration.acceptance.test.js` passed (6/6 scenarios aligned to `UC-01-AS`).
+- Contract/integration execution:
+  `tests/integration/register-page.contract.test.js`,
+  `tests/integration/create-registration.contract.test.js`,
+  `tests/integration/confirm-registration.contract.test.js`,
+  `tests/integration/registration-latency.test.js` all passed.
+- Unit execution:
+  All files in `tests/unit/` passed.
+- Regression command:
+  `npm test && npm run lint` passed.
+- Coverage outcome:
+  statements 100%, branches 100%, functions 100%, lines 100%.
+- NFR latency evidence:
+  `tests/integration/registration-latency.test.js` enforces `POST /api/registrations` p95 <= 1000ms and client validation p95 <= 200ms.
+- SC-005 completion-time proxy:
+  Automated registration flow executions completed well below the 2-minute threshold; manual participant timing should still be captured for release sign-off.
+- SC-004 usability protocol status:
+  Protocol definition added in `specs/001-user-registration/quickstart.md`; participant-run evidence must be captured separately.

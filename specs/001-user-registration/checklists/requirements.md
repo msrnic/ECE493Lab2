@@ -34,3 +34,9 @@
 - Validation iteration 1: all checklist items pass.
 - Traceability confirmed against `Use Cases/UC-01.md` and `Acceptance Tests/UC-01-AS.md`.
 - Spec is ready for `/speckit.plan` (and optionally `/speckit.clarify` if scope changes).
+- UC-to-acceptance traceability baseline maintained in implementation artifacts:
+  `tests/acceptance/uc-01-registration.acceptance.test.js`,
+  `tests/integration/create-registration.contract.test.js`, and
+  `tests/integration/confirm-registration.contract.test.js`.
+- Final coverage gate result (2026-02-27): statements 100%, branches 100%, functions 100%, lines 100%.
+- Uncovered-line remediation notes: none required; all production source files are fully covered.
