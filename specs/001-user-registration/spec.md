@@ -50,9 +50,18 @@ invalid inputs; successful registration and validation handling are both verifie
 **Acceptance Scenarios**:
 
 1. **Given** the user is not logged in, **When** valid registration details are submitted,
-   **Then** an account is created in pending state and a confirmation email is sent.
+   **Then** an account is created in pending state and a confirmation email is sent or queued for
+   retry.
 2. **Given** required fields are missing or invalid, **When** the form is submitted,
    **Then** validation errors are shown and no account is created.
+3. **Given** there are 5 attempts for the same email in 10 minutes, **When** another submission is
+   made, **Then** the system blocks the submission and returns retry guidance.
+4. **Given** a duplicate email is submitted, **When** registration is processed, **Then** the
+   system rejects the request with explicit login/reset-password guidance.
+5. **Given** initial email delivery fails, **When** registration completes, **Then** the account
+   remains pending and an automatic retry is scheduled.
+6. **Given** a valid confirmation token is submitted, **When** confirmation is processed, **Then**
+   the account transitions from pending to active.
 
 ## Traceability Matrix *(mandatory)*
 
@@ -70,6 +79,10 @@ invalid inputs; successful registration and validation handling are both verifie
 | FR-010 | UC-01 | UC-01-AS | Registration throttling and temporary block behavior |
 | FR-011 | UC-01 | UC-01-AS | Account activation via email confirmation |
 | FR-012 | UC-01 | UC-01-AS | Password strength enforcement |
+| NFR-001 | UC-01 | UC-01-AS | Registration API latency verification |
+| NFR-002 | UC-01 | UC-01-AS | Client validation latency verification |
+| NFR-003 | UC-01 | UC-01-AS | First-attempt usability completion rate |
+| NFR-004 | UC-01 | UC-01-AS | Deterministic throttling unblock timing and Retry-After behavior |
 
 ### Edge Cases
 
@@ -97,8 +110,8 @@ invalid inputs; successful registration and validation handling are both verifie
   information is valid.
 - **FR-005 (UC-01 / UC-01-AS)**: System MUST send a confirmation email after successful
   account creation.
-- **FR-006 (UC-01 / UC-01-AS)**: System MUST display validation errors and MUST NOT create an
-  account when required information is missing or invalid.
+- **FR-006 (UC-01 / UC-01-AS)**: On validation failure, System MUST return clear field-level
+  and/or global validation errors and MUST NOT create an account.
 - **FR-007 (UC-01 / UC-01-AS)**: System MUST produce coverage evidence for in-scope registration
   behavior, target 100%, and document remediation when below 100%; below 95% requires approved
   exception.
@@ -109,13 +122,25 @@ invalid inputs; successful registration and validation handling are both verifie
   account creation, display an explicit "Email already registered" error, and provide user actions
   to login or reset password.
 - **FR-010 (UC-01 / UC-01-AS)**: System MUST limit registration submissions to 5 attempts per
-  email per rolling 10-minute window and MUST temporarily block additional attempts beyond this
-  limit with clear user feedback.
+  email per rolling 10-minute window. Additional attempts in the same window MUST be blocked until
+  the window expires, with user feedback and a deterministic `Retry-After` value equal to the
+  remaining block time in seconds.
 - **FR-011 (UC-01 / UC-01-AS)**: System MUST activate a pending account only after successful
   email confirmation by the registering user.
 - **FR-012 (UC-01 / UC-01-AS)**: System MUST require passwords to be at least 12 characters and
   include at least one uppercase letter, one lowercase letter, one number, and one symbol, and
   MUST reject non-compliant passwords with clear validation errors.
+
+### Non-Functional Requirements
+
+- **NFR-001 (UC-01 / UC-01-AS)**: `POST /api/registrations` p95 server response time MUST be
+  <= 1 second under normal load.
+- **NFR-002 (UC-01 / UC-01-AS)**: Client-side field validation feedback MUST be produced within
+  200ms p95 after input change or submit attempt.
+- **NFR-003 (UC-01 / UC-01-AS)**: In first-time-user usability testing, at least 90% of users
+  MUST complete registration on the first attempt without external assistance.
+- **NFR-004 (UC-01 / UC-01-AS)**: Throttling unblock behavior and `Retry-After` calculation MUST
+  be deterministic and test-verifiable.
 
 If a source requirement is ambiguous, implementation MUST pause and log a clarification request
 that cites exact `Use Cases/UC-01.md` and `Acceptance Tests/UC-01-AS.md` text.
