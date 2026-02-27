@@ -1,0 +1,373 @@
+openapi: 3.1.0
+info:
+  title: Reviewer Invitation Delivery API
+  version: 0.1.0
+  description: >-
+    Contracts for UC-07 invitation delivery, retries, cancellation, and
+    role-restricted failure-log access.
+servers:
+  - url: https://cms.example.com
+tags:
+  - name: InvitationLifecycle
+  - name: RetryWorker
+  - name: FailureLogs
+paths:
+  /api/reviewer-assignments/{assignmentId}/invitations:
+    post:
+      tags: [InvitationLifecycle]
+      summary: Create or reuse an active invitation and trigger initial delivery
+      operationId: triggerInvitationDelivery
+      parameters:
+        - $ref: '#/components/parameters/AssignmentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TriggerInvitationRequest'
+      responses:
+        '202':
+          description: Invitation dispatch accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationStatusResponse'
+        '200':
+          description: Existing active invitation reused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/review-invitations/{invitationId}:
+    get:
+      tags: [InvitationLifecycle]
+      summary: Retrieve invitation delivery status
+      operationId: getInvitationStatus
+      parameters:
+        - $ref: '#/components/parameters/InvitationId'
+      responses:
+        '200':
+          description: Invitation status returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/review-invitations/{invitationId}/delivery-events:
+    post:
+      tags: [InvitationLifecycle]
+      summary: Record provider callback outcome for an invitation attempt
+      operationId: recordDeliveryEvent
+      parameters:
+        - $ref: '#/components/parameters/InvitationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryEventRequest'
+      responses:
+        '200':
+          description: Delivery event applied to invitation lifecycle
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/reviewer-assignments/{assignmentId}/invitations/cancel:
+    post:
+      tags: [InvitationLifecycle]
+      summary: Cancel pending invitation retries when assignment is removed
+      operationId: cancelInvitationForRemovedAssignment
+      parameters:
+        - $ref: '#/components/parameters/AssignmentId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CancellationRequest'
+      responses:
+        '200':
+          description: Invitation canceled or already terminal
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationStatusResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/internal/review-invitations/retry-due:
+    post:
+      tags: [RetryWorker]
+      summary: Execute retry attempts due at or before runtime timestamp
+      operationId: processDueInvitationRetries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RetryRunRequest'
+      responses:
+        '200':
+          description: Retry execution summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetryRunResponse'
+
+  /api/papers/{paperId}/invitation-failure-logs:
+    get:
+      tags: [FailureLogs]
+      summary: List invitation failure evidence for a paper
+      operationId: listInvitationFailureLogs
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PaperId'
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: pageSize
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        '200':
+          description: Failure logs visible to authorized requester
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FailureLogListResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    AssignmentId:
+      name: assignmentId
+      in: path
+      required: true
+      schema:
+        type: string
+    InvitationId:
+      name: invitationId
+      in: path
+      required: true
+      schema:
+        type: string
+    PaperId:
+      name: paperId
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    NotFound:
+      description: Requested resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Forbidden:
+      description: Authenticated user is not authorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+  schemas:
+    TriggerInvitationRequest:
+      type: object
+      required: [paperId, reviewerId]
+      properties:
+        paperId:
+          type: string
+        reviewerId:
+          type: string
+
+    DeliveryEventRequest:
+      type: object
+      required: [attemptId, eventType, occurredAt]
+      properties:
+        attemptId:
+          type: string
+        eventType:
+          type: string
+          enum: [delivered, failed]
+        failureReason:
+          type: string
+          nullable: true
+        providerMessageId:
+          type: string
+          nullable: true
+        occurredAt:
+          type: string
+          format: date-time
+
+    CancellationRequest:
+      type: object
+      required: [reason, occurredAt]
+      properties:
+        reason:
+          type: string
+          enum: [assignment_removed]
+        occurredAt:
+          type: string
+          format: date-time
+
+    RetryRunRequest:
+      type: object
+      required: [runAt]
+      properties:
+        runAt:
+          type: string
+          format: date-time
+
+    RetryRunResponse:
+      type: object
+      required: [runAt, processedInvitations, attemptsCreated, completed, failed, canceled]
+      properties:
+        runAt:
+          type: string
+          format: date-time
+        processedInvitations:
+          type: integer
+        attemptsCreated:
+          type: integer
+        completed:
+          type: integer
+        failed:
+          type: integer
+        canceled:
+          type: integer
+
+    InvitationStatusResponse:
+      type: object
+      required:
+        - id
+        - reviewerAssignmentId
+        - paperId
+        - reviewerId
+        - status
+        - retryCount
+        - maxRetries
+        - followUpRequired
+        - updatedAt
+      properties:
+        id:
+          type: string
+        reviewerAssignmentId:
+          type: string
+        paperId:
+          type: string
+        reviewerId:
+          type: string
+        status:
+          type: string
+          enum: [pending, delivered, failed, canceled]
+        retryCount:
+          type: integer
+          minimum: 0
+          maximum: 3
+        maxRetries:
+          type: integer
+          enum: [3]
+        nextRetryAt:
+          type: string
+          format: date-time
+          nullable: true
+        followUpRequired:
+          type: boolean
+        lastFailureReason:
+          type: string
+          nullable: true
+        deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+        canceledAt:
+          type: string
+          format: date-time
+          nullable: true
+        updatedAt:
+          type: string
+          format: date-time
+
+    FailureLogListResponse:
+      type: object
+      required: [paperId, entries, page, pageSize, total]
+      properties:
+        paperId:
+          type: string
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/FailureLogEntry'
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        total:
+          type: integer
+
+    FailureLogEntry:
+      type: object
+      required:
+        - id
+        - invitationId
+        - eventType
+        - message
+        - createdAt
+      properties:
+        id:
+          type: string
+        invitationId:
+          type: string
+        deliveryAttemptId:
+          type: string
+          nullable: true
+        eventType:
+          type: string
+          enum:
+            - initial-failure
+            - retry-failure
+            - terminal-failure
+            - retry-canceled
+            - late-callback-ignored
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
