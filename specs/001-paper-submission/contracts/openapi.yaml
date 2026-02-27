@@ -1,0 +1,386 @@
+openapi: 3.0.3
+info:
+  title: Paper Submission API
+  version: 1.0.0
+  description: >
+    REST contract for UC-04 author paper submission flow with retry handling,
+    duplicate protection, and malware-scan-gated finalization.
+servers:
+  - url: https://conference.example.com
+tags:
+  - name: Submissions
+    description: Author paper submission lifecycle
+paths:
+  /api/v1/submissions:
+    post:
+      tags: [Submissions]
+      summary: Start a submission action sequence
+      description: Creates a draft submission bound to an active author session.
+      operationId: createSubmission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubmissionRequest'
+      responses:
+        '201':
+          description: Draft submission created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResource'
+        '401':
+          $ref: '#/components/responses/SessionInvalid'
+
+  /api/v1/submissions/{submissionId}/files:
+    post:
+      tags: [Submissions]
+      summary: Upload a paper file for a submission
+      description: Supports unlimited retries while session remains active.
+      operationId: uploadSubmissionFile
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/FileUploadRequest'
+      responses:
+        '201':
+          description: File uploaded and queued for scan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUploadResponse'
+        '400':
+          description: File type/size policy violation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Upload failed; retry required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetryResponse'
+        '401':
+          $ref: '#/components/responses/SessionInvalid'
+
+  /api/v1/submissions/{submissionId}/validate:
+    post:
+      tags: [Submissions]
+      summary: Validate metadata and required files
+      operationId: validateSubmission
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ValidateSubmissionRequest'
+      responses:
+        '200':
+          description: Validation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationResponse'
+        '401':
+          $ref: '#/components/responses/SessionInvalid'
+
+  /api/v1/submissions/{submissionId}/submit:
+    post:
+      tags: [Submissions]
+      summary: Finalize submission
+      description: >
+        Finalization requires validation pass, scan pass for all required files,
+        and successful persistence. Duplicate finalize attempts in the same
+        action sequence are blocked.
+      operationId: finalizeSubmission
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitRequest'
+      responses:
+        '200':
+          description: Submission finalized and marked submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmitResponse'
+        '409':
+          description: Duplicate finalization blocked for this action sequence
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '422':
+          description: Validation or scan failure blocked finalization
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '503':
+          description: Save failed after validation/upload/scan; retry allowed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RetryResponse'
+        '401':
+          $ref: '#/components/responses/SessionInvalid'
+
+  /api/v1/submissions/{submissionId}:
+    get:
+      tags: [Submissions]
+      summary: Get current submission state for retry/resume
+      operationId: getSubmission
+      parameters:
+        - $ref: '#/components/parameters/SubmissionId'
+      responses:
+        '200':
+          description: Submission state returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubmissionResource'
+        '401':
+          $ref: '#/components/responses/SessionInvalid'
+        '404':
+          description: Submission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  parameters:
+    SubmissionId:
+      name: submissionId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    SessionInvalid:
+      description: Session is invalid or expired; author must re-authenticate.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    CreateSubmissionRequest:
+      type: object
+      required: [actionSequenceId, sessionId, metadata]
+      properties:
+        actionSequenceId:
+          type: string
+          format: uuid
+        sessionId:
+          type: string
+        metadata:
+          $ref: '#/components/schemas/PaperMetadata'
+
+    FileUploadRequest:
+      type: object
+      required: [sessionId, category, file]
+      properties:
+        sessionId:
+          type: string
+        category:
+          type: string
+          enum: [manuscript, supplementary]
+        file:
+          type: string
+          format: binary
+
+    ValidateSubmissionRequest:
+      type: object
+      required: [sessionId]
+      properties:
+        sessionId:
+          type: string
+
+    SubmitRequest:
+      type: object
+      required: [sessionId]
+      properties:
+        sessionId:
+          type: string
+
+    PaperMetadata:
+      type: object
+      required: [title, abstract, authorList]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        abstract:
+          type: string
+          minLength: 1
+        authorList:
+          type: array
+          minItems: 1
+          items:
+            type: string
+            minLength: 1
+        keywords:
+          type: array
+          items:
+            type: string
+
+    SubmissionResource:
+      type: object
+      required:
+        [submissionId, actionSequenceId, status, metadata, files, retryAllowed, updatedAt]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        actionSequenceId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+            [draft, upload_failed, validation_failed, scan_failed, save_failed, submitted]
+        metadata:
+          $ref: '#/components/schemas/PaperMetadata'
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SubmissionFile'
+        retryAllowed:
+          type: boolean
+        outcome:
+          type: string
+          enum: [submitted, rejected, retry_required]
+        message:
+          type: string
+        confirmationCode:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+
+    SubmissionFile:
+      type: object
+      required: [fileId, category, originalFilename, uploadStatus, scanStatus]
+      properties:
+        fileId:
+          type: string
+          format: uuid
+        category:
+          type: string
+          enum: [manuscript, supplementary]
+        originalFilename:
+          type: string
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+          minimum: 1
+        uploadStatus:
+          type: string
+          enum: [uploaded, upload_failed]
+        scanStatus:
+          type: string
+          enum: [pending, passed, failed]
+
+    FileUploadResponse:
+      type: object
+      required: [submissionId, file]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        file:
+          $ref: '#/components/schemas/SubmissionFile'
+
+    ValidationResponse:
+      type: object
+      required: [submissionId, valid, errors]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        valid:
+          type: boolean
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+
+    SubmitResponse:
+      type: object
+      required: [submissionId, status, outcome, message, confirmationCode]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [submitted]
+        outcome:
+          type: string
+          enum: [submitted]
+        message:
+          type: string
+        confirmationCode:
+          type: string
+
+    RetryResponse:
+      type: object
+      required: [submissionId, outcome, retryAllowed, message]
+      properties:
+        submissionId:
+          type: string
+          format: uuid
+        outcome:
+          type: string
+          enum: [retry_required]
+        retryAllowed:
+          type: boolean
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
+
+    ValidationError:
+      type: object
+      required: [code, field, message]
+      properties:
+        code:
+          type: string
+        field:
+          type: string
+        message:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ValidationError'
