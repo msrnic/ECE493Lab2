@@ -1,0 +1,34 @@
+:root {
+  --draft-bg: linear-gradient(140deg, #f2f7ff 0%, #fff6ea 100%);
+  --draft-ink: #112240;
+  --draft-accent: #0f6bff;
+  --draft-success: #0f8a42;
+  --draft-warning: #b06a00;
+  --draft-error: #b52121;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Source Sans 3", "Segoe UI", sans-serif;
+  color: var(--draft-ink);
+  background: var(--draft-bg);
+}
+
+main {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.notice--success {
+  color: var(--draft-success);
+}
+
+.notice--warning {
+  color: var(--draft-warning);
+}
+
+.notice--error {
+  color: var(--draft-error);
+}

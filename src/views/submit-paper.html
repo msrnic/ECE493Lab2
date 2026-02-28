@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Submit Paper</title>
     <link rel="stylesheet" href="/assets/css/submit-paper.css" />
+    <link rel="stylesheet" href="/assets/css/draft.css" />
   </head>
   <body>
     <main class="submit-paper-shell">
@@ -84,6 +85,19 @@
       </form>
 
       <p class="submit-paper-status" aria-live="polite" data-submit-paper-status></p>
+
+      <section class="submit-paper-draft" data-submit-paper-draft>
+        <h2>Draft Controls</h2>
+        <p class="submit-paper-draft-hint">Save progress, resume later, and restore previous versions.</p>
+        <div class="submit-paper-draft-actions">
+          <button type="button" data-draft-save>Save Draft</button>
+          <button type="button" data-draft-load>Load Latest Draft</button>
+          <button type="button" data-draft-history-refresh>Refresh Draft History</button>
+        </div>
+        <p class="submit-paper-draft-status" aria-live="polite" data-draft-status></p>
+        <ul class="submit-paper-draft-history" data-draft-history-list></ul>
+      </section>
+
       <p><a href="/dashboard">Back to dashboard</a></p>
     </main>
 

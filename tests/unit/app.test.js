@@ -56,7 +56,13 @@ describe('app bootstrap', () => {
         { path: '/dashboard', methods: ['get'] },
         { path: '/api/registrations', methods: ['post'] },
         { path: '/api/registrations/confirm', methods: ['get'] },
-        { path: '/api/v1/account/password-change', methods: ['post'] }
+        { path: '/api/v1/account/password-change', methods: ['post'] },
+        { path: '/api/submissions/:submissionId/draft', methods: ['put'] },
+        { path: '/api/submissions/:submissionId/draft', methods: ['get'] },
+        { path: '/api/submissions/:submissionId/draft/versions', methods: ['get'] },
+        { path: '/api/submissions/:submissionId/draft/versions/:versionId', methods: ['get'] },
+        { path: '/api/submissions/:submissionId/draft/versions/:versionId/restore', methods: ['post'] },
+        { path: '/api/submissions/:submissionId/draft/retention/prune', methods: ['post'] }
       ])
     );
   });
@@ -182,6 +188,11 @@ describe('app bootstrap', () => {
     expect(submitPaperAsAuthor.text).toContain('data-submit-paper-role-form');
     expect(submitPaperAsAuthor.text).toContain('data-submit-paper-role-select');
     expect(submitPaperAsAuthor.text).toContain('data-submit-paper-role-submit');
+    expect(submitPaperAsAuthor.text).toContain('data-submit-paper-draft');
+    expect(submitPaperAsAuthor.text).toContain('data-draft-save');
+    expect(submitPaperAsAuthor.text).toContain('data-draft-load');
+    expect(submitPaperAsAuthor.text).toContain('data-draft-history-refresh');
+    expect(submitPaperAsAuthor.text).toContain('data-draft-history-list');
 
     const logoutResponse = await invokeHandler(logoutHandler, {
       headers: {

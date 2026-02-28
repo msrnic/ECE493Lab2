@@ -2,6 +2,11 @@ function toStringValue(value) {
   return String(value ?? '');
 }
 
+function toPositiveNumber(value) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 0;
+}
+
 export function readSubmissionFormValues(form) {
   if (!form) {
     return {
@@ -96,4 +101,60 @@ export function hydrateSubmissionForm(form, metadata = {}) {
   if (keywords) {
     keywords.value = Array.isArray(metadata.keywords) ? metadata.keywords.join(', ') : '';
   }
+}
+
+export function hydrateSubmissionFileInput(form, files = []) {
+  if (!form) {
+    return;
+  }
+
+  const manuscript = form.querySelector('[name="manuscript"]');
+  if (!manuscript) {
+    return;
+  }
+
+  const descriptors = Array.isArray(files) ? files : [];
+  const restoredFiles = descriptors
+    .map((fileDescriptor) => {
+      const fileName = toStringValue(fileDescriptor?.fileName).trim();
+      if (!fileName) {
+        return null;
+      }
+
+      const mimeType = toStringValue(fileDescriptor?.mimeType).trim() || 'application/octet-stream';
+      const restoredSizeBytes = toPositiveNumber(fileDescriptor?.sizeBytes);
+      const restoredFile = new File([new Uint8Array(0)], fileName, {
+        type: mimeType,
+        lastModified: Date.now()
+      });
+
+      Object.defineProperty(restoredFile, 'draftSizeBytes', {
+        value: restoredSizeBytes,
+        configurable: true
+      });
+      Object.defineProperty(restoredFile, 'draftChecksum', {
+        value: toStringValue(fileDescriptor?.checksum).trim(),
+        configurable: true
+      });
+      Object.defineProperty(restoredFile, 'draftStorageKey', {
+        value: toStringValue(fileDescriptor?.storageKey).trim(),
+        configurable: true
+      });
+
+      return restoredFile;
+    })
+    .filter(Boolean);
+
+  Object.defineProperty(manuscript, 'files', {
+    value: restoredFiles,
+    configurable: true
+  });
+
+  if (restoredFiles.length === 0) {
+    manuscript.value = '';
+    delete manuscript.dataset.restoredFileNames;
+    return;
+  }
+
+  manuscript.dataset.restoredFileNames = restoredFiles.map((file) => file.name).join(', ');
 }

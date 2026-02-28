@@ -65,3 +65,53 @@
 .submit-paper-status[data-status='warning'] {
   color: #9a3412;
 }
+
+.submit-paper-draft {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border: 1px solid #d0d7de;
+  border-radius: 0.5rem;
+  background: #f8fafc;
+}
+
+.submit-paper-draft-hint {
+  margin-top: 0;
+  color: #4b5563;
+}
+
+.submit-paper-draft-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.submit-paper-draft-status[data-status='success'] {
+  color: #067647;
+}
+
+.submit-paper-draft-status[data-status='error'] {
+  color: #b42318;
+}
+
+.submit-paper-draft-status[data-status='warning'] {
+  color: #9a3412;
+}
+
+.submit-paper-draft-history {
+  display: grid;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.submit-paper-draft-history li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.4rem;
+  padding: 0.5rem;
+  background: #ffffff;
+}

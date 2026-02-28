@@ -140,6 +140,11 @@ describe('UC-04-AS acceptance suite', () => {
     expect(submitPage.text).toContain('data-submit-paper-role-form');
     expect(submitPage.text).toContain('data-submit-paper-role-select');
     expect(submitPage.text).toContain('data-submit-paper-role-submit');
+    expect(submitPage.text).toContain('data-submit-paper-draft');
+    expect(submitPage.text).toContain('data-draft-save');
+    expect(submitPage.text).toContain('data-draft-load');
+    expect(submitPage.text).toContain('data-draft-history-refresh');
+    expect(submitPage.text).toContain('data-draft-history-list');
   });
 
   it('Given the author is logged in When all required metadata and files are submitted Then the paper is stored and marked as submitted', async () => {
