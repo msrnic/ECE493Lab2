@@ -7,7 +7,15 @@ export default [
       'coverage/',
       'database/',
       'uploads/',
-      '*.min.js'
+      '*.min.js',
+      '*.log',
+      '.env*',
+      '.DS_Store',
+      'Thumbs.db',
+      '*.tmp',
+      '*.swp',
+      '.vscode/',
+      '.idea/'
     ]
   },
   {

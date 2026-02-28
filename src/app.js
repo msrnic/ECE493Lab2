@@ -47,10 +47,16 @@ import { createAccessRecordsController } from './controllers/access-records.cont
 import { createOutageRetryController } from './controllers/outage-retry.controller.js';
 import { createPaperFileRequestController } from './controllers/paper-file-request.controller.js';
 import { createReviewerPaperAccessController } from './controllers/reviewer-paper-access.controller.js';
+import { createReviewSubmissionController } from './controllers/review-submission-controller.js';
 import { createOutageRetryWindowModel } from './models/outage-retry-window.model.js';
 import { renderAccessRecordsView } from './views/access-records.view.js';
 import { renderDashboardPage } from './views/dashboard-view.js';
 import { renderLoginPage } from './views/login-view.js';
+import { createReviewSubmissionModel } from './models/review-submission-model.js';
+import { createReviewRecordModel } from './models/review-record-model.js';
+import { createValidationFeedbackModel } from './models/validation-feedback-model.js';
+import { createReviewerPaperAssignmentModel } from './models/reviewer-paper-assignment-model.js';
+import { registerReviewSubmissionRoutes } from './api/review-submission-routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const __filename = fileURLToPath(import.meta.url);
@@ -313,6 +319,14 @@ export function createApp({
     nowFn,
     outageRetryWindowModel
   });
+  const reviewSubmissionModel = createReviewSubmissionModel();
+  const reviewRecordModel = createReviewRecordModel({
+    nowFn
+  });
+  const validationFeedbackModel = createValidationFeedbackModel({
+    nowFn
+  });
+  const reviewerPaperAssignmentModel = createReviewerPaperAssignmentModel();
   const invitationController = createInvitationController({
     invitationModel,
     sendInvitation: sendInvitationFn,
@@ -321,6 +335,12 @@ export function createApp({
         entitlementId: invitation.id,
         reviewerId: invitation.reviewerId,
         paperId: invitation.paperId
+      });
+      reviewerPaperAssignmentModel.upsertAssignment({
+        assignmentId: invitation.reviewerAssignmentId,
+        reviewerId: invitation.reviewerId,
+        paperId: invitation.paperId,
+        accessState: 'ACTIVE'
       });
     },
     onInvitationDeclined: async () => {}
@@ -345,6 +365,12 @@ export function createApp({
   });
   const accessRecordsController = createAccessRecordsController({
     paperAccessApiService
+  });
+  const reviewSubmissionController = createReviewSubmissionController({
+    reviewSubmissionModel,
+    reviewRecordModel,
+    validationFeedbackModel,
+    reviewerPaperAssignmentModel
   });
 
   app.use(express.json());
@@ -591,6 +617,11 @@ export function createApp({
   app.post('/api/reviewer-assignments/:assignmentId/invitations/cancel', invitationController.cancelByAssignment);
   app.post('/api/internal/review-invitations/retry-due', invitationController.retryDue);
   app.get('/api/papers/:paperId/invitation-failure-logs', invitationController.listFailureLogsByPaper);
+  registerReviewSubmissionRoutes({
+    app,
+    reviewSubmissionController,
+    requireReviewerSession
+  });
   app.get('/api/reviewer/invitations', requireReviewerSession, invitationController.listReviewerInbox);
   app.post('/api/reviewer/invitations/:invitationId/accept', requireReviewerSession, invitationController.acceptReviewerInvitation);
   app.post('/api/reviewer/invitations/:invitationId/decline', requireReviewerSession, invitationController.declineReviewerInvitation);
@@ -641,6 +672,11 @@ export function createApp({
   app.locals.paperFileRequestController = paperFileRequestController;
   app.locals.reviewerPaperAccessController = reviewerPaperAccessController;
   app.locals.accessRecordsController = accessRecordsController;
+  app.locals.reviewSubmissionModel = reviewSubmissionModel;
+  app.locals.reviewRecordModel = reviewRecordModel;
+  app.locals.validationFeedbackModel = validationFeedbackModel;
+  app.locals.reviewerPaperAssignmentModel = reviewerPaperAssignmentModel;
+  app.locals.reviewSubmissionController = reviewSubmissionController;
 
   return app;
 }

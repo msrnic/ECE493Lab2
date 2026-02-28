@@ -55,3 +55,18 @@ Validation expectations:
 3. Fill missing fields and resubmit; confirm review becomes `COMPLETED`.
 4. Attempt a second submit for same assignment; confirm conflict rejection and no record mutation.
 5. Trigger two concurrent valid submits; confirm exactly one succeeds.
+
+## 6. Implementation Verification Notes (2026-02-28)
+
+Validation run from `/home/m_srnic/ece493/lab2/ECE493Lab2`:
+
+```bash
+npm run lint
+npx vitest run tests/acceptance/uc-09-submit-review.acceptance.test.js
+npm run test:coverage:c8
+```
+
+Evidence artifacts produced:
+
+- `/home/m_srnic/ece493/lab2/ECE493Lab2/tests/acceptance/uc-09-final-regression.log`
+- `/home/m_srnic/ece493/lab2/ECE493Lab2/coverage/coverage-summary.json`
