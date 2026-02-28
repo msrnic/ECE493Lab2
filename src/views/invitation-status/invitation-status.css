@@ -1,0 +1,32 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(180deg, #f7fbff 0%, #eef4ff 100%);
+  color: #1c2430;
+}
+
+.invitation-status {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border: 1px solid #d7e1f3;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(28, 36, 48, 0.08);
+}
+
+.meta,
+.status-row {
+  margin: 0.6rem 0;
+  line-height: 1.4;
+}
+
+.error {
+  margin-top: 1rem;
+  color: #a30000;
+  font-weight: 600;
+}

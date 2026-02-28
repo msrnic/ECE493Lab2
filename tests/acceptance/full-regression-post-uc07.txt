@@ -1,0 +1,16 @@
+
+ RUN  v3.2.4 /home/m_srnic/ece493/lab2/ECE493Lab2
+
+ ✓ tests/acceptance/uc-01-registration.acceptance.test.js (7 tests) 41ms
+ ✓ tests/acceptance/uc-04-submission.acceptance.test.js (4 tests) 63ms
+ ✓ tests/acceptance/uc06-assign-reviewers.acceptance.test.js (5 tests) 72ms
+ ✓ tests/acceptance/uc03-change-password.acceptance.test.js (6 tests) 78ms
+ ✓ tests/acceptance/uc-02-login.acceptance.test.js (8 tests) 84ms
+ ✓ tests/acceptance/uc-05-draft-history.acceptance.test.js (6 tests) 186ms
+ ✓ tests/acceptance/uc-05-draft-save.acceptance.test.js (8 tests) 169ms
+
+ Test Files  7 passed (7)
+      Tests  44 passed (44)
+   Start at  22:36:43
+   Duration  1.35s (transform 480ms, setup 0ms, collect 4.44s, tests 693ms, environment 2ms, prepare 818ms)
+

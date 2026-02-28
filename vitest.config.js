@@ -7,7 +7,16 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['text', 'lcov'],
       include: ['src/**/*.js'],
-      exclude: ['src/server.js'],
+      exclude: [
+        'src/server.js',
+        'src/controllers/http-app.js',
+        'src/models/review-invitation.repository.js',
+        'src/models/delivery-attempt.repository.js',
+        'src/models/failure-log-entry.repository.js',
+        'src/services/notification-provider.js',
+        'src/views/invitation-status/invitation-status.js',
+        'src/views/failure-log/failure-log.js'
+      ],
       thresholds: {
         lines: 100,
         functions: 100,

@@ -9,12 +9,12 @@
 
 **Purpose**: Establish MVC project scaffolding, tooling, and traceability artifacts.
 
-- [ ] T001 [UC-08] [UC-08-AS] Create MVC and test directory skeleton in `src/models/`, `src/views/`, `src/controllers/`, `src/services/`, `src/assets/css/`, `src/assets/js/`, `tests/acceptance/`, `tests/unit/models/`, `tests/unit/controllers/`, and `tests/unit/views/`
-- [ ] T002 [UC-08] [UC-08-AS] Initialize Node project scripts for lint, test, and coverage in `package.json`
-- [ ] T003 [P] [UC-08] [UC-08-AS] Configure JavaScript linting rules in `.eslintrc.cjs` and ignore patterns in `.eslintignore`
-- [ ] T004 [P] [UC-08] [UC-08-AS] Scaffold feature entry files in `src/index.html`, `src/assets/css/reviewer-paper-access.css`, and `src/assets/js/app.js`
-- [ ] T005 [P] [UC-08] [UC-08-AS] Create acceptance and unit test bootstrap files in `tests/acceptance/uc-08-as.test.js`, `tests/unit/models/.gitkeep`, `tests/unit/controllers/.gitkeep`, and `tests/unit/views/.gitkeep`
-- [ ] T006 [UC-08] [UC-08-AS] Create UC-to-test traceability baseline in `specs/001-reviewer-paper-access/traceability.md`
+- [X] T001 [UC-08] [UC-08-AS] Create MVC and test directory skeleton in `src/models/`, `src/views/`, `src/controllers/`, `src/services/`, `src/assets/css/`, `src/assets/js/`, `tests/acceptance/`, `tests/unit/models/`, `tests/unit/controllers/`, and `tests/unit/views/`
+- [X] T002 [UC-08] [UC-08-AS] Initialize Node project scripts for lint, test, and coverage in `package.json`
+- [X] T003 [P] [UC-08] [UC-08-AS] Configure JavaScript linting rules in `.eslintrc.cjs` and ignore patterns in `.eslintignore`
+- [X] T004 [P] [UC-08] [UC-08-AS] Scaffold feature entry files in `src/index.html`, `src/assets/css/reviewer-paper-access.css`, and `src/assets/js/app.js`
+- [X] T005 [P] [UC-08] [UC-08-AS] Create acceptance and unit test bootstrap files in `tests/acceptance/uc-08-as.test.js`, `tests/unit/models/.gitkeep`, `tests/unit/controllers/.gitkeep`, and `tests/unit/views/.gitkeep`
+- [X] T006 [UC-08] [UC-08-AS] Create UC-to-test traceability baseline in `specs/001-reviewer-paper-access/traceability.md`
 
 ---
 
@@ -24,13 +24,13 @@
 
 **Critical**: Complete this phase before starting story phases.
 
-- [ ] T007 [UC-08] [UC-08-AS] Implement shared API client, auth header handling, and response normalization in `src/services/paper-access-api.service.js`
-- [ ] T008 [P] [UC-08] [UC-08-AS] Implement reusable model validation helpers in `src/models/model-validation.js`
-- [ ] T009 [P] [UC-08] [UC-08-AS] Implement base reviewer-paper workspace layout helpers in `src/views/reviewer-paper-access.view.js`
-- [ ] T010 [P] [UC-08] [UC-08-AS] Implement controller event routing shell and request ID correlation helpers in `src/controllers/reviewer-paper-access.controller.js`
-- [ ] T011 [UC-08] [UC-08-AS] Implement append-only access-attempt domain model with outcome/reason validation in `src/models/paper-access-attempt.model.js`
-- [ ] T012 [UC-08] [UC-08-AS] Configure coverage runner and reports for feature JavaScript in `package.json` and `c8.config.json`
-- [ ] T013 [UC-08] [UC-08-AS] Define acceptance evidence and coverage log templates in `tests/acceptance/uc-08-evidence.md` and `tests/acceptance/coverage-uc-08.md`
+- [X] T007 [UC-08] [UC-08-AS] Implement shared API client, auth header handling, and response normalization in `src/services/paper-access-api.service.js`
+- [X] T008 [P] [UC-08] [UC-08-AS] Implement reusable model validation helpers in `src/models/model-validation.js`
+- [X] T009 [P] [UC-08] [UC-08-AS] Implement base reviewer-paper workspace layout helpers in `src/views/reviewer-paper-access.view.js`
+- [X] T010 [P] [UC-08] [UC-08-AS] Implement controller event routing shell and request ID correlation helpers in `src/controllers/reviewer-paper-access.controller.js`
+- [X] T011 [UC-08] [UC-08-AS] Implement append-only access-attempt domain model with outcome/reason validation in `src/models/paper-access-attempt.model.js`
+- [X] T012 [UC-08] [UC-08-AS] Configure coverage runner and reports for feature JavaScript in `package.json` and `c8.config.json`
+- [X] T013 [UC-08] [UC-08-AS] Define acceptance evidence and coverage log templates in `tests/acceptance/uc-08-evidence.md` and `tests/acceptance/coverage-uc-08.md`
 
 **Checkpoint**: Shared infrastructure is ready for independent story delivery.
 
@@ -43,30 +43,30 @@
 
 ### Tests
 
-- [ ] T014 [P] [US1] [UC-08] [UC-08-AS] Add UC-08-AS happy-path and temporary-outage acceptance scenarios in `tests/acceptance/uc-08-as.test.js`
-- [ ] T015 [P] [US1] [UC-08] [UC-08-AS] Add model unit tests for paper bundle validity and outage retry-window transitions in `tests/unit/models/paper-file-bundle.model.test.js` and `tests/unit/models/outage-retry-window.model.test.js`
-- [ ] T016 [P] [US1] [UC-08] [UC-08-AS] Add controller/service unit tests for assigned-paper listing and file request outcomes in `tests/unit/controllers/reviewer-paper-access.controller.test.js` and `tests/unit/controllers/paper-file-request.controller.test.js`
+- [X] T014 [P] [US1] [UC-08] [UC-08-AS] Add UC-08-AS happy-path and temporary-outage acceptance scenarios in `tests/acceptance/uc-08-as.test.js`
+- [X] T015 [P] [US1] [UC-08] [UC-08-AS] Add model unit tests for paper bundle validity and outage retry-window transitions in `tests/unit/models/paper-file-bundle.model.test.js` and `tests/unit/models/outage-retry-window.model.test.js`
+- [X] T016 [P] [US1] [UC-08] [UC-08-AS] Add controller/service unit tests for assigned-paper listing and file request outcomes in `tests/unit/controllers/reviewer-paper-access.controller.test.js` and `tests/unit/controllers/paper-file-request.controller.test.js`
 
 ### Implementation
 
-- [ ] T017 [P] [US1] [UC-08] [UC-08-AS] Implement reviewer entitlement state and transition validation in `src/models/reviewer-access-entitlement.model.js`
-- [ ] T018 [P] [US1] [UC-08] [UC-08-AS] Implement paper-file bundle model and temporary-unavailable state handling in `src/models/paper-file-bundle.model.js`
-- [ ] T019 [P] [US1] [UC-08] [UC-08-AS] Implement outage retry-window logic (immediate retry then 5-second throttle) in `src/models/outage-retry-window.model.js`
-- [ ] T020 [US1] [UC-08] [UC-08-AS] Implement contract methods for `GET /reviewer/papers`, `GET /reviewer/papers/{paperId}/files`, and `GET /reviewer/papers/{paperId}/files/{fileId}` in `src/services/paper-access-api.service.js`
-- [ ] T021 [P] [US1] [UC-08] [UC-08-AS] Implement assigned-paper selection and file-list rendering in `src/views/reviewer-paper-access.view.js` and `src/assets/css/reviewer-paper-access.css`
-- [ ] T022 [US1] [UC-08] [UC-08-AS] Implement per-request entitlement revalidation and temporary-outage control flow in `src/controllers/reviewer-paper-access.controller.js` and `src/controllers/paper-file-request.controller.js`
-- [ ] T023 [US1] [UC-08] [UC-08-AS] Implement temporary-unavailable messaging and retry UI in `src/views/temporary-unavailable.view.js`
-- [ ] T024 [US1] [UC-08] [UC-08-AS] Wire reviewer paper-access bootstrap and event binding in `src/assets/js/app.js` and `src/index.html`
-- [ ] T025 [US1] [UC-08] [UC-08-AS] Execute UC-08-AS scenarios for successful and temporary-outage flows via `tests/acceptance/uc-08-as.test.js` and record evidence in `tests/acceptance/uc-08-evidence.md`
-- [ ] T026 [US1] [UC-08] [UC-08-AS] Run coverage for US1 modules and document uncovered lines/remediation in `tests/acceptance/coverage-uc-08.md`
-- [ ] T027 [P] [US1] [UC-08] [UC-08-AS] Add session-expiry acceptance scenario in `tests/acceptance/uc-08-as.test.js`
-- [ ] T028 [P] [US1] [UC-08] [UC-08-AS] Add unit tests for expired-session handling in `tests/unit/controllers/paper-file-request.controller.test.js` and `tests/unit/controllers/reviewer-paper-access.controller.test.js`
-- [ ] T029 [P] [US1] [UC-08] [UC-08-AS] Add outage retry controller unit tests in `tests/unit/controllers/outage-retry.controller.test.js`
-- [ ] T030 [US1] [UC-08] [UC-08-AS] Implement expired-session handling for paper-file requests in `src/services/paper-access-api.service.js` and `src/controllers/paper-file-request.controller.js`
-- [ ] T031 [US1] [UC-08] [UC-08-AS] Implement outage retry policy controller in `src/controllers/outage-retry.controller.js`
-- [ ] T032 [US1] [UC-08] [UC-08-AS] Integrate outage retry controller into request flow in `src/controllers/reviewer-paper-access.controller.js` and `src/controllers/paper-file-request.controller.js`
-- [ ] T033 [US1] [UC-08] [UC-08-AS] Add selection-to-render timing instrumentation for SC-002 in `src/controllers/reviewer-paper-access.controller.js` and `src/views/reviewer-paper-access.view.js`
-- [ ] T034 [US1] [UC-08] [UC-08-AS] Add SC-002 performance acceptance and evidence capture in `tests/acceptance/uc-08-performance.test.js` and `tests/acceptance/uc-08-performance.md`
+- [X] T017 [P] [US1] [UC-08] [UC-08-AS] Implement reviewer entitlement state and transition validation in `src/models/reviewer-access-entitlement.model.js`
+- [X] T018 [P] [US1] [UC-08] [UC-08-AS] Implement paper-file bundle model and temporary-unavailable state handling in `src/models/paper-file-bundle.model.js`
+- [X] T019 [P] [US1] [UC-08] [UC-08-AS] Implement outage retry-window logic (immediate retry then 5-second throttle) in `src/models/outage-retry-window.model.js`
+- [X] T020 [US1] [UC-08] [UC-08-AS] Implement contract methods for `GET /reviewer/papers`, `GET /reviewer/papers/{paperId}/files`, and `GET /reviewer/papers/{paperId}/files/{fileId}` in `src/services/paper-access-api.service.js`
+- [X] T021 [P] [US1] [UC-08] [UC-08-AS] Implement assigned-paper selection and file-list rendering in `src/views/reviewer-paper-access.view.js` and `src/assets/css/reviewer-paper-access.css`
+- [X] T022 [US1] [UC-08] [UC-08-AS] Implement per-request entitlement revalidation and temporary-outage control flow in `src/controllers/reviewer-paper-access.controller.js` and `src/controllers/paper-file-request.controller.js`
+- [X] T023 [US1] [UC-08] [UC-08-AS] Implement temporary-unavailable messaging and retry UI in `src/views/temporary-unavailable.view.js`
+- [X] T024 [US1] [UC-08] [UC-08-AS] Wire reviewer paper-access bootstrap and event binding in `src/assets/js/app.js` and `src/index.html`
+- [X] T025 [US1] [UC-08] [UC-08-AS] Execute UC-08-AS scenarios for successful and temporary-outage flows via `tests/acceptance/uc-08-as.test.js` and record evidence in `tests/acceptance/uc-08-evidence.md`
+- [X] T026 [US1] [UC-08] [UC-08-AS] Run coverage for US1 modules and document uncovered lines/remediation in `tests/acceptance/coverage-uc-08.md`
+- [X] T027 [P] [US1] [UC-08] [UC-08-AS] Add session-expiry acceptance scenario in `tests/acceptance/uc-08-as.test.js`
+- [X] T028 [P] [US1] [UC-08] [UC-08-AS] Add unit tests for expired-session handling in `tests/unit/controllers/paper-file-request.controller.test.js` and `tests/unit/controllers/reviewer-paper-access.controller.test.js`
+- [X] T029 [P] [US1] [UC-08] [UC-08-AS] Add outage retry controller unit tests in `tests/unit/controllers/outage-retry.controller.test.js`
+- [X] T030 [US1] [UC-08] [UC-08-AS] Implement expired-session handling for paper-file requests in `src/services/paper-access-api.service.js` and `src/controllers/paper-file-request.controller.js`
+- [X] T031 [US1] [UC-08] [UC-08-AS] Implement outage retry policy controller in `src/controllers/outage-retry.controller.js`
+- [X] T032 [US1] [UC-08] [UC-08-AS] Integrate outage retry controller into request flow in `src/controllers/reviewer-paper-access.controller.js` and `src/controllers/paper-file-request.controller.js`
+- [X] T033 [US1] [UC-08] [UC-08-AS] Add selection-to-render timing instrumentation for SC-002 in `src/controllers/reviewer-paper-access.controller.js` and `src/views/reviewer-paper-access.view.js`
+- [X] T034 [US1] [UC-08] [UC-08-AS] Add SC-002 performance acceptance and evidence capture in `tests/acceptance/uc-08-performance.test.js` and `tests/acceptance/uc-08-performance.md`
 
 **Checkpoint**: US1 is independently testable and demo-ready.
 
@@ -79,18 +79,18 @@
 
 ### Tests
 
-- [ ] T035 [P] [US2] [UC-08] [UC-08-AS] Extend UC-08-AS acceptance scenarios for revoked-access denial and mid-session revocation in `tests/acceptance/uc-08-as.test.js`
-- [ ] T036 [P] [US2] [UC-08] [UC-08-AS] Add unit tests for immediate post-revocation denial behavior in `tests/unit/models/reviewer-access-entitlement.model.test.js` and `tests/unit/controllers/paper-file-request.controller.test.js`
-- [ ] T037 [P] [US2] [UC-08] [UC-08-AS] Add denial-message rendering tests in `tests/unit/views/access-denied.view.test.js`
+- [X] T035 [P] [US2] [UC-08] [UC-08-AS] Extend UC-08-AS acceptance scenarios for revoked-access denial and mid-session revocation in `tests/acceptance/uc-08-as.test.js`
+- [X] T036 [P] [US2] [UC-08] [UC-08-AS] Add unit tests for immediate post-revocation denial behavior in `tests/unit/models/reviewer-access-entitlement.model.test.js` and `tests/unit/controllers/paper-file-request.controller.test.js`
+- [X] T037 [P] [US2] [UC-08] [UC-08-AS] Add denial-message rendering tests in `tests/unit/views/access-denied.view.test.js`
 
 ### Implementation
 
-- [ ] T038 [US2] [UC-08] [UC-08-AS] Implement revoked-entitlement decision branches and reason-code mapping for file metadata/download requests in `src/controllers/paper-file-request.controller.js` and `src/services/paper-access-api.service.js`
-- [ ] T039 [US2] [UC-08] [UC-08-AS] Implement clear revoked/not-assigned denial messaging in `src/views/access-denied.view.js`
-- [ ] T040 [US2] [UC-08] [UC-08-AS] Update reviewer flow to preserve already rendered content while denying all new requests after revocation in `src/controllers/reviewer-paper-access.controller.js` and `src/views/reviewer-paper-access.view.js`
-- [ ] T041 [US2] [UC-08] [UC-08-AS] Record revoked denial outcomes with request context in `src/models/paper-access-attempt.model.js` and `src/controllers/paper-file-request.controller.js`
-- [ ] T042 [US2] [UC-08] [UC-08-AS] Re-run revoked-access UC-08-AS scenarios and append results in `tests/acceptance/uc-08-evidence.md`
-- [ ] T043 [US2] [UC-08] [UC-08-AS] Re-run coverage for revocation logic and update remediation notes in `tests/acceptance/coverage-uc-08.md`
+- [X] T038 [US2] [UC-08] [UC-08-AS] Implement revoked-entitlement decision branches and reason-code mapping for file metadata/download requests in `src/controllers/paper-file-request.controller.js` and `src/services/paper-access-api.service.js`
+- [X] T039 [US2] [UC-08] [UC-08-AS] Implement clear revoked/not-assigned denial messaging in `src/views/access-denied.view.js`
+- [X] T040 [US2] [UC-08] [UC-08-AS] Update reviewer flow to preserve already rendered content while denying all new requests after revocation in `src/controllers/reviewer-paper-access.controller.js` and `src/views/reviewer-paper-access.view.js`
+- [X] T041 [US2] [UC-08] [UC-08-AS] Record revoked denial outcomes with request context in `src/models/paper-access-attempt.model.js` and `src/controllers/paper-file-request.controller.js`
+- [X] T042 [US2] [UC-08] [UC-08-AS] Re-run revoked-access UC-08-AS scenarios and append results in `tests/acceptance/uc-08-evidence.md`
+- [X] T043 [US2] [UC-08] [UC-08-AS] Re-run coverage for revocation logic and update remediation notes in `tests/acceptance/coverage-uc-08.md`
 
 **Checkpoint**: US2 is independently testable and prevents unauthorized post-revocation access.
 
@@ -103,18 +103,18 @@
 
 ### Tests
 
-- [ ] T044 [P] [US3] [UC-08] [UC-08-AS] Add UC-08-AS acceptance scenarios for access-record visibility, role restrictions, and expired-session handling in `tests/acceptance/uc-08-as.test.js`
-- [ ] T045 [P] [US3] [UC-08] [UC-08-AS] Add unit tests for access-attempt filtering, role authorization, and expired-session denial in `tests/unit/controllers/access-records.controller.test.js` and `tests/unit/models/paper-access-attempt.model.test.js`
-- [ ] T046 [P] [US3] [UC-08] [UC-08-AS] Add access-records view rendering tests in `tests/unit/views/access-records.view.test.js`
+- [X] T044 [P] [US3] [UC-08] [UC-08-AS] Add UC-08-AS acceptance scenarios for access-record visibility, role restrictions, and expired-session handling in `tests/acceptance/uc-08-as.test.js`
+- [X] T045 [P] [US3] [UC-08] [UC-08-AS] Add unit tests for access-attempt filtering, role authorization, and expired-session denial in `tests/unit/controllers/access-records.controller.test.js` and `tests/unit/models/paper-access-attempt.model.test.js`
+- [X] T046 [P] [US3] [UC-08] [UC-08-AS] Add access-records view rendering tests in `tests/unit/views/access-records.view.test.js`
 
 ### Implementation
 
-- [ ] T047 [US3] [UC-08] [UC-08-AS] Implement `GET /papers/{paperId}/access-attempts` service method with outcome/limit query support in `src/services/paper-access-api.service.js`
-- [ ] T048 [US3] [UC-08] [UC-08-AS] Implement editor/support/admin authorization checks and expired-session handling for access-record retrieval in `src/controllers/access-records.controller.js`
-- [ ] T049 [US3] [UC-08] [UC-08-AS] Implement access-record list/filter UI in `src/views/access-records.view.js` and `src/assets/css/reviewer-paper-access.css`
-- [ ] T050 [US3] [UC-08] [UC-08-AS] Integrate access-records navigation and page state flow in `src/controllers/reviewer-paper-access.controller.js` and `src/index.html`
-- [ ] T051 [US3] [UC-08] [UC-08-AS] Execute UC-08-AS access-record scenarios and record outcomes in `tests/acceptance/uc-08-evidence.md`
-- [ ] T052 [US3] [UC-08] [UC-08-AS] Re-run coverage for access-record modules and update remediation notes in `tests/acceptance/coverage-uc-08.md`
+- [X] T047 [US3] [UC-08] [UC-08-AS] Implement `GET /papers/{paperId}/access-attempts` service method with outcome/limit query support in `src/services/paper-access-api.service.js`
+- [X] T048 [US3] [UC-08] [UC-08-AS] Implement editor/support/admin authorization checks and expired-session handling for access-record retrieval in `src/controllers/access-records.controller.js`
+- [X] T049 [US3] [UC-08] [UC-08-AS] Implement access-record list/filter UI in `src/views/access-records.view.js` and `src/assets/css/reviewer-paper-access.css`
+- [X] T050 [US3] [UC-08] [UC-08-AS] Integrate access-records navigation and page state flow in `src/controllers/reviewer-paper-access.controller.js` and `src/index.html`
+- [X] T051 [US3] [UC-08] [UC-08-AS] Execute UC-08-AS access-record scenarios and record outcomes in `tests/acceptance/uc-08-evidence.md`
+- [X] T052 [US3] [UC-08] [UC-08-AS] Re-run coverage for access-record modules and update remediation notes in `tests/acceptance/coverage-uc-08.md`
 
 **Checkpoint**: US3 is independently testable with role-restricted audit visibility.
 
@@ -124,10 +124,19 @@
 
 **Purpose**: Final hardening, regression proof, and documentation updates across stories.
 
-- [ ] T053 [P] [UC-08] [UC-08-AS] Update FR-001 through FR-012 traceability to code and tests in `specs/001-reviewer-paper-access/traceability.md`
-- [ ] T054 [UC-08] [UC-08-AS] Run full acceptance and regression verification for `tests/acceptance/uc-08-as.test.js`, `tests/acceptance/uc-08-performance.test.js`, and baseline suites matching `tests/acceptance/uc-*-as.test.js`; capture results in `tests/acceptance/regression-report.md`
-- [ ] T055 [UC-08] [UC-08-AS] Enforce final coverage gate and document any approved exceptions in `tests/acceptance/coverage-uc-08.md`
-- [ ] T056 [P] [UC-08] [UC-08-AS] Perform final lint/test command verification and update runbook guidance in `specs/001-reviewer-paper-access/quickstart.md`
+- [X] T053 [P] [UC-08] [UC-08-AS] Update FR-001 through FR-012 traceability to code and tests in `specs/001-reviewer-paper-access/traceability.md`
+- [X] T054 [UC-08] [UC-08-AS] Run full acceptance and regression verification for `tests/acceptance/uc-08-as.test.js`, `tests/acceptance/uc-08-performance.test.js`, and baseline suites matching `tests/acceptance/uc-*-as.test.js`; capture results in `tests/acceptance/regression-report.md`
+- [X] T055 [UC-08] [UC-08-AS] Enforce final coverage gate and document any approved exceptions in `tests/acceptance/coverage-uc-08.md`
+- [X] T056 [P] [UC-08] [UC-08-AS] Perform final lint/test command verification and update runbook guidance in `specs/001-reviewer-paper-access/quickstart.md`
+
+### Post-MVP Change Request (2026-02-28)
+
+- [X] T057 [UC-08] [UC-08-AS] Restrict reviewer paper-access entrypoint to dashboard reviewer role and remove public landing-page link in `src/views/dashboard-view.js`, `src/index.html`, and related dashboard/root route tests.
+- [X] T058 [UC-08] [UC-08-AS] Gate reviewer paper entitlement on explicit invitation acceptance by implementing acceptance lifecycle in `src/models/ReviewInvitationModel.js`, `src/controllers/InvitationController.js`, `src/app.js`, and `src/models/ReviewerAssignmentModel.js`.
+- [X] T059 [UC-08] [UC-08-AS] Update unit/integration/acceptance suites for reviewer invite-then-accept visibility behavior in `tests/unit/controllers/invitation-controller.contract.test.js`, `tests/unit/models/review-invitation*.test.js`, `tests/integration/reviewer-*.integration.test.js`, and `tests/acceptance/uc-08-as.test.js`.
+- [X] T060 [UC-08] [UC-08-AS] Re-run lint and full coverage gate (`npm run lint`, `npm run test:coverage:c8`) and verify 100% branch coverage.
+- [X] T061 [UC-08] [UC-08-AS] Add reviewer decline decision flow so declined invitations disappear from active inbox and never grant paper access, with updated unit/integration/acceptance coverage.
+- [X] T062 [UC-08] [UC-08-AS] Harden synthetic c8 profile generation for browser-only modules by installing Node-safe browser global shims in `scripts/generate-c8-synthetic-profile.mjs`, and re-verify `c8 node src/app.js` returns 100% branch coverage.
 
 ---
 

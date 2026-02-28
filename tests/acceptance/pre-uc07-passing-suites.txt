@@ -1,0 +1,7 @@
+tests/acceptance/uc-01-registration.acceptance.test.js
+tests/acceptance/uc-02-login.acceptance.test.js
+tests/acceptance/uc03-change-password.acceptance.test.js
+tests/acceptance/uc-04-submission.acceptance.test.js
+tests/acceptance/uc-05-draft-save.acceptance.test.js
+tests/acceptance/uc-05-draft-history.acceptance.test.js
+tests/acceptance/uc06-assign-reviewers.acceptance.test.js

@@ -34,7 +34,7 @@ export function resolveRoleUpdateMessage(roleUpdated) {
   }
 
   if (roleUpdated === 'reviewer_required') {
-    return 'Only reviewer accounts can access invitation inbox. Change your role to reviewer.';
+    return 'Only reviewer accounts can access reviewer workflows. Change your role to reviewer.';
   }
 
   return '';
@@ -64,6 +64,9 @@ export function renderDashboardPage({ email, role = 'author', roleUpdated } = {}
   const reviewerInboxSection = normalizedRole === 'reviewer'
     ? '<p><a href="/reviewer/invitations" data-dashboard-reviewer-inbox>Review invitation inbox</a></p>'
     : '<p data-dashboard-reviewer-inbox-disabled>Switch your role to reviewer to open invitation inbox.</p>';
+  const reviewerPaperAccessSection = normalizedRole === 'reviewer'
+    ? '<p><a href="/reviewer/papers" data-dashboard-reviewer-paper-access>Open assigned paper files</a></p>'
+    : '';
 
   return `<!doctype html>
 <html lang="en">
@@ -90,6 +93,7 @@ export function renderDashboardPage({ email, role = 'author', roleUpdated } = {}
       ${submitSection}
       ${assignmentSection}
       ${reviewerInboxSection}
+      ${reviewerPaperAccessSection}
       <p><a href="/account/password-change">Change password</a></p>
       <form method="post" action="/logout">
         <button type="submit" data-dashboard-logout>Log Out</button>

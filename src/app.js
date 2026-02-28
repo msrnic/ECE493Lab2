@@ -40,8 +40,15 @@ import { createFileRepository } from './repositories/file-repository.js';
 import { createSessionStateRepository } from './repositories/session-state-repository.js';
 import { createSubmissionRepository } from './repositories/submission-repository.js';
 import { createAuthRoutes } from './routes/auth-routes.js';
+import { createPaperAccessApiService } from './services/paper-access-api.service.js';
 import { createScanService } from './services/scan-service.js';
 import { createStorageService } from './services/storage-service.js';
+import { createAccessRecordsController } from './controllers/access-records.controller.js';
+import { createOutageRetryController } from './controllers/outage-retry.controller.js';
+import { createPaperFileRequestController } from './controllers/paper-file-request.controller.js';
+import { createReviewerPaperAccessController } from './controllers/reviewer-paper-access.controller.js';
+import { createOutageRetryWindowModel } from './models/outage-retry-window.model.js';
+import { renderAccessRecordsView } from './views/access-records.view.js';
 import { renderDashboardPage } from './views/dashboard-view.js';
 import { renderLoginPage } from './views/login-view.js';
 
@@ -293,10 +300,6 @@ export function createApp({
     idFactory,
     nowFn: () => nowFn().toISOString()
   });
-  const invitationController = createInvitationController({
-    invitationModel,
-    sendInvitation: sendInvitationFn
-  });
   const reviewerAssignmentModel = createReviewerAssignmentModel({
     paperSubmissionModel,
     reviewerModel,
@@ -304,11 +307,44 @@ export function createApp({
     idFactory,
     nowFn: () => nowFn().toISOString()
   });
+  const outageRetryWindowModel = createOutageRetryWindowModel({ nowFn });
+  const paperAccessApiService = createPaperAccessApiService({
+    idFactory,
+    nowFn,
+    outageRetryWindowModel
+  });
+  const invitationController = createInvitationController({
+    invitationModel,
+    sendInvitation: sendInvitationFn,
+    onInvitationAccepted: async (invitation) => {
+      paperAccessApiService.assignReviewer({
+        entitlementId: invitation.id,
+        reviewerId: invitation.reviewerId,
+        paperId: invitation.paperId
+      });
+    },
+    onInvitationDeclined: async () => {}
+  });
   const reviewerAssignmentController = createReviewerAssignmentController({
     paperSubmissionModel,
     reviewerModel,
     reviewerAssignmentModel,
     invitationController
+  });
+  const outageRetryController = createOutageRetryController({
+    outageRetryWindowModel,
+    nowFn
+  });
+  const paperFileRequestController = createPaperFileRequestController({
+    paperAccessApiService,
+    outageRetryController
+  });
+  const reviewerPaperAccessController = createReviewerPaperAccessController({
+    paperAccessApiService,
+    nowFn
+  });
+  const accessRecordsController = createAccessRecordsController({
+    paperAccessApiService
   });
 
   app.use(express.json());
@@ -356,6 +392,8 @@ export function createApp({
       return;
     }
 
+    req.authenticatedSession = session;
+    req.authenticatedUserRole = 'editor';
     req.assignmentEditorId = session.user.id;
     next();
   }
@@ -390,22 +428,70 @@ export function createApp({
       return;
     }
 
+    req.authenticatedUserRole = 'reviewer';
     req.authenticatedReviewerId = `account-${session.user.id}`;
     req.authenticatedSession = session;
+    next();
+  }
+
+  function requireAuthenticatedSession(req, res, next) {
+    const isApiRequest = String(req.path ?? req.originalUrl ?? '').startsWith('/api/');
+    const session = authController.getAuthenticatedSession(req);
+    if (!session) {
+      if (isApiRequest) {
+        res.status(401).json({
+          code: 'AUTHENTICATION_REQUIRED',
+          message: 'Authentication is required.'
+        });
+        return;
+      }
+
+      res.status(302).redirect('/login');
+      return;
+    }
+
+    const account = resolvedRepository.findUserById(session.user.id);
+    req.authenticatedSession = session;
+    req.authenticatedUserRole = normalizeUserRole(account?.role);
     next();
   }
 
   app.get('/assign-reviewers', requireEditorSession, (_req, res) => {
     res.status(200).type('html').send(assignReviewersTemplateHtml);
   });
+  app.get('/reviewer/papers', requireReviewerSession, reviewerPaperAccessController.getPaperAccessPage);
   app.get('/reviewer/invitations', requireReviewerSession, (req, res) => {
     const invitations = invitationModel.listInvitationsForReviewer(req.authenticatedReviewerId, {
-      includeInactive: true
+      includeInactive: false
     });
     res.status(200).type('html').send(
       renderReviewerInvitationInboxPage({
         email: req.authenticatedSession?.user?.email,
         invitations
+      })
+    );
+  });
+  app.get('/papers/:paperId/access-attempts', requireAuthenticatedSession, (req, res) => {
+    const response = paperAccessApiService.getAccessAttempts({
+      isAuthenticated: true,
+      requesterId: req.authenticatedSession.user.id,
+      requesterRole: req.authenticatedUserRole,
+      elevatedRoles: String(req.headers?.['x-user-role'] ?? '').split(','),
+      paperId: req.params.paperId,
+      outcome: req.query?.outcome,
+      limit: req.query?.limit
+    });
+
+    if (response.status !== 200) {
+      res.status(response.status).json(response.body);
+      return;
+    }
+
+    res.status(200).type('html').send(
+      renderAccessRecordsView({
+        paperId: req.params.paperId,
+        records: response.body.records,
+        outcomeFilter: req.query?.outcome ?? 'all'
       })
     );
   });
@@ -506,6 +592,12 @@ export function createApp({
   app.post('/api/internal/review-invitations/retry-due', invitationController.retryDue);
   app.get('/api/papers/:paperId/invitation-failure-logs', invitationController.listFailureLogsByPaper);
   app.get('/api/reviewer/invitations', requireReviewerSession, invitationController.listReviewerInbox);
+  app.post('/api/reviewer/invitations/:invitationId/accept', requireReviewerSession, invitationController.acceptReviewerInvitation);
+  app.post('/api/reviewer/invitations/:invitationId/decline', requireReviewerSession, invitationController.declineReviewerInvitation);
+  app.get('/api/reviewer/papers', requireReviewerSession, reviewerPaperAccessController.listAssignedPapers);
+  app.get('/api/reviewer/papers/:paperId/files', requireReviewerSession, paperFileRequestController.getPaperFiles);
+  app.get('/api/reviewer/papers/:paperId/files/:fileId', requireReviewerSession, paperFileRequestController.downloadPaperFile);
+  app.get('/api/papers/:paperId/access-attempts', requireAuthenticatedSession, accessRecordsController.listAccessAttempts);
   app.use('/api/auth', createAuthRoutes({ authController }));
 
   app.use((error, _req, res, _next) => {
@@ -543,6 +635,12 @@ export function createApp({
   app.locals.invitationModel = invitationModel;
   app.locals.reviewerAssignmentController = reviewerAssignmentController;
   app.locals.invitationController = invitationController;
+  app.locals.outageRetryWindowModel = outageRetryWindowModel;
+  app.locals.paperAccessApiService = paperAccessApiService;
+  app.locals.outageRetryController = outageRetryController;
+  app.locals.paperFileRequestController = paperFileRequestController;
+  app.locals.reviewerPaperAccessController = reviewerPaperAccessController;
+  app.locals.accessRecordsController = accessRecordsController;
 
   return app;
 }

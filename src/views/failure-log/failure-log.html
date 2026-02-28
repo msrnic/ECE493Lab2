@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invitation Failure Log</title>
+    <link rel="stylesheet" href="./failure-log.css" />
+  </head>
+  <body>
+    <main class="failure-log">
+      <h1>Invitation Failure Log</h1>
+      <p class="meta">Paper: <span data-field="paper-id">-</span></p>
+      <div class="controls">
+        <label>
+          Page
+          <input type="number" min="1" value="1" data-field="page" />
+        </label>
+        <label>
+          Page size
+          <input type="number" min="1" max="100" value="20" data-field="page-size" />
+        </label>
+        <button type="button" data-action="reload">Reload</button>
+      </div>
+      <p class="error" data-role="error" hidden></p>
+      <table>
+        <thead>
+          <tr>
+            <th>Created</th>
+            <th>Invitation</th>
+            <th>Event</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody data-role="rows"></tbody>
+      </table>
+      <p class="pagination" data-role="pagination"></p>
+    </main>
+
+    <script type="module" src="./failure-log.js"></script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+
+ RUN  v3.2.4 /home/m_srnic/ece493/lab2/ECE493Lab2
+
+ ✓ tests/unit/controllers/failure-log.authorization.test.js (5 tests) 7ms
+ ✓ tests/integration/failure-log.us3.test.js (1 test) 21ms
+
+ Test Files  2 passed (2)
+      Tests  6 passed (6)
+   Start at  22:32:30
+   Duration  1.56s (transform 370ms, setup 0ms, collect 646ms, tests 28ms, environment 1ms, prepare 361ms)
+

@@ -205,6 +205,7 @@ export function createReviewerAssignmentModel({
     const assignedReviewers = assignments.map((assignment) => {
       const invitation = invitationModel.createInvitation({
         assignmentId: assignment.assignmentId,
+        paperId: assignment.paperId,
         reviewerId: assignment.reviewerId,
         displayName: assignment.displayName
       });

@@ -165,6 +165,145 @@ describe('ReviewInvitationModel contract lifecycle', () => {
     expect(lateEntry?.message).toContain('Ignored delivered callback');
   });
 
+  it('requires reviewer acceptance before invitation becomes accepted and keeps accepted invitations terminal', async () => {
+    const model = createModel({
+      nowFn: () => '2026-02-08T12:00:00.000Z'
+    });
+    const pending = await model.triggerInvitationDelivery(
+      {
+        reviewerAssignmentId: 'asg-accept-pending',
+        paperId: 'paper-accept-pending',
+        reviewerId: 'reviewer-accept-pending'
+      },
+      async () => ({ accepted: false, error: 'delivery pending' })
+    );
+    expect(() => model.acceptInvitation(pending.invitation.id, {
+      reviewerId: 'reviewer-accept-pending'
+    })).toThrow(/cannot be accepted/);
+
+    const delivered = await model.triggerInvitationDelivery(
+      {
+        reviewerAssignmentId: 'asg-accept-delivered',
+        paperId: 'paper-accept-delivered',
+        reviewerId: 'reviewer-accept-delivered'
+      },
+      async () => ({ accepted: true })
+    );
+    expect(() => model.acceptInvitation(delivered.invitation.id, {
+      reviewerId: 'reviewer-other'
+    })).toThrow(/do not have access/);
+    expect(() => model.declineInvitation(delivered.invitation.id, {
+      reviewerId: 'reviewer-other'
+    })).toThrow(/do not have access/);
+
+    const deliveredActive = model.listInvitationsForReviewer('reviewer-accept-delivered', {
+      includeInactive: false
+    });
+    expect(deliveredActive).toHaveLength(1);
+    expect(deliveredActive[0].status).toBe('delivered');
+
+    const accepted = model.acceptInvitation(delivered.invitation.id, {
+      reviewerId: 'reviewer-accept-delivered',
+      occurredAt: '2026-02-08T12:03:00.000Z'
+    });
+    expect(accepted.status).toBe('accepted');
+    expect(accepted.acceptedAt).toBe('2026-02-08T12:03:00.000Z');
+
+    const acceptedNoop = model.acceptInvitation(delivered.invitation.id, {
+      reviewerId: 'reviewer-accept-delivered'
+    });
+    expect(acceptedNoop.status).toBe('accepted');
+    expect(acceptedNoop.acceptedAt).toBe('2026-02-08T12:03:00.000Z');
+
+    const legacyAccepted = model.getInvitation(delivered.invitation.id);
+    expect(legacyAccepted.status).toBe('accepted');
+
+    const activeAfterAccept = model.listInvitationsForReviewer('reviewer-accept-delivered', {
+      includeInactive: false
+    });
+    expect(activeAfterAccept).toHaveLength(0);
+
+    const dispatchNoop = await model.dispatchInvitation(delivered.invitation.id, async () => ({ accepted: true }));
+    expect(dispatchNoop.status).toBe('accepted');
+
+    const retryNoop = await model.retryInvitation(delivered.invitation.id, async () => ({ accepted: true }));
+    expect(retryNoop.status).toBe('accepted');
+
+    const attempt = model.getDeliveryAttempts(delivered.invitation.id)[0];
+    const ignoredCallback = model.recordDeliveryEvent(delivered.invitation.id, {
+      attemptId: attempt.id,
+      eventType: 'failed',
+      occurredAt: '2026-02-08T12:04:00.000Z'
+    });
+    expect(ignoredCallback.status).toBe('accepted');
+
+    const cancelByAssignmentNoop = model.cancelInvitationByAssignment(
+      'asg-accept-delivered',
+      'assignment_removed',
+      '2026-02-08T12:05:00.000Z'
+    );
+    expect(cancelByAssignmentNoop.status).toBe('accepted');
+  });
+
+  it('allows delivered invitations to be declined and keeps declined invitations terminal', async () => {
+    const model = createModel({
+      nowFn: () => '2026-02-08T15:00:00.000Z'
+    });
+    const pending = await model.triggerInvitationDelivery(
+      {
+        reviewerAssignmentId: 'asg-decline-pending',
+        paperId: 'paper-decline-pending',
+        reviewerId: 'reviewer-decline'
+      },
+      async () => ({ accepted: false, error: 'delivery pending' })
+    );
+
+    expect(() => model.declineInvitation(pending.invitation.id, {
+      reviewerId: 'reviewer-decline'
+    })).toThrow(/cannot be declined/);
+
+    const delivered = await model.triggerInvitationDelivery(
+      {
+        reviewerAssignmentId: 'asg-decline-delivered',
+        paperId: 'paper-decline-delivered',
+        reviewerId: 'reviewer-decline'
+      },
+      async () => ({ accepted: true })
+    );
+
+    const declined = model.declineInvitation(delivered.invitation.id, {
+      reviewerId: 'reviewer-decline',
+      occurredAt: '2026-02-08T15:01:00.000Z'
+    });
+    expect(declined.status).toBe('declined');
+    expect(declined.declinedAt).toBe('2026-02-08T15:01:00.000Z');
+
+    const declinedNoop = model.declineInvitation(delivered.invitation.id, {
+      reviewerId: 'reviewer-decline'
+    });
+    expect(declinedNoop.status).toBe('declined');
+    expect(declinedNoop.declinedAt).toBe('2026-02-08T15:01:00.000Z');
+
+    const activeOnly = model.listInvitationsForReviewer('reviewer-decline', {
+      includeInactive: false
+    });
+    expect(activeOnly.map((invitation) => invitation.id)).toEqual([pending.invitation.id]);
+
+    const retryNoop = await model.retryInvitation(delivered.invitation.id, async () => ({ accepted: true }));
+    expect(retryNoop.status).toBe('declined');
+
+    const dispatchNoop = await model.dispatchInvitation(delivered.invitation.id, async () => ({ accepted: true }));
+    expect(dispatchNoop.status).toBe('declined');
+
+    const attempt = model.getDeliveryAttempts(delivered.invitation.id)[0];
+    const ignoredCallback = model.recordDeliveryEvent(delivered.invitation.id, {
+      attemptId: attempt.id,
+      eventType: 'failed',
+      occurredAt: '2026-02-08T15:02:00.000Z'
+    });
+    expect(ignoredCallback.status).toBe('declined');
+  });
+
   it('applies failed callback events for initial and retry attempts', async () => {
     const model = createModel({
       nowFn: () => '2026-02-08T13:00:00.000Z'
@@ -245,13 +384,13 @@ describe('ReviewInvitationModel contract lifecycle', () => {
       async () => ({ accepted: true })
     );
 
-    const deliveredNoop = model.cancelInvitationByAssignment(
+    const deliveredCanceled = model.cancelInvitationByAssignment(
       'asg-terminal',
       'assignment_removed',
       '2026-02-08T10:08:00.000Z'
     );
-    expect(deliveredNoop.status).toBe('delivered');
-    expect(terminal.invitation.status).toBe('delivered');
+    expect(deliveredCanceled.status).toBe('canceled');
+    expect(model.getInvitationStatus(terminal.invitation.id)?.status).toBe('canceled');
 
     expect(pending.invitation.id).toBeDefined();
   });
@@ -410,8 +549,18 @@ describe('ReviewInvitationModel contract lifecycle', () => {
     expect(all.some((entry) => entry.id === delivered.invitation.id)).toBe(true);
 
     const activeOnly = model.listInvitationsForReviewer('account-reviewer-1', { includeInactive: false });
-    expect(activeOnly).toHaveLength(1);
-    expect(activeOnly[0].id).toBe(pending.invitation.id);
+    expect(activeOnly).toHaveLength(2);
+    expect(activeOnly.some((entry) => entry.id === pending.invitation.id)).toBe(true);
+    expect(activeOnly.some((entry) => entry.id === delivered.invitation.id)).toBe(true);
+
+    model.declineInvitation(delivered.invitation.id, {
+      reviewerId: 'account-reviewer-1',
+      occurredAt: '2026-02-08T18:01:00.000Z'
+    });
+
+    const activeAfterDecline = model.listInvitationsForReviewer('account-reviewer-1', { includeInactive: false });
+    expect(activeAfterDecline).toHaveLength(1);
+    expect(activeAfterDecline[0].id).toBe(pending.invitation.id);
 
     expect(model.listInvitationsForReviewer('account-missing')).toEqual([]);
     expect(model.listInvitationsForReviewer(undefined)).toEqual([]);

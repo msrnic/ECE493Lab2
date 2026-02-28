@@ -1,0 +1,257 @@
+
+> ece493-lab2-cms-registration@1.0.0 test:coverage:c8
+> vitest run --coverage && c8 --all=false --reporter=none node scripts/assert-branch-coverage.mjs coverage/lcov.info
+
+
+ RUN  v3.2.4 /home/m_srnic/ece493/lab2/ECE493Lab2
+      Coverage enabled with v8
+
+ ✓ tests/unit/views/view-state-renderer.test.js (1 test) 128ms
+ ✓ tests/unit/views/assignment-outcome-view.test.js (2 tests) 172ms
+ ✓ tests/unit/views/assign-reviewers-view.test.js (3 tests) 204ms
+ ✓ tests/unit/assets/reviewer-paper-access-page.test.js (2 tests) 197ms
+ ✓ tests/integration/draft-page-client.fetch-context.integration.test.js (1 test) 242ms
+ ✓ tests/unit/assets/assign-reviewers-page.bootstrap.test.js (6 tests) 368ms
+ ✓ tests/integration/auth-api.integration.test.js (10 tests) 146ms
+ ✓ tests/integration/auth-api.performance.test.js (1 test) 161ms
+ ✓ tests/integration/draft-restore.form.integration.test.js (1 test) 353ms
+   ✓ integration: submit-paper restore hydrates form fields > saves versioned metadata and hydrates restored values after pressing Restore  349ms
+ ✓ tests/acceptance/uc-05-draft-save.acceptance.test.js (8 tests) 341ms
+ ✓ tests/acceptance/uc-05-draft-history.acceptance.test.js (6 tests) 375ms
+ ✓ tests/acceptance/uc07-review-invitation.acceptance.test.js (9 tests) 130ms
+ ✓ tests/integration/assign-reviewers-api.integration.test.js (5 tests) 112ms
+ ✓ tests/acceptance/uc-08-as.test.js (7 tests) 116ms
+ ✓ tests/acceptance/uc03-change-password.acceptance.test.js (6 tests) 84ms
+ ✓ tests/unit/app.test.js (5 tests) 87ms
+ ✓ tests/acceptance/uc06-assign-reviewers.acceptance.test.js (5 tests) 96ms
+ ✓ tests/integration/paper-submission.integration.test.js (5 tests) 152ms
+ ✓ tests/acceptance/uc-02-login.acceptance.test.js (8 tests) 150ms
+ ✓ tests/unit/controllers/draft-page-and-views.test.js (7 tests) 67ms
+ ✓ tests/unit/controllers/draft-controller.stale-conflict.test.js (7 tests) 93ms
+ ✓ tests/integration/reviewer-paper-access.integration.test.js (3 tests) 81ms
+ ✓ tests/acceptance/uc-04-submission.acceptance.test.js (4 tests) 88ms
+ ✓ tests/unit/controllers/submission-contract.test.js (2 tests) 74ms
+ ✓ tests/integration/reviewer-invitation-inbox.integration.test.js (2 tests) 66ms
+ ✓ tests/unit/controllers/draft-version-controller.test.js (4 tests) 78ms
+ ✓ tests/integration/invitation-retry.us2.test.js (3 tests) 54ms
+ ✓ tests/unit/controllers/draft-controller.save-success.test.js (3 tests) 64ms
+ ✓ tests/integration/password-change-rejection.integration.test.js (2 tests) 70ms
+ ✓ tests/integration/draft-api.save-error.integration.test.js (2 tests) 54ms
+ ✓ tests/integration/invitation-lifecycle.us1.test.js (2 tests) 63ms
+ ✓ tests/unit/repositories/auth-repository.test.js (3 tests) 42ms
+ ✓ tests/acceptance/uc-01-registration.acceptance.test.js (7 tests) 41ms
+ ✓ tests/acceptance/uc-04-performance.test.js (1 test) 35ms
+ ✓ tests/integration/draft-api.session.integration.test.js (2 tests) 49ms
+ ✓ tests/integration/contracts/reviewer-invitation.openapi.test.js (1 test) 36ms
+ ✓ tests/integration/password-change-success.integration.test.js (1 test) 42ms
+ ✓ tests/unit/models/review-invitation.contract.test.js (11 tests) 45ms
+ ✓ tests/unit/services/storage-service.test.js (4 tests) 38ms
+ ✓ tests/integration/performance/invitation-latency.sc002.test.js (1 test) 38ms
+ ✓ tests/unit/controllers/draft-integration-regression.test.js (1 test) 40ms
+ ✓ tests/unit/password-change-model.test.js (8 tests) 35ms
+ ✓ tests/unit/controllers/upload-controller.test.js (4 tests) 38ms
+ ✓ tests/integration/retry-scheduler-drift.nfr.test.js (1 test) 53ms
+ ✓ tests/unit/controllers/submission-controller.test.js (5 tests) 45ms
+ ✓ tests/unit/models/submission-model.test.js (5 tests) 14ms
+ ✓ tests/unit/repositories/session-state-repository.test.js (2 tests) 13ms
+ ✓ tests/unit/controllers/draft-api-client.test.js (7 tests) 28ms
+ ✓ tests/unit/repositories/submission-repository.test.js (3 tests) 21ms
+ ✓ tests/integration/failure-log.us3.test.js (1 test) 33ms
+ ✓ tests/unit/models/api-client.test.js (4 tests) 20ms
+ ✓ tests/unit/models/reviewer-assignment-model.test.js (7 tests) 20ms
+ ✓ tests/unit/models/security-adapters.test.js (5 tests) 16ms
+ ✓ tests/integration/register-page.contract.test.js (2 tests) 28ms
+ ✓ tests/unit/services/paper-access-api.service.test.js (5 tests) 26ms
+ ✓ tests/unit/registration-controller.test.js (6 tests) 28ms
+ ✓ tests/unit/controllers/invitation-controller.contract.test.js (7 tests) 30ms
+ ✓ tests/unit/token-and-validation-models.test.js (6 tests) 15ms
+ ✓ tests/unit/models/review-invitation-model.test.js (8 tests) 40ms
+ ✓ tests/unit/models/paper-file-bundle.model.test.js (2 tests) 12ms
+ ✓ tests/unit/user-account-model.test.js (5 tests) 10ms
+ ✓ tests/integration/confirm-registration.contract.test.js (6 tests) 16ms
+ ✓ tests/unit/models/draft-submission-model.test.js (5 tests) 15ms
+ ✓ tests/unit/controllers/auth-controller.test.js (6 tests) 20ms
+ ✓ tests/unit/models/draft-version-access-policy.test.js (2 tests) 8ms
+ ✓ tests/unit/controllers/reviewer-assignment-controller.test.js (3 tests) 16ms
+ ✓ tests/unit/controllers/status-controller.test.js (3 tests) 20ms
+ ✓ tests/unit/models/model-validation.test.js (3 tests) 12ms
+ ✓ tests/unit/models/deduplication-model.test.js (3 tests) 14ms
+ ✓ tests/integration/registration-latency.test.js (2 tests) 21ms
+ ✓ tests/unit/controllers/invitation-controller.test.js (4 tests) 14ms
+ ✓ tests/unit/email-delivery-service.test.js (5 tests) 13ms
+ ✓ tests/integration/create-registration.contract.test.js (4 tests) 19ms
+ ✓ tests/unit/models/failed-login-tracker-model.test.js (4 tests) 9ms
+ ✓ tests/unit/repository.test.js (7 tests) 24ms
+ ✓ tests/unit/controllers/paper-file-request.controller.test.js (2 tests) 14ms
+ ✓ tests/unit/models/draft-file-reference-model.test.js (4 tests) 32ms
+ ✓ tests/unit/controllers/session-controller.test.js (3 tests) 21ms
+ ✓ tests/unit/models/password-change-api-client.test.js (3 tests) 14ms
+ ✓ tests/unit/repositories/file-repository.test.js (2 tests) 19ms
+ ✓ tests/unit/registration-attempt-model.test.js (5 tests) 13ms
+ ✓ tests/unit/controllers/outage-retry.controller.test.js (1 test) 10ms
+ ✓ tests/unit/models/draft-version-model.test.js (6 tests) 13ms
+ ✓ tests/unit/models/paper-access-attempt.model.test.js (3 tests) 13ms
+ ✓ tests/unit/controllers/reviewer-paper-access.controller.test.js (3 tests) 16ms
+ ✓ tests/unit/models/file-model.test.js (4 tests) 14ms
+ ✓ tests/unit/models/reviewer-model.test.js (4 tests) 12ms
+ ✓ tests/unit/models/draft-version-retention.test.js (3 tests) 12ms
+ ✓ tests/unit/repositories/json-file-store.test.js (2 tests) 15ms
+ ✓ tests/unit/models/session-state-model.test.js (2 tests) 11ms
+ ✓ tests/unit/models/draft-save-attempt-model.test.js (3 tests) 10ms
+ ✓ tests/unit/models/paper-submission-model.test.js (3 tests) 11ms
+ ✓ tests/unit/models/assignment-validation.test.js (3 tests) 13ms
+ ✓ tests/unit/views/login-and-dashboard-view.test.js (4 tests) 18ms
+ ✓ tests/unit/models/reviewer-access-entitlement.model.test.js (3 tests) 11ms
+ ✓ tests/unit/controllers/access-records.controller.test.js (2 tests) 16ms
+ ✓ tests/unit/controllers/failure-log.authorization.test.js (6 tests) 10ms
+ ✓ tests/unit/controllers/role-controller.test.js (3 tests) 12ms
+ ✓ tests/unit/models/outage-retry-window.model.test.js (3 tests) 11ms
+ ✓ tests/unit/email-delivery-job-model.test.js (5 tests) 10ms
+ ✓ tests/unit/models/submission-config.test.js (1 test) 8ms
+ ✓ tests/unit/models/attempt-throttle-model.test.js (3 tests) 14ms
+ ✓ tests/unit/controllers/session-auth.test.js (3 tests) 12ms
+ ✓ tests/unit/controllers/draft-error-mapper.test.js (3 tests) 8ms
+ ✓ tests/unit/models/password-policy-model.test.js (4 tests) 7ms
+ ✓ tests/unit/models/auth-session-model.test.js (4 tests) 8ms
+ ✓ tests/unit/services/scan-service.test.js (2 tests) 8ms
+ ✓ tests/unit/models/credential-submission-model.test.js (4 tests) 9ms
+ ✓ tests/unit/config/persistence-paths.test.js (3 tests) 7ms
+ ✓ tests/unit/views/reviewer-paper-access.view.test.js (2 tests) 22ms
+ ✓ tests/unit/registration-view-and-page-controller.test.js (3 tests) 7ms
+ ✓ tests/unit/controllers/app-controller.test.js (1 test) 7ms
+ ✓ tests/unit/views/access-denied.view.test.js (1 test) 6ms
+ ✓ tests/unit/views/access-records.view.test.js (1 test) 6ms
+ ✓ tests/unit/views/temporary-unavailable.view.test.js (1 test) 7ms
+ ✓ tests/acceptance/uc-08-performance.test.js (1 test) 9ms
+ ✓ tests/unit/assets/draft-page.bootstrap.test.js (7 tests) 235ms
+ ✓ tests/unit/registration-form.test.js (8 tests) 132ms
+ ✓ tests/unit/controllers/login-controller.test.js (4 tests) 75ms
+ ✓ tests/unit/views/submit-paper-view.test.js (4 tests) 76ms
+ ✓ tests/unit/assets/password-change-app-bootstrap.test.js (2 tests) 68ms
+ ✓ tests/unit/assets/submit-paper-page.test.js (10 tests) 337ms
+ ✓ tests/unit/views/password-change-view.test.js (4 tests) 51ms
+ ✓ tests/unit/assets/login-app-bootstrap.test.js (2 tests) 48ms
+ ✓ tests/unit/controllers/password-change-controller.test.js (6 tests) 49ms
+
+ Test Files  125 passed (125)
+      Tests  480 passed (480)
+   Start at  22:36:07
+   Duration  11.38s (transform 2.16s, setup 0ms, collect 34.27s, tests 7.18s, environment 7.99s, prepare 22.19s)
+
+ % Coverage report from v8
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |     100 |      100 |     100 |     100 |                   
+ src               |     100 |      100 |     100 |     100 |                   
+  app.js           |     100 |      100 |     100 |     100 |                   
+ src/assets/js     |     100 |      100 |     100 |     100 |                   
+  app.js           |     100 |      100 |     100 |     100 |                   
+  ...ewers-page.js |     100 |      100 |     100 |     100 |                   
+  draft-page.js    |     100 |      100 |     100 |     100 |                   
+  ...ation-form.js |     100 |      100 |     100 |     100 |                   
+  ...ccess-page.js |     100 |      100 |     100 |     100 |                   
+  ...paper-page.js |     100 |      100 |     100 |     100 |                   
+ src/config        |     100 |      100 |     100 |     100 |                   
+  ...ence-paths.js |     100 |      100 |     100 |     100 |                   
+  ...ion-config.js |     100 |      100 |     100 |     100 |                   
+ src/controllers   |     100 |      100 |     100 |     100 |                   
+  AppController.js |     100 |      100 |     100 |     100 |                   
+  ...Controller.js |     100 |      100 |     100 |     100 |                   
+  ...Controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...ion.policy.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...api-client.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...ror-mapper.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...ry-service.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+  ...controller.js |     100 |      100 |     100 |     100 |                   
+ src/middleware    |     100 |      100 |     100 |     100 |                   
+  session-auth.js  |     100 |      100 |     100 |     100 |                   
+ src/models        |     100 |      100 |     100 |     100 |                   
+  ApiClient.js     |     100 |      100 |     100 |     100 |                   
+  ...Validation.js |     100 |      100 |     100 |     100 |                   
+  ...ssionModel.js |     100 |      100 |     100 |     100 |                   
+  ...ationModel.js |     100 |      100 |     100 |     100 |                   
+  ...nmentModel.js |     100 |      100 |     100 |     100 |                   
+  ReviewerModel.js |     100 |      100 |     100 |     100 |                   
+  ...ttle-model.js |     100 |      100 |     100 |     100 |                   
+  ...-log-model.js |     100 |      100 |     100 |     100 |                   
+  ...sion-model.js |     100 |      100 |     100 |     100 |                   
+  ...en-service.js |     100 |      100 |     100 |     100 |                   
+  ...sion-model.js |     100 |      100 |     100 |     100 |                   
+  ...tion-model.js |     100 |      100 |     100 |     100 |                   
+  ...ence-model.js |     100 |      100 |     100 |     100 |                   
+  ...ion-policy.js |     100 |      100 |     100 |     100 |                   
+  ...empt-model.js |     100 |      100 |     100 |     100 |                   
+  ...sion-model.js |     100 |      100 |     100 |     100 |                   
+  ...ess-policy.js |     100 |      100 |     100 |     100 |                   
+  ...sion-model.js |     100 |      100 |     100 |     100 |                   
+  ...oken-model.js |     100 |      100 |     100 |     100 |                   
+  ...-job-model.js |     100 |      100 |     100 |     100 |                   
+  ...malization.js |     100 |      100 |     100 |     100 |                   
+  ...cker-model.js |     100 |      100 |     100 |     100 |                   
+  file-model.js    |     100 |      100 |     100 |     100 |                   
+  ...validation.js |     100 |      100 |     100 |     100 |                   
+  ...tion-model.js |     100 |      100 |     100 |     100 |                   
+  ...ndow.model.js |     100 |      100 |     100 |     100 |                   
+  ...empt.model.js |     100 |      100 |     100 |     100 |                   
+  ...ndle.model.js |     100 |      100 |     100 |     100 |                   
+  ...api-client.js |     100 |      100 |     100 |     100 |                   
+  ...ange-model.js |     100 |      100 |     100 |     100 |                   
+  ...licy-model.js |     100 |      100 |     100 |     100 |                   
+  ...empt-model.js |     100 |      100 |     100 |     100 |                   
+  ...sion-model.js |     100 |      100 |     100 |     100 |                   
+  ...validation.js |     100 |      100 |     100 |     100 |                   
+  repository.js    |     100 |      100 |     100 |     100 |                   
+  ...ment.model.js |     100 |      100 |     100 |     100 |                   
+  session-model.js |     100 |      100 |     100 |     100 |                   
+  ...tate-model.js |     100 |      100 |     100 |     100 |                   
+  ...sion-model.js |     100 |      100 |     100 |     100 |                   
+  ...ount-model.js |     100 |      100 |     100 |     100 |                   
+ src/repositories  |     100 |      100 |     100 |     100 |                   
+  ...repository.js |     100 |      100 |     100 |     100 |                   
+  ...repository.js |     100 |      100 |     100 |     100 |                   
+  ...file-store.js |     100 |      100 |     100 |     100 |                   
+  ...repository.js |     100 |      100 |     100 |     100 |                   
+  ...repository.js |     100 |      100 |     100 |     100 |                   
+ src/routes        |     100 |      100 |     100 |     100 |                   
+  auth-routes.js   |     100 |      100 |     100 |     100 |                   
+ src/services      |     100 |      100 |     100 |     100 |                   
+  ...pi.service.js |     100 |      100 |     100 |     100 |                   
+  scan-service.js  |     100 |      100 |     100 |     100 |                   
+  ...ge-service.js |     100 |      100 |     100 |     100 |                   
+ src/views         |     100 |      100 |     100 |     100 |                   
+  ...iewersView.js |     100 |      100 |     100 |     100 |                   
+  ...utcomeView.js |     100 |      100 |     100 |     100 |                   
+  ...teRenderer.js |     100 |      100 |     100 |     100 |                   
+  ...enied.view.js |     100 |      100 |     100 |     100 |                   
+  ...cords.view.js |     100 |      100 |     100 |     100 |                   
+  ...board-view.js |     100 |      100 |     100 |     100 |                   
+  ...ditor-view.js |     100 |      100 |     100 |     100 |                   
+  ...story-view.js |     100 |      100 |     100 |     100 |                   
+  ...-ui-shared.js |     100 |      100 |     100 |     100 |                   
+  login-view.js    |     100 |      100 |     100 |     100 |                   
+  ...hange-view.js |     100 |      100 |     100 |     100 |                   
+  ...tatus-view.js |     100 |      100 |     100 |     100 |                   
+  ...ation-view.js |     100 |      100 |     100 |     100 |                   
+  ...ccess.view.js |     100 |      100 |     100 |     100 |                   
+  ...paper-view.js |     100 |      100 |     100 |     100 |                   
+  ...lable.view.js |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------
+Branch coverage verified at 100.00% (2667/2667) from coverage/lcov.info.

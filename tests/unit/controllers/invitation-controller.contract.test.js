@@ -289,6 +289,142 @@ describe('InvitationController contract endpoints', () => {
     });
   });
 
+  it('accepts reviewer invitations and runs acceptance hooks', async () => {
+    const invitationModel = {
+      acceptInvitation: vi
+        .fn()
+        .mockReturnValue({
+          id: 'inv-accepted',
+          reviewerId: 'account-reviewer-1',
+          paperId: 'paper-1',
+          status: 'accepted'
+        })
+    };
+    const onInvitationAccepted = vi.fn();
+    const controller = createInvitationController({
+      invitationModel,
+      onInvitationAccepted
+    });
+
+    const unauthenticatedRes = createMockResponse();
+    await controller.acceptReviewerInvitation(
+      createReq({
+        params: { invitationId: 'inv-accepted' }
+      }),
+      unauthenticatedRes
+    );
+    expect(unauthenticatedRes.statusCode).toBe(401);
+
+    const acceptedRes = createMockResponse();
+    await controller.acceptReviewerInvitation(
+      createReq({
+        params: { invitationId: 'inv-accepted' },
+        authenticatedReviewerId: 'account-reviewer-1',
+        body: { occurredAt: '2026-02-08T10:00:00.000Z' }
+      }),
+      acceptedRes
+    );
+    expect(acceptedRes.statusCode).toBe(200);
+    expect(invitationModel.acceptInvitation).toHaveBeenCalledWith('inv-accepted', {
+      reviewerId: 'account-reviewer-1',
+      occurredAt: '2026-02-08T10:00:00.000Z'
+    });
+    expect(onInvitationAccepted).toHaveBeenCalledWith({
+      id: 'inv-accepted',
+      reviewerId: 'account-reviewer-1',
+      paperId: 'paper-1',
+      status: 'accepted'
+    });
+
+    const defaultHookController = createInvitationController({
+      invitationModel: {
+        acceptInvitation: vi.fn().mockReturnValue({
+          id: 'inv-default-hook',
+          reviewerId: 'account-reviewer-1',
+          paperId: 'paper-2',
+          status: 'accepted'
+        })
+      }
+    });
+    const defaultHookRes = createMockResponse();
+    await defaultHookController.acceptReviewerInvitation(
+      createReq({
+        params: { invitationId: 'inv-default-hook' },
+        authenticatedReviewerId: 'account-reviewer-1'
+      }),
+      defaultHookRes
+    );
+    expect(defaultHookRes.statusCode).toBe(200);
+  });
+
+  it('declines reviewer invitations and runs decline hooks', async () => {
+    const invitationModel = {
+      declineInvitation: vi
+        .fn()
+        .mockReturnValue({
+          id: 'inv-declined',
+          reviewerId: 'account-reviewer-1',
+          paperId: 'paper-1',
+          status: 'declined'
+        })
+    };
+    const onInvitationDeclined = vi.fn();
+    const controller = createInvitationController({
+      invitationModel,
+      onInvitationDeclined
+    });
+
+    const unauthenticatedRes = createMockResponse();
+    await controller.declineReviewerInvitation(
+      createReq({
+        params: { invitationId: 'inv-declined' }
+      }),
+      unauthenticatedRes
+    );
+    expect(unauthenticatedRes.statusCode).toBe(401);
+
+    const declinedRes = createMockResponse();
+    await controller.declineReviewerInvitation(
+      createReq({
+        params: { invitationId: 'inv-declined' },
+        authenticatedReviewerId: 'account-reviewer-1',
+        body: { occurredAt: '2026-02-08T10:00:00.000Z' }
+      }),
+      declinedRes
+    );
+    expect(declinedRes.statusCode).toBe(200);
+    expect(invitationModel.declineInvitation).toHaveBeenCalledWith('inv-declined', {
+      reviewerId: 'account-reviewer-1',
+      occurredAt: '2026-02-08T10:00:00.000Z'
+    });
+    expect(onInvitationDeclined).toHaveBeenCalledWith({
+      id: 'inv-declined',
+      reviewerId: 'account-reviewer-1',
+      paperId: 'paper-1',
+      status: 'declined'
+    });
+
+    const defaultHookController = createInvitationController({
+      invitationModel: {
+        declineInvitation: vi.fn().mockReturnValue({
+          id: 'inv-default-decline-hook',
+          reviewerId: 'account-reviewer-1',
+          paperId: 'paper-2',
+          status: 'declined'
+        })
+      }
+    });
+    const defaultHookRes = createMockResponse();
+    await defaultHookController.declineReviewerInvitation(
+      createReq({
+        params: { invitationId: 'inv-default-decline-hook' },
+        authenticatedReviewerId: 'account-reviewer-1'
+      }),
+      defaultHookRes
+    );
+    expect(defaultHookRes.statusCode).toBe(200);
+  });
+
   it('maps unexpected controller-level errors for contract routes', async () => {
     const invitationModel = {
       triggerInvitationDelivery: vi.fn().mockRejectedValue({ status: 500, code: 'UNKNOWN' }),
@@ -307,6 +443,12 @@ describe('InvitationController contract endpoints', () => {
       }),
       listInvitationsForReviewer: vi.fn().mockImplementation(() => {
         throw Object.assign(new Error('reviewer inbox failure'), { status: 500, code: 'INBOX_FAILURE' });
+      }),
+      acceptInvitation: vi.fn().mockImplementation(() => {
+        throw Object.assign(new Error('accept failure'), { status: 409, code: 'INVITATION_NOT_ACCEPTABLE' });
+      }),
+      declineInvitation: vi.fn().mockImplementation(() => {
+        throw Object.assign(new Error('decline failure'), { status: 409, code: 'INVITATION_NOT_DECLINABLE' });
       })
     };
     const controller = createInvitationController({ invitationModel });
@@ -359,5 +501,25 @@ describe('InvitationController contract endpoints', () => {
       reviewerInboxRes
     );
     expect(reviewerInboxRes.statusCode).toBe(500);
+
+    const acceptRes = createMockResponse();
+    await controller.acceptReviewerInvitation(
+      createReq({
+        params: { invitationId: 'inv-1' },
+        authenticatedReviewerId: 'account-reviewer-1'
+      }),
+      acceptRes
+    );
+    expect(acceptRes.statusCode).toBe(409);
+
+    const declineRes = createMockResponse();
+    await controller.declineReviewerInvitation(
+      createReq({
+        params: { invitationId: 'inv-1' },
+        authenticatedReviewerId: 'account-reviewer-1'
+      }),
+      declineRes
+    );
+    expect(declineRes.statusCode).toBe(409);
   });
 });

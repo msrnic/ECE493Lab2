@@ -61,6 +61,22 @@ describe('integration: reviewer invitation inbox', () => {
     expect(apiUnauthenticated.statusCode).toBe(401);
     expect(apiUnauthenticated.body.code).toBe('AUTHENTICATION_REQUIRED');
 
+    const acceptApiUnauthenticated = await invokeAppRoute(app, {
+      method: 'post',
+      path: '/api/reviewer/invitations/:invitationId/accept',
+      params: { invitationId: 'inv-1' }
+    });
+    expect(acceptApiUnauthenticated.statusCode).toBe(401);
+    expect(acceptApiUnauthenticated.body.code).toBe('AUTHENTICATION_REQUIRED');
+
+    const declineApiUnauthenticated = await invokeAppRoute(app, {
+      method: 'post',
+      path: '/api/reviewer/invitations/:invitationId/decline',
+      params: { invitationId: 'inv-1' }
+    });
+    expect(declineApiUnauthenticated.statusCode).toBe(401);
+    expect(declineApiUnauthenticated.body.code).toBe('AUTHENTICATION_REQUIRED');
+
     const pageForbidden = await invokeAppRoute(app, {
       method: 'get',
       path: '/reviewer/invitations',
@@ -76,9 +92,27 @@ describe('integration: reviewer invitation inbox', () => {
     });
     expect(apiForbidden.statusCode).toBe(403);
     expect(apiForbidden.body.code).toBe('INVITATION_FORBIDDEN');
+
+    const acceptApiForbidden = await invokeAppRoute(app, {
+      method: 'post',
+      path: '/api/reviewer/invitations/:invitationId/accept',
+      params: { invitationId: 'inv-1' },
+      headers: { cookie: editorCookie }
+    });
+    expect(acceptApiForbidden.statusCode).toBe(403);
+    expect(acceptApiForbidden.body.code).toBe('INVITATION_FORBIDDEN');
+
+    const declineApiForbidden = await invokeAppRoute(app, {
+      method: 'post',
+      path: '/api/reviewer/invitations/:invitationId/decline',
+      params: { invitationId: 'inv-1' },
+      headers: { cookie: editorCookie }
+    });
+    expect(declineApiForbidden.statusCode).toBe(403);
+    expect(declineApiForbidden.body.code).toBe('INVITATION_FORBIDDEN');
   });
 
-  it('lists invitation inbox entries and supports includeInactive filtering', async () => {
+  it('lists invitation inbox entries and removes declined invitations from active inbox results', async () => {
     const app = createApp({
       sendInvitationFn: async (invitation) => {
         if (invitation.paperId === 'paper-inbox-delivered') {
@@ -133,7 +167,60 @@ describe('integration: reviewer invitation inbox', () => {
       query: { includeInactive: 'false' }
     });
     expect(activeOnlyApi.statusCode).toBe(200);
-    expect(activeOnlyApi.body.invitations).toHaveLength(1);
-    expect(activeOnlyApi.body.invitations[0].paperId).toBe('paper-inbox-pending');
+    expect(activeOnlyApi.body.invitations).toHaveLength(2);
+    expect(activeOnlyApi.body.invitations.some((invitation) => invitation.paperId === 'paper-inbox-pending')).toBe(true);
+    expect(activeOnlyApi.body.invitations.some((invitation) => invitation.paperId === 'paper-inbox-delivered')).toBe(true);
+
+    const deliveredInvitationId = defaultApi.body.invitations.find((invitation) => invitation.status === 'delivered')?.id;
+    const accepted = await invokeAppRoute(app, {
+      method: 'post',
+      path: '/api/reviewer/invitations/:invitationId/accept',
+      params: { invitationId: deliveredInvitationId },
+      headers: { cookie: reviewerCookie }
+    });
+    expect(accepted.statusCode).toBe(200);
+    expect(accepted.body.status).toBe('accepted');
+    expect(accepted.body.acceptedAt).toBeDefined();
+
+    await triggerInvitation(app, {
+      assignmentId: 'asg-inbox-declined-int',
+      paperId: 'paper-inbox-delivered',
+      reviewerId
+    });
+    const beforeDecline = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/api/reviewer/invitations',
+      headers: { cookie: reviewerCookie },
+      query: { includeInactive: 'false' }
+    });
+    const declineInvitationId = beforeDecline.body.invitations.find((invitation) => invitation.status === 'delivered')?.id;
+
+    const declined = await invokeAppRoute(app, {
+      method: 'post',
+      path: '/api/reviewer/invitations/:invitationId/decline',
+      params: { invitationId: declineInvitationId },
+      headers: { cookie: reviewerCookie }
+    });
+    expect(declined.statusCode).toBe(200);
+    expect(declined.body.status).toBe('declined');
+    expect(declined.body.declinedAt).toBeDefined();
+
+    const activeAfterDecision = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/api/reviewer/invitations',
+      headers: { cookie: reviewerCookie },
+      query: { includeInactive: 'false' }
+    });
+    expect(activeAfterDecision.statusCode).toBe(200);
+    expect(activeAfterDecision.body.invitations).toHaveLength(1);
+    expect(activeAfterDecision.body.invitations[0].paperId).toBe('paper-inbox-pending');
+
+    const inboxPageAfterDecline = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/reviewer/invitations',
+      headers: { cookie: reviewerCookie }
+    });
+    expect(inboxPageAfterDecline.statusCode).toBe(200);
+    expect(inboxPageAfterDecline.text).toContain('paper-inbox-pending');
   });
 });

@@ -6,15 +6,7 @@
 - npm 10+
 - Working directory: `/home/m_srnic/ece493/lab2/ECE493Lab2`
 
-## 1. Verify Planned MVC Structure
-
-Ensure implementation follows constitution rule III:
-
-- Model files under `src/models/`
-- View files under `src/views/` (`.html` structure, `.css` styling, `.js` behavior)
-- Controller files under `src/controllers/`
-
-## 2. Run the Feature Locally (After Implementation)
+## 1. Start Service
 
 ```bash
 cd /home/m_srnic/ece493/lab2/ECE493Lab2
@@ -22,9 +14,7 @@ npm install
 npm run dev
 ```
 
-## 3. Exercise Core Invitation Flow
-
-Trigger invitation dispatch when a reviewer assignment exists:
+## 2. Trigger Invitation Delivery
 
 ```bash
 curl -X POST http://localhost:3000/api/reviewer-assignments/asg-1001/invitations \
@@ -32,15 +22,17 @@ curl -X POST http://localhost:3000/api/reviewer-assignments/asg-1001/invitations
   -d '{"paperId":"paper-42","reviewerId":"rev-9"}'
 ```
 
-Check invitation status:
+## 3. Read Invitation Status
 
 ```bash
 curl http://localhost:3000/api/review-invitations/inv-1001
 ```
 
-## 4. Exercise Retry and Failure Logging
+Optional status view page:
 
-Record a failed attempt callback:
+- `http://localhost:3000/views/invitation-status/invitation-status.html?invitationId=inv-1001`
+
+## 4. Record Delivery Callback and Retry Due
 
 ```bash
 curl -X POST http://localhost:3000/api/review-invitations/inv-1001/delivery-events \
@@ -51,24 +43,13 @@ curl -X POST http://localhost:3000/api/review-invitations/inv-1001/delivery-even
     "failureReason":"SMTP timeout",
     "occurredAt":"2026-02-08T12:00:00Z"
   }'
-```
 
-Run due retries:
-
-```bash
 curl -X POST http://localhost:3000/api/internal/review-invitations/retry-due \
   -H 'Content-Type: application/json' \
   -d '{"runAt":"2026-02-08T12:05:00Z"}'
 ```
 
-Query failure logs as authorized editor/support/admin:
-
-```bash
-curl http://localhost:3000/api/papers/paper-42/invitation-failure-logs?page=1&pageSize=20 \
-  -H 'Authorization: Bearer <token>'
-```
-
-## 5. Exercise Assignment-Removal Cancellation
+## 5. Cancel On Assignment Removal
 
 ```bash
 curl -X POST http://localhost:3000/api/reviewer-assignments/asg-1001/invitations/cancel \
@@ -76,18 +57,29 @@ curl -X POST http://localhost:3000/api/reviewer-assignments/asg-1001/invitations
   -d '{"reason":"assignment_removed","occurredAt":"2026-02-08T12:06:00Z"}'
 ```
 
-Expected: invitation transitions to `canceled` and no further retries are created.
-
-## 6. Validate Acceptance + Coverage
+## 6. Query Failure Logs (RBAC)
 
 ```bash
-cd /home/m_srnic/ece493/lab2/ECE493Lab2
-npm test
-npx c8 --reporter=text --reporter=lcov npm test
+curl http://localhost:3000/api/papers/paper-42/invitation-failure-logs?page=1&pageSize=20 \
+  -H 'x-user-role: support'
 ```
 
-Pass criteria:
+Optional failure log view page:
 
-- `Acceptance Tests/UC-07-AS.md` scenarios pass exactly as written
-- In-scope JavaScript line coverage is 100%, or documented remediation if below 100%
-- Coverage below 95% is blocked unless approved exception exists
+- `http://localhost:3000/views/failure-log/failure-log.html?paperId=paper-42&role=support`
+
+## 7. Reviewer Inbox + Decisions
+
+```bash
+curl http://localhost:3000/api/reviewer/invitations
+curl -X POST http://localhost:3000/api/reviewer/invitations/inv-1001/accept
+curl -X POST http://localhost:3000/api/reviewer/invitations/inv-1001/decline
+```
+
+## 8. Verification Commands
+
+```bash
+npx vitest run --coverage=false tests/acceptance/uc07-review-invitation.acceptance.test.js
+npx vitest run --coverage=false tests/unit tests/integration
+npm run test:coverage:c8
+```
