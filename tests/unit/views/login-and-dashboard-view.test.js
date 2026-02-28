@@ -57,6 +57,7 @@ describe('login and dashboard views', () => {
     expect(html).toContain('data-dashboard-role-form');
     expect(html).toContain('Role updated successfully.');
     expect(html).toContain('data-dashboard-submit-paper');
+    expect(html).toContain('data-dashboard-assign-reviewers-disabled');
     expect(html).toContain('href="/account/password-change"');
     expect(html).toContain('action="/logout"');
     expect(html).toContain('data-dashboard-logout');
@@ -65,10 +66,13 @@ describe('login and dashboard views', () => {
     expect(fallback).toContain('unknown user');
     expect(fallback).toContain('Current role: Editor');
     expect(fallback).toContain('data-dashboard-submit-paper-disabled');
+    expect(fallback).toContain('data-dashboard-assign-reviewers');
+    expect(fallback).not.toContain('data-dashboard-assign-reviewers-disabled');
     expect(fallback).toContain('Only author accounts can access paper submission');
 
     const unknownRole = renderDashboardPage({ role: ' ' });
     expect(unknownRole).toContain('Current role: Author');
+    expect(unknownRole).toContain('Switch your role to editor to assign reviewers.');
   });
 
   it('resolves role update message variants', () => {
@@ -76,6 +80,7 @@ describe('login and dashboard views', () => {
     expect(resolveRoleUpdateMessage('unchanged')).toBe('Role unchanged.');
     expect(resolveRoleUpdateMessage('invalid')).toBe('Invalid role selected.');
     expect(resolveRoleUpdateMessage('author_required')).toContain('Only author accounts');
+    expect(resolveRoleUpdateMessage('editor_required')).toContain('Only editor accounts');
     expect(resolveRoleUpdateMessage('unexpected')).toBe('');
   });
 });

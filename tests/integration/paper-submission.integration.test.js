@@ -113,6 +113,8 @@ describe('integration: paper submission api', () => {
     expect(dashboardAsEditor.statusCode).toBe(200);
     expect(dashboardAsEditor.text).toContain('Current role: Editor');
     expect(dashboardAsEditor.text).toContain('data-dashboard-submit-paper-disabled');
+    expect(dashboardAsEditor.text).toContain('data-dashboard-assign-reviewers');
+    expect(dashboardAsEditor.text).not.toContain('data-dashboard-assign-reviewers-disabled');
 
     const blockedSubmitPage = await invokeAppRoute(app, {
       method: 'get',
@@ -151,6 +153,7 @@ describe('integration: paper submission api', () => {
     expect(dashboardAsAuthor.text).toContain('Current role: Author');
     expect(dashboardAsAuthor.text).toContain('Role updated successfully.');
     expect(dashboardAsAuthor.text).toContain('data-dashboard-submit-paper');
+    expect(dashboardAsAuthor.text).toContain('data-dashboard-assign-reviewers-disabled');
 
     const submitPage = await invokeAppRoute(app, {
       method: 'get',

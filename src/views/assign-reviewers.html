@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Assign Reviewers</title>
+    <link rel="stylesheet" href="/assets/css/assign-reviewers.css" />
+  </head>
+  <body>
+    <main data-assignment-root>
+      <h1>Assign Reviewers</h1>
+      <p data-assignment-banner aria-live="polite"></p>
+      <label>
+        Paper
+        <select data-assignment-paper></select>
+      </label>
+      <label>
+        Reviewers
+        <select data-assignment-reviewers multiple size="6"></select>
+      </label>
+      <button type="button" data-assignment-confirm>Confirm Assignment</button>
+      <p data-outcome-banner aria-live="polite"></p>
+      <ul data-outcome-list></ul>
+    </main>
+    <script type="module">
+      import { bootstrapAssignReviewersPage } from '/assets/js/assign-reviewers-page.js';
+
+      bootstrapAssignReviewersPage();
+    </script>
+  </body>
+</html>

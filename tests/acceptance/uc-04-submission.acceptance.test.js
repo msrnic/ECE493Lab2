@@ -94,6 +94,8 @@ describe('UC-04-AS acceptance suite', () => {
     expect(dashboardAsEditor.text).toContain('Current role: Editor');
     expect(dashboardAsEditor.text).toContain('data-dashboard-role-form');
     expect(dashboardAsEditor.text).toContain('data-dashboard-submit-paper-disabled');
+    expect(dashboardAsEditor.text).toContain('data-dashboard-assign-reviewers');
+    expect(dashboardAsEditor.text).not.toContain('data-dashboard-assign-reviewers-disabled');
 
     const roleUpdate = await invokeAppRoute(app, {
       method: 'post',
@@ -122,6 +124,7 @@ describe('UC-04-AS acceptance suite', () => {
     expect(dashboardAsAuthor.text).toContain('Current role: Author');
     expect(dashboardAsAuthor.text).toContain('Role updated successfully.');
     expect(dashboardAsAuthor.text).toContain('data-dashboard-submit-paper');
+    expect(dashboardAsAuthor.text).toContain('data-dashboard-assign-reviewers-disabled');
 
     const submitPage = await invokeAppRoute(app, {
       method: 'get',

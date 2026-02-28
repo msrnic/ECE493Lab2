@@ -52,7 +52,8 @@ export async function invokeHandler(handler, { body, query, headers, params, fil
     query: query ?? {},
     headers: headers ?? {},
     params: params ?? {},
-    file
+    file,
+    path: request?.path ?? ''
   };
   const requestWithOverrides = {
     ...requestShape,
@@ -80,7 +81,8 @@ export async function invokeAppRoute(
     query: query ?? {},
     headers: headers ?? {},
     params: params ?? {},
-    file
+    file,
+    path
   };
   const requestWithOverrides = {
     ...requestShape,

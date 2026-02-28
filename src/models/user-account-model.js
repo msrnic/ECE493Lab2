@@ -27,11 +27,13 @@ export function createPendingUserAccount({
   role = DEFAULT_USER_ROLE,
   now = new Date()
 }) {
+  const normalizedRole = normalizeUserRole(role);
   return {
     fullName: fullName.trim(),
     emailNormalized,
     passwordHash,
-    role: normalizeUserRole(role),
+    role: normalizedRole,
+    lastAssignedRole: normalizedRole,
     status: 'pending',
     createdAt: now.toISOString(),
     activatedAt: null
@@ -39,9 +41,11 @@ export function createPendingUserAccount({
 }
 
 export function updateUserAccountRole(account, role) {
+  const normalizedRole = normalizeUserRole(role);
   return {
     ...account,
-    role: normalizeUserRole(role)
+    role: normalizedRole,
+    lastAssignedRole: normalizedRole
   };
 }
 

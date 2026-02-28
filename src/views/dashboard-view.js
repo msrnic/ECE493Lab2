@@ -29,6 +29,10 @@ export function resolveRoleUpdateMessage(roleUpdated) {
     return 'Only author accounts can access paper submission. Change your role to author.';
   }
 
+  if (roleUpdated === 'editor_required') {
+    return 'Only editor accounts can assign reviewers. Change your role to editor.';
+  }
+
   return '';
 }
 
@@ -50,6 +54,9 @@ export function renderDashboardPage({ email, role = 'author', roleUpdated } = {}
   const submitSection = normalizedRole === 'author'
     ? '<p><a href="/submit-paper" data-dashboard-submit-paper>Submit paper</a></p>'
     : '<p data-dashboard-submit-paper-disabled>Switch your role to author to submit a paper.</p>';
+  const assignmentSection = normalizedRole === 'editor'
+    ? '<p><a href="/assign-reviewers" data-dashboard-assign-reviewers>Assign reviewers</a></p>'
+    : '<p data-dashboard-assign-reviewers-disabled>Switch your role to editor to assign reviewers.</p>';
 
   return `<!doctype html>
 <html lang="en">
@@ -74,6 +81,7 @@ export function renderDashboardPage({ email, role = 'author', roleUpdated } = {}
       </form>
       <p data-dashboard-role-status>${escapeHtml(roleMessage)}</p>
       ${submitSection}
+      ${assignmentSection}
       <p><a href="/account/password-change">Change password</a></p>
       <form method="post" action="/logout">
         <button type="submit" data-dashboard-logout>Log Out</button>

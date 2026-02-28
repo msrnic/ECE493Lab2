@@ -46,6 +46,7 @@ export function resolvePersistencePaths({
     rootDirectory: baseRoot,
     databaseDirectory: resolvedDatabaseDirectory,
     uploadsDirectory: resolvedUploadsDirectory,
+    authDataFilePath: path.join(resolvedDatabaseDirectory, 'auth.json'),
     submissionDataFilePath: path.join(resolvedDatabaseDirectory, 'submissions.json'),
     fileDataFilePath: path.join(resolvedDatabaseDirectory, 'files.json'),
     sessionStateDataFilePath: path.join(resolvedDatabaseDirectory, 'session-states.json'),

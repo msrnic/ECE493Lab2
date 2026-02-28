@@ -11,6 +11,7 @@ describe('persistence-paths', () => {
     expect(paths.rootDirectory).toBe(process.cwd());
     expect(paths.databaseDirectory).toBe(path.join(process.cwd(), 'database'));
     expect(paths.uploadsDirectory).toBe(path.join(process.cwd(), 'uploads'));
+    expect(paths.authDataFilePath).toBe(path.join(process.cwd(), 'database', 'auth.json'));
     expect(paths.submissionDataFilePath).toBe(path.join(process.cwd(), 'database', 'submissions.json'));
   });
 

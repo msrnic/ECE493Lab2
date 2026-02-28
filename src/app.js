@@ -13,10 +13,16 @@ import { createSubmissionController } from './controllers/submission-controller.
 import { createUploadController } from './controllers/upload-controller.js';
 import { createDraftController } from './controllers/draft-controller.js';
 import { createDraftVersionController } from './controllers/draft-version-controller.js';
+import { createReviewerAssignmentController } from './controllers/ReviewerAssignmentController.js';
+import { createInvitationController } from './controllers/InvitationController.js';
 import { resolvePersistencePaths } from './config/persistence-paths.js';
 import { createSessionAuthMiddleware } from './middleware/session-auth.js';
 import { createDeduplicationModel } from './models/deduplication-model.js';
 import { createDraftState } from './models/draft-submission-model.js';
+import { createPaperSubmissionModel } from './models/PaperSubmissionModel.js';
+import { createReviewerModel } from './models/ReviewerModel.js';
+import { createReviewerAssignmentModel } from './models/ReviewerAssignmentModel.js';
+import { createReviewInvitationModel } from './models/ReviewInvitationModel.js';
 import {
   createPasswordChangeApiController,
   createPasswordChangePageController
@@ -27,9 +33,9 @@ import { createAuditLogModel } from './models/audit-log-model.js';
 import { createAttemptThrottleModel } from './models/attempt-throttle-model.js';
 import { createNotificationModel } from './models/notification-model.js';
 import { createPasswordChangeModel } from './models/password-change-model.js';
-import { createInMemoryRepository } from './models/repository.js';
 import { createSessionModel } from './models/session-model.js';
 import { normalizeUserRole } from './models/user-account-model.js';
+import { createAuthRepository } from './repositories/auth-repository.js';
 import { createFileRepository } from './repositories/file-repository.js';
 import { createSessionStateRepository } from './repositories/session-state-repository.js';
 import { createSubmissionRepository } from './repositories/submission-repository.js';
@@ -104,7 +110,7 @@ function generateSyntheticCoverage() {
 }
 
 export function createApp({
-  repository = createInMemoryRepository(),
+  repository,
   submissionRepository,
   fileRepository,
   sessionStateRepository,
@@ -120,16 +126,21 @@ export function createApp({
   hashPasswordFn,
   authSessionTtlMs,
   authNodeEnv,
+  sendInvitationFn,
   persistenceRootDirectory,
   databaseDirectory,
   uploadsDirectory
 } = {}) {
-  const nodeEnv = authNodeEnv ?? process.env.NODE_ENV;
+  const processNodeEnv = process.env.NODE_ENV;
+  const authRuntimeEnv = authNodeEnv ?? processNodeEnv;
   const persistencePaths = resolvePersistencePaths({
-    nodeEnv,
+    nodeEnv: processNodeEnv,
     rootDirectory: persistenceRootDirectory,
     databaseDirectory,
     uploadsDirectory
+  });
+  const resolvedRepository = repository ?? createAuthRepository({
+    databaseFilePath: persistencePaths.authDataFilePath
   });
   const resolvedSubmissionRepository = submissionRepository ?? createSubmissionRepository({
     databaseFilePath: persistencePaths.submissionDataFilePath,
@@ -153,16 +164,17 @@ export function createApp({
   const app = express();
   const indexPageHtml = readFileSync(path.join(__dirname, 'index.html'), 'utf8');
   const submitPaperTemplateHtml = readFileSync(path.join(__dirname, 'views', 'submit-paper.html'), 'utf8');
+  const assignReviewersTemplateHtml = readFileSync(path.join(__dirname, 'views', 'assign-reviewers.html'), 'utf8');
   const emailDeliveryService = createEmailDeliveryService({
-    repository,
+    repository: resolvedRepository,
     sendEmail,
     nowFn
   });
   const authController = createAuthController({
-    repository,
+    repository: resolvedRepository,
     nowFn,
     hashPasswordFn,
-    nodeEnv,
+    nodeEnv: authRuntimeEnv,
     sessionStoreTtlMs: authSessionTtlMs
   });
   const attemptThrottleModel = createAttemptThrottleModel({ nowFn });
@@ -171,15 +183,15 @@ export function createApp({
     nowFn
   });
   const notificationModel = createNotificationModel({
-    repository,
+    repository: resolvedRepository,
     nowFn
   });
   const auditLogModel = createAuditLogModel({
-    repository,
+    repository: resolvedRepository,
     nowFn
   });
   const passwordChangeModel = createPasswordChangeModel({
-    repository,
+    repository: resolvedRepository,
     nowFn,
     hashPasswordFn,
     attemptThrottleModel,
@@ -195,7 +207,7 @@ export function createApp({
     authController
   });
   const roleController = createRoleController({
-    repository,
+    repository: resolvedRepository,
     authController
   });
   const submissionController = createSubmissionController({
@@ -230,7 +242,7 @@ export function createApp({
     now: draftNow,
     internalServiceToken,
     resolveRole: (userId) => {
-      const role = normalizeUserRole(repository.findUserById(userId)?.role);
+      const role = normalizeUserRole(resolvedRepository.findUserById(userId)?.role);
       return role === 'editor' ? 'admin' : role;
     }
   });
@@ -239,9 +251,34 @@ export function createApp({
     idFactory,
     now: draftNow,
     resolveRole: (userId) => {
-      const role = normalizeUserRole(repository.findUserById(userId)?.role);
+      const role = normalizeUserRole(resolvedRepository.findUserById(userId)?.role);
       return role === 'editor' ? 'admin' : role;
     }
+  });
+  const paperSubmissionModel = createPaperSubmissionModel();
+  const reviewerModel = createReviewerModel({
+    repository: resolvedRepository
+  });
+  const invitationModel = createReviewInvitationModel({
+    idFactory,
+    nowFn: () => nowFn().toISOString()
+  });
+  const invitationController = createInvitationController({
+    invitationModel,
+    sendInvitation: sendInvitationFn
+  });
+  const reviewerAssignmentModel = createReviewerAssignmentModel({
+    paperSubmissionModel,
+    reviewerModel,
+    invitationModel,
+    idFactory,
+    nowFn: () => nowFn().toISOString()
+  });
+  const reviewerAssignmentController = createReviewerAssignmentController({
+    paperSubmissionModel,
+    reviewerModel,
+    reviewerAssignmentModel,
+    invitationController
   });
 
   app.use(express.json());
@@ -259,6 +296,43 @@ export function createApp({
   app.get('/login', (_req, res) => {
     res.status(200).type('html').send(renderLoginPage());
   });
+  function requireEditorSession(req, res, next) {
+    const isApiRequest = String(req.path ?? req.originalUrl ?? '').startsWith('/api/');
+    const session = authController.getAuthenticatedSession(req);
+    if (!session) {
+      if (isApiRequest) {
+        res.status(401).json({
+          code: 'AUTHENTICATION_REQUIRED',
+          message: 'Authentication is required.'
+        });
+        return;
+      }
+
+      res.status(302).redirect('/login');
+      return;
+    }
+
+    const account = resolvedRepository.findUserById(session.user.id);
+    if (normalizeUserRole(account?.role) !== 'editor') {
+      if (isApiRequest) {
+        res.status(403).json({
+          code: 'ASSIGNMENT_FORBIDDEN',
+          message: 'Only editors can assign reviewers.'
+        });
+        return;
+      }
+
+      res.status(302).redirect('/dashboard?roleUpdated=editor_required');
+      return;
+    }
+
+    req.assignmentEditorId = session.user.id;
+    next();
+  }
+
+  app.get('/assign-reviewers', requireEditorSession, (_req, res) => {
+    res.status(200).type('html').send(assignReviewersTemplateHtml);
+  });
   app.get('/submit-paper', (req, res) => {
     const session = authController.getAuthenticatedSession(req);
     if (!session) {
@@ -266,7 +340,7 @@ export function createApp({
       return;
     }
 
-    const account = repository.findUserById(session.user.id);
+    const account = resolvedRepository.findUserById(session.user.id);
     if (normalizeUserRole(account?.role) !== 'author') {
       res.status(302).redirect('/dashboard?roleUpdated=author_required');
       return;
@@ -293,7 +367,7 @@ export function createApp({
       return;
     }
 
-    const account = repository.findUserById(session.user.id);
+    const account = resolvedRepository.findUserById(session.user.id);
     res.status(200).type('html').send(
       renderDashboardPage({
         email: session.user.email,
@@ -305,15 +379,15 @@ export function createApp({
   app.post(
     '/api/registrations',
     createRegistrationController({
-      repository,
+      repository: resolvedRepository,
       emailDeliveryService,
       nowFn,
       tokenTtlMs,
       hashPasswordFn,
-      includeConfirmationUrl: nodeEnv !== 'production'
+      includeConfirmationUrl: authRuntimeEnv !== 'production'
     })
   );
-  app.get('/api/registrations/confirm', createConfirmationController({ repository, nowFn }));
+  app.get('/api/registrations/confirm', createConfirmationController({ repository: resolvedRepository, nowFn }));
   app.post('/api/v1/account/password-change', passwordChangeApiController);
   app.post('/api/v1/submissions', sessionAuthMiddleware, submissionController.createSubmission);
   app.post('/api/v1/submissions/:submissionId/files', sessionAuthMiddleware, uploadController.uploadSubmissionFile);
@@ -326,6 +400,29 @@ export function createApp({
   app.get('/api/submissions/:submissionId/draft/versions/:versionId', sessionAuthMiddleware, draftVersionController.getDraftVersion);
   app.post('/api/submissions/:submissionId/draft/versions/:versionId/restore', sessionAuthMiddleware, draftVersionController.restoreDraftVersion);
   app.post('/api/submissions/:submissionId/draft/retention/prune', draftController.pruneRetention);
+  app.get('/api/papers', requireEditorSession, reviewerAssignmentController.listSubmittedPapers);
+  app.get('/api/papers/:paperId/reviewer-candidates', requireEditorSession, reviewerAssignmentController.listReviewerCandidates);
+  app.post('/api/papers/:paperId/assignment-attempts', requireEditorSession, reviewerAssignmentController.createAttempt);
+  app.patch(
+    '/api/papers/:paperId/assignment-attempts/:attemptId/selections/:selectionId',
+    requireEditorSession,
+    reviewerAssignmentController.replaceSelection
+  );
+  app.post(
+    '/api/papers/:paperId/assignment-attempts/:attemptId/confirm',
+    requireEditorSession,
+    reviewerAssignmentController.confirmAttempt
+  );
+  app.get(
+    '/api/papers/:paperId/assignment-outcomes/:attemptId',
+    requireEditorSession,
+    reviewerAssignmentController.getOutcome
+  );
+  app.post('/api/invitations/:invitationId/dispatch', invitationController.dispatch);
+  app.post('/api/invitations/:invitationId/retry', invitationController.retry);
+  app.get('/api/invitations/:invitationId', invitationController.getStatus);
+  app.post('/api/invitations/:invitationId/cancel', invitationController.cancel);
+  app.get('/api/invitations/:invitationId/failure-log', invitationController.getFailureLog);
   app.use('/api/auth', createAuthRoutes({ authController }));
 
   app.use((error, _req, res, _next) => {
@@ -336,7 +433,7 @@ export function createApp({
     });
   });
 
-  app.locals.repository = repository;
+  app.locals.repository = resolvedRepository;
   app.locals.emailDeliveryService = emailDeliveryService;
   app.locals.authController = authController;
   app.locals.passwordChangeModel = passwordChangeModel;
@@ -357,6 +454,12 @@ export function createApp({
   app.locals.draftState = draftState;
   app.locals.draftController = draftController;
   app.locals.draftVersionController = draftVersionController;
+  app.locals.paperSubmissionModel = paperSubmissionModel;
+  app.locals.reviewerModel = reviewerModel;
+  app.locals.reviewerAssignmentModel = reviewerAssignmentModel;
+  app.locals.invitationModel = invitationModel;
+  app.locals.reviewerAssignmentController = reviewerAssignmentController;
+  app.locals.invitationController = invitationController;
 
   return app;
 }

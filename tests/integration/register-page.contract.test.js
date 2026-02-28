@@ -23,6 +23,7 @@ describe('contract: GET /register', () => {
     expect(response.contentType).toBe('html');
     expect(response.text).toContain('href="/register"');
     expect(response.text).toContain('href="/login"');
+    expect(response.text).not.toContain('href="/assign-reviewers"');
   });
 
   it('returns html registration page', async () => {

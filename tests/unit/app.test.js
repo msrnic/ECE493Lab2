@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { createApp } from '../../src/app.js';
 import { hashPassword } from '../../src/models/user-account-model.js';
-import { invokeHandler } from '../helpers/http-harness.js';
+import { invokeAppRoute, invokeHandler } from '../helpers/http-harness.js';
 import { validRegistrationPayload } from '../helpers/test-support.js';
+import { createTempPersistencePaths } from '../helpers/persistence-paths.js';
 
 function extractInputValue(html, inputName) {
   const match = html.match(new RegExp(`<input[^>]*name="${inputName}"[^>]*value="([^"]*)"`, 'i'));
@@ -84,6 +85,7 @@ describe('app bootstrap', () => {
     expect(rootResponse.text).toContain('Conference Management System');
     expect(rootResponse.text).toContain('href="/register"');
     expect(rootResponse.text).toContain('href="/login"');
+    expect(rootResponse.text).not.toContain('href="/assign-reviewers"');
 
     const loginResponse = await invokeHandler(loginPageHandler);
     expect(loginResponse.statusCode).toBe(200);
@@ -93,6 +95,13 @@ describe('app bootstrap', () => {
     const submitPaperResponse = await invokeHandler(submitPaperHandler);
     expect(submitPaperResponse.statusCode).toBe(302);
     expect(submitPaperResponse.redirectLocation).toBe('/login');
+
+    const assignReviewersRedirect = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/assign-reviewers'
+    });
+    expect(assignReviewersRedirect.statusCode).toBe(302);
+    expect(assignReviewersRedirect.redirectLocation).toBe('/login');
 
     const passwordPageRedirect = await invokeHandler(passwordPageHandler);
     expect(passwordPageRedirect.statusCode).toBe(302);
@@ -137,6 +146,8 @@ describe('app bootstrap', () => {
     expect(dashboardEditor.statusCode).toBe(200);
     expect(dashboardEditor.text).toContain('Current role: Editor');
     expect(dashboardEditor.text).toContain('data-dashboard-submit-paper-disabled');
+    expect(dashboardEditor.text).toContain('data-dashboard-assign-reviewers');
+    expect(dashboardEditor.text).not.toContain('data-dashboard-assign-reviewers-disabled');
 
     const submitPaperAsEditor = await invokeHandler(submitPaperHandler, {
       headers: {
@@ -145,6 +156,16 @@ describe('app bootstrap', () => {
     });
     expect(submitPaperAsEditor.statusCode).toBe(302);
     expect(submitPaperAsEditor.redirectLocation).toBe('/dashboard?roleUpdated=author_required');
+
+    const assignReviewersAsEditor = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/assign-reviewers',
+      headers: {
+        cookie: sessionCookie
+      }
+    });
+    expect(assignReviewersAsEditor.statusCode).toBe(200);
+    expect(assignReviewersAsEditor.text).toContain('data-assignment-root');
 
     const roleUpdate = await invokeHandler(roleHandler, {
       headers: {
@@ -169,6 +190,7 @@ describe('app bootstrap', () => {
     expect(dashboardAuthor.text).toContain('Current role: Author');
     expect(dashboardAuthor.text).toContain('Role updated successfully.');
     expect(dashboardAuthor.text).toContain('data-dashboard-submit-paper');
+    expect(dashboardAuthor.text).toContain('data-dashboard-assign-reviewers-disabled');
 
     const submitPaperAsAuthor = await invokeHandler(submitPaperHandler, {
       headers: {
@@ -193,6 +215,16 @@ describe('app bootstrap', () => {
     expect(submitPaperAsAuthor.text).toContain('data-draft-load');
     expect(submitPaperAsAuthor.text).toContain('data-draft-history-refresh');
     expect(submitPaperAsAuthor.text).toContain('data-draft-history-list');
+
+    const assignReviewersAsAuthor = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/assign-reviewers',
+      headers: {
+        cookie: sessionCookie
+      }
+    });
+    expect(assignReviewersAsAuthor.statusCode).toBe(302);
+    expect(assignReviewersAsAuthor.redirectLocation).toBe('/dashboard?roleUpdated=editor_required');
 
     const logoutResponse = await invokeHandler(logoutHandler, {
       headers: {
@@ -220,7 +252,12 @@ describe('app bootstrap', () => {
   });
 
   it('omits registration confirmationUrl in production mode', async () => {
-    const app = createApp({ authNodeEnv: 'production' });
+    const paths = createTempPersistencePaths('ece493-app-prod-');
+    const app = createApp({
+      authNodeEnv: 'production',
+      databaseDirectory: paths.databaseDirectory,
+      uploadsDirectory: paths.uploadsDirectory
+    });
     const registrationHandler = getRouteHandler(app, 'post', '/api/registrations');
 
     const registrationResponse = await invokeHandler(registrationHandler, {

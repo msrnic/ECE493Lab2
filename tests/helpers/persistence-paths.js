@@ -11,6 +11,7 @@ export function createTempPersistencePaths(prefix = 'ece493-test-') {
     rootDirectory,
     databaseDirectory,
     uploadsDirectory,
+    authDataFilePath: path.join(databaseDirectory, 'auth.json'),
     submissionDataFilePath: path.join(databaseDirectory, 'submissions.json'),
     fileDataFilePath: path.join(databaseDirectory, 'files.json'),
     sessionStateDataFilePath: path.join(databaseDirectory, 'session-states.json'),

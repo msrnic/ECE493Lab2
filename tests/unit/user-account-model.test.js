@@ -21,6 +21,7 @@ describe('user-account-model', () => {
     expect(account.fullName).toBe('Alice Example');
     expect(account.status).toBe('pending');
     expect(account.role).toBe('author');
+    expect(account.lastAssignedRole).toBe('author');
     expect(account.activatedAt).toBeNull();
     expect(account.createdAt).toBe(now.toISOString());
   });
@@ -72,7 +73,8 @@ describe('user-account-model', () => {
       )
     ).toEqual({
       id: 'usr-role',
-      role: 'reviewer'
+      role: 'reviewer',
+      lastAssignedRole: 'reviewer'
     });
   });
 });
