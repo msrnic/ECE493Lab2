@@ -4,6 +4,7 @@ import {
   renderValidationSummary,
   setSubmissionStatus
 } from '../../views/submit-paper-view.js';
+import { bootstrapDraftPage } from './draft-page.js';
 
 async function readJsonSafe(response) {
   try {
@@ -38,10 +39,15 @@ function getManuscriptFile(form) {
 }
 
 function toUploadFilePayload(file) {
+  const restoredSize = Number(file?.draftSizeBytes);
+  const size = Number.isFinite(restoredSize) && restoredSize > 0
+    ? restoredSize
+    : Number(file?.size ?? 0);
+
   return {
     name: String(file?.name ?? '').trim(),
     type: String(file?.type ?? '').trim(),
-    size: Number(file?.size ?? 0)
+    size
   };
 }
 
@@ -154,6 +160,13 @@ export function bootstrapSubmitPaperPage({
   }
 
   const api = createSubmissionApi({ fetchImpl });
+  bootstrapDraftPage({
+    documentRef,
+    formRef: form,
+    apiClientOptions: {
+      fetchImpl
+    }
+  });
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();

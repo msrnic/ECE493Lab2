@@ -170,6 +170,11 @@ describe('integration: paper submission api', () => {
     expect(submitPage.text).toContain('data-submit-paper-role-form');
     expect(submitPage.text).toContain('data-submit-paper-role-select');
     expect(submitPage.text).toContain('data-submit-paper-role-submit');
+    expect(submitPage.text).toContain('data-submit-paper-draft');
+    expect(submitPage.text).toContain('data-draft-save');
+    expect(submitPage.text).toContain('data-draft-load');
+    expect(submitPage.text).toContain('data-draft-history-refresh');
+    expect(submitPage.text).toContain('data-draft-history-list');
   });
 
   it('completes create -> upload -> validate -> submit -> status successfully', async () => {

@@ -11,9 +11,12 @@ import { createRoleController } from './controllers/role-controller.js';
 import { createStatusController } from './controllers/status-controller.js';
 import { createSubmissionController } from './controllers/submission-controller.js';
 import { createUploadController } from './controllers/upload-controller.js';
+import { createDraftController } from './controllers/draft-controller.js';
+import { createDraftVersionController } from './controllers/draft-version-controller.js';
 import { resolvePersistencePaths } from './config/persistence-paths.js';
 import { createSessionAuthMiddleware } from './middleware/session-auth.js';
 import { createDeduplicationModel } from './models/deduplication-model.js';
+import { createDraftState } from './models/draft-submission-model.js';
 import {
   createPasswordChangeApiController,
   createPasswordChangePageController
@@ -110,6 +113,9 @@ export function createApp({
   deduplicationModel,
   sendEmail = defaultSendEmail,
   nowFn = () => new Date(),
+  now,
+  idFactory,
+  internalServiceToken,
   tokenTtlMs,
   hashPasswordFn,
   authSessionTtlMs,
@@ -216,6 +222,27 @@ export function createApp({
   const sessionAuthMiddleware = createSessionAuthMiddleware({
     authController
   });
+  const draftState = createDraftState();
+  const draftNow = now ?? (() => nowFn().toISOString());
+  const draftController = createDraftController({
+    state: draftState,
+    idFactory,
+    now: draftNow,
+    internalServiceToken,
+    resolveRole: (userId) => {
+      const role = normalizeUserRole(repository.findUserById(userId)?.role);
+      return role === 'editor' ? 'admin' : role;
+    }
+  });
+  const draftVersionController = createDraftVersionController({
+    state: draftState,
+    idFactory,
+    now: draftNow,
+    resolveRole: (userId) => {
+      const role = normalizeUserRole(repository.findUserById(userId)?.role);
+      return role === 'editor' ? 'admin' : role;
+    }
+  });
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
@@ -293,6 +320,12 @@ export function createApp({
   app.post('/api/v1/submissions/:submissionId/validate', sessionAuthMiddleware, submissionController.validateSubmission);
   app.post('/api/v1/submissions/:submissionId/submit', sessionAuthMiddleware, submissionController.finalizeSubmission);
   app.get('/api/v1/submissions/:submissionId', sessionAuthMiddleware, statusController.getSubmission);
+  app.put('/api/submissions/:submissionId/draft', sessionAuthMiddleware, draftController.saveDraft);
+  app.get('/api/submissions/:submissionId/draft', sessionAuthMiddleware, draftController.getLatestDraft);
+  app.get('/api/submissions/:submissionId/draft/versions', sessionAuthMiddleware, draftVersionController.listDraftVersions);
+  app.get('/api/submissions/:submissionId/draft/versions/:versionId', sessionAuthMiddleware, draftVersionController.getDraftVersion);
+  app.post('/api/submissions/:submissionId/draft/versions/:versionId/restore', sessionAuthMiddleware, draftVersionController.restoreDraftVersion);
+  app.post('/api/submissions/:submissionId/draft/retention/prune', draftController.pruneRetention);
   app.use('/api/auth', createAuthRoutes({ authController }));
 
   app.use((error, _req, res, _next) => {
@@ -321,6 +354,9 @@ export function createApp({
   app.locals.uploadController = uploadController;
   app.locals.statusController = statusController;
   app.locals.roleController = roleController;
+  app.locals.draftState = draftState;
+  app.locals.draftController = draftController;
+  app.locals.draftVersionController = draftVersionController;
 
   return app;
 }

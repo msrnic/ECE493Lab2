@@ -37,6 +37,29 @@ function setFormHtml() {
   `;
 }
 
+function setFormHtmlWithDraftControls() {
+  document.body.innerHTML = `
+    <form data-submit-paper-form>
+      <input name="sessionId" value="session-1" />
+      <input name="actionSequenceId" value="action-1" />
+      <input name="title" value="Paper" />
+      <textarea name="abstract">Abstract</textarea>
+      <input name="authorList" value="Author" />
+      <input name="keywords" value="keyword" />
+      <input name="manuscript" type="file" />
+      <button type="submit">Submit</button>
+    </form>
+    <p data-submit-paper-status></p>
+    <section data-submit-paper-draft>
+      <button type="button" data-draft-save>Save Draft</button>
+      <button type="button" data-draft-load>Load Latest Draft</button>
+      <button type="button" data-draft-history-refresh>Refresh Draft History</button>
+      <p data-draft-status></p>
+      <ul data-draft-history-list></ul>
+    </section>
+  `;
+}
+
 describe('submit-paper-page', () => {
   it('creates submission API wrappers and handles request failures', async () => {
     const fetchImpl = vi
@@ -155,6 +178,40 @@ describe('submit-paper-page', () => {
         name: '',
         type: '',
         size: 0
+      }
+    });
+  });
+
+  it('prefers restored draft file size metadata when present', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ payload: { submissionId: 'sub-1' } }));
+    const api = createSubmissionApi({ fetchImpl });
+
+    const restoredFile = new File(['x'], 'restored.pdf', { type: 'application/pdf' });
+    Object.defineProperty(restoredFile, 'draftSizeBytes', {
+      value: 4096,
+      configurable: true
+    });
+
+    await expect(
+      api.uploadFile({
+        submissionId: 'sub-1',
+        category: 'manuscript',
+        file: restoredFile
+      })
+    ).resolves.toEqual({
+      ok: true,
+      status: 200,
+      payload: {
+        submissionId: 'sub-1'
+      }
+    });
+
+    expect(JSON.parse(fetchImpl.mock.calls[0][1].body)).toEqual({
+      category: 'manuscript',
+      file: {
+        name: 'restored.pdf',
+        type: 'application/pdf',
+        size: 4096
       }
     });
   });
@@ -629,5 +686,196 @@ describe('submit-paper-page', () => {
 
     expect(document.querySelector('[data-submit-paper-status]').dataset.status).toBe('success');
     expect(document.querySelector('[data-submit-paper-status]').textContent).toContain('CONF-1234');
+  });
+
+  it('uses injected fetch implementation for draft save/restore and hydrates restored values', async () => {
+    setFormHtmlWithDraftControls();
+
+    const originalFetch = globalThis.fetch;
+    Object.defineProperty(globalThis, 'fetch', {
+      value: vi.fn(async () => {
+        throw new Error('global fetch should not be used for draft flow');
+      }),
+      configurable: true
+    });
+
+    const savedVersions = [];
+    const fetchImpl = vi.fn(async (url, options = {}) => {
+      const method = String(options.method ?? 'GET').toUpperCase();
+      const body = typeof options.body === 'string' && options.body.length > 0
+        ? JSON.parse(options.body)
+        : {};
+
+      if (url === '/api/submissions/session-1/draft' && method === 'GET') {
+        if (savedVersions.length === 0) {
+          return new Response(
+            JSON.stringify({
+              code: 'DRAFT_NOT_FOUND',
+              message: 'No saved draft exists for this submission.'
+            }),
+            { status: 404, headers: { 'content-type': 'application/json' } }
+          );
+        }
+
+        return new Response(
+          JSON.stringify(savedVersions[savedVersions.length - 1]),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        );
+      }
+
+      if (url === '/api/submissions/session-1/draft' && method === 'PUT') {
+        const metadata = typeof body.metadata === 'string' ? JSON.parse(body.metadata) : (body.metadata ?? {});
+        const revision = savedVersions.length + 1;
+        const version = {
+          submissionId: 'session-1',
+          versionId: `v${revision}`,
+          revision,
+          savedAt: `2026-02-08T12:00:0${revision}.000Z`,
+          savedByUserId: 'author-1',
+          restoredFromVersionId: null,
+          metadata,
+          files: Array.isArray(body.files) ? body.files : []
+        };
+        savedVersions.push(version);
+
+        return new Response(
+          JSON.stringify({
+            submissionId: 'session-1',
+            versionId: version.versionId,
+            revision: version.revision,
+            savedAt: version.savedAt
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        );
+      }
+
+      if (url === '/api/submissions/session-1/draft/versions' && method === 'GET') {
+        return new Response(
+          JSON.stringify({
+            submissionId: 'session-1',
+            latestRevision: savedVersions.length,
+            versions: [...savedVersions]
+              .reverse()
+              .map((version) => ({
+                versionId: version.versionId,
+                revision: version.revision,
+                savedAt: version.savedAt,
+                savedByUserId: version.savedByUserId,
+                restoredFromVersionId: version.restoredFromVersionId
+              }))
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        );
+      }
+
+      const restoreMatch = String(url).match(/^\/api\/submissions\/session-1\/draft\/versions\/([^/]+)\/restore$/);
+      if (restoreMatch && method === 'POST') {
+        const sourceVersion = savedVersions.find((version) => version.versionId === restoreMatch[1]);
+        if (!sourceVersion) {
+          return new Response(
+            JSON.stringify({
+              code: 'DRAFT_NOT_FOUND',
+              message: 'Requested version not found.'
+            }),
+            { status: 404, headers: { 'content-type': 'application/json' } }
+          );
+        }
+
+        const revision = savedVersions.length + 1;
+        const restoredVersion = {
+          submissionId: 'session-1',
+          versionId: `v${revision}`,
+          revision,
+          savedAt: `2026-02-08T12:00:0${revision}.000Z`,
+          savedByUserId: 'author-1',
+          restoredFromVersionId: sourceVersion.versionId,
+          metadata: sourceVersion.metadata,
+          files: sourceVersion.files
+        };
+        savedVersions.push(restoredVersion);
+
+        return new Response(
+          JSON.stringify({
+            submissionId: 'session-1',
+            versionId: restoredVersion.versionId,
+            revision: restoredVersion.revision,
+            savedAt: restoredVersion.savedAt,
+            message: 'Draft saved successfully.'
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } }
+        );
+      }
+
+      throw new Error(`Unexpected request: ${method} ${url}`);
+    });
+
+    try {
+      bootstrapSubmitPaperPage({
+        documentRef: document,
+        fetchImpl
+      });
+
+      await flushAsyncWork();
+      await flushAsyncWork();
+
+      const manuscriptInput = document.querySelector('[name="manuscript"]');
+      const version1File = new File(['v1'], 'draft-v1.pdf', { type: 'application/pdf', lastModified: 11 });
+      Object.defineProperty(manuscriptInput, 'files', {
+        value: [version1File],
+        configurable: true
+      });
+
+      document.querySelector('[name="title"]').value = 'Version 1 title';
+      document.querySelector('[name="abstract"]').value = 'Version 1 abstract';
+      document.querySelector('[name="authorList"]').value = 'Alice, Bob';
+      document.querySelector('[name="keywords"]').value = 'alpha, beta';
+
+      document.querySelector('[data-draft-save]').click();
+      await flushAsyncWork();
+      await flushAsyncWork();
+
+      const version2File = new File(['v2x'], 'draft-v2.pdf', { type: 'application/pdf', lastModified: 12 });
+      Object.defineProperty(manuscriptInput, 'files', {
+        value: [version2File],
+        configurable: true
+      });
+
+      document.querySelector('[name="title"]').value = 'Version 2 title';
+      document.querySelector('[name="abstract"]').value = 'Version 2 abstract';
+      document.querySelector('[name="authorList"]').value = 'Carol';
+      document.querySelector('[name="keywords"]').value = 'gamma';
+
+      document.querySelector('[data-draft-save]').click();
+      await flushAsyncWork();
+      await flushAsyncWork();
+
+      const restoreV1Button = [...document.querySelectorAll('[data-draft-restore-version]')]
+        .find((button) => button.dataset.draftRestoreVersion === 'v1');
+      expect(restoreV1Button).toBeDefined();
+
+      restoreV1Button.click();
+      await flushAsyncWork();
+      await flushAsyncWork();
+
+      expect(document.querySelector('[name="title"]').value).toBe('Version 1 title');
+      expect(document.querySelector('[name="abstract"]').value).toBe('Version 1 abstract');
+      expect(document.querySelector('[name="authorList"]').value).toBe('Alice, Bob');
+      expect(document.querySelector('[name="keywords"]').value).toBe('alpha, beta');
+      expect(manuscriptInput.files).toHaveLength(1);
+      expect(manuscriptInput.files[0].name).toBe('draft-v1.pdf');
+      expect(manuscriptInput.files[0].draftSizeBytes).toBe(2);
+
+      expect(
+        fetchImpl.mock.calls.some(
+          ([url, init = {}]) =>
+            url === '/api/submissions/session-1/draft/versions/v1/restore' && String(init.method) === 'POST'
+        )
+      ).toBe(true);
+    } finally {
+      Object.defineProperty(globalThis, 'fetch', {
+        value: originalFetch,
+        configurable: true
+      });
+    }
   });
 });
