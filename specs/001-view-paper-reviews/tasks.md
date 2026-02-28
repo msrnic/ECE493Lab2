@@ -25,12 +25,12 @@
 
 **⚠️ CRITICAL**: No user story starts before this phase is complete.
 
-- [ ] T006 [UC-10] [UC-10-AS] Implement paper lookup helpers in `src/models/paper-model.js`
-- [ ] T007 [P] [UC-10] [UC-10-AS] Implement review repository helpers and status constants in `src/models/review-model.js`
-- [ ] T008 [P] [UC-10] [UC-10-AS] Implement paper/track editor-assignment lookup helpers in `src/models/editor-assignment-model.js`
-- [ ] T009 [P] [UC-10] [UC-10-AS] Implement review-access audit persistence and retention purge helper in `src/models/review-access-audit-model.js`
-- [ ] T010 [UC-10] [UC-10-AS] Implement review page/API route wiring in `src/controllers/review-page-controller.js` and `src/controllers/review-api-controller.js`
-- [ ] T011 [UC-10] [UC-10-AS] Create shared fixtures for papers, reviews, assignments, and audit events in `tests/fixtures/review-visibility-fixtures.js`
+- [X] T006 [UC-10] [UC-10-AS] Implement paper lookup helpers in `src/models/paper-model.js`
+- [X] T007 [P] [UC-10] [UC-10-AS] Implement review repository helpers and status constants in `src/models/review-model.js`
+- [X] T008 [P] [UC-10] [UC-10-AS] Implement paper/track editor-assignment lookup helpers in `src/models/editor-assignment-model.js`
+- [X] T009 [P] [UC-10] [UC-10-AS] Implement review-access audit persistence and retention purge helper in `src/models/review-access-audit-model.js`
+- [X] T010 [UC-10] [UC-10-AS] Implement review page/API route wiring in `src/controllers/review-page-controller.js` and `src/controllers/review-api-controller.js`
+- [X] T011 [UC-10] [UC-10-AS] Create shared fixtures for papers, reviews, assignments, and audit events in `tests/fixtures/review-visibility-fixtures.js`
 
 **Checkpoint**: Foundation complete; user-story implementation can begin.
 
@@ -44,18 +44,18 @@
 
 ### Validation Tasks
 
-- [ ] T012 [P] [US1] [UC-10] [UC-10-AS] Encode UC-10-AS completed-review scenario checks in `tests/acceptance/uc-10-view-reviews.acceptance.test.js`
-- [ ] T013 [P] [US1] [UC-10] [UC-10-AS] Add integration tests for authorized available and unauthorized unavailable responses on `GET /api/papers/:paperId/reviews` in `tests/integration/review-api-controller.test.js`
-- [ ] T014 [P] [US1] [UC-10] [UC-10-AS] Add unit tests for submitted-only filtering and reviewer identity projection in `tests/unit/review-model.test.js`
-- [ ] T015 [P] [US1] [UC-10] [UC-10-AS] Add unit tests for audit entry creation and one-year retention metadata in `tests/unit/review-access-audit-model.test.js`
+- [X] T012 [P] [US1] [UC-10] [UC-10-AS] Encode UC-10-AS completed-review scenario checks in `tests/acceptance/uc-10-view-reviews.acceptance.test.js`
+- [X] T013 [P] [US1] [UC-10] [UC-10-AS] Add integration tests for authorized available and unauthorized unavailable responses on `GET /api/papers/:paperId/reviews` in `tests/integration/review-api-controller.test.js`
+- [X] T014 [P] [US1] [UC-10] [UC-10-AS] Add unit tests for submitted-only filtering and reviewer identity projection in `tests/unit/review-model.test.js`
+- [X] T015 [P] [US1] [UC-10] [UC-10-AS] Add unit tests for audit entry creation and one-year retention metadata in `tests/unit/review-access-audit-model.test.js`
 
 ### Implementation Tasks
 
-- [ ] T016 [US1] [UC-10] [UC-10-AS] Implement submitted-review filtering and review summary projection in `src/models/review-model.js`
-- [ ] T017 [US1] [UC-10] [UC-10-AS] Implement assigned-editor authorization checks (paper and track scope) in `src/models/editor-assignment-model.js`
-- [ ] T018 [US1] [UC-10] [UC-10-AS] Implement available/unavailable API branches, successful-access audit trigger, and FR-006 outcome traceability emission in `src/controllers/review-api-controller.js`
-- [ ] T019 [US1] [UC-10] [UC-10-AS] Implement available-review page flow in `src/controllers/review-page-controller.js`, `src/assets/js/editor-reviews.js`, and `src/views/editor-reviews.html`
-- [ ] T020 [US1] [UC-10] [UC-10-AS] Add reviewer identity styling and record UC-10-AS completed-review evidence in `src/assets/css/editor-reviews.css` and `specs/001-view-paper-reviews/acceptance-evidence.md`
+- [X] T016 [US1] [UC-10] [UC-10-AS] Implement submitted-review filtering and review summary projection in `src/models/review-model.js`
+- [X] T017 [US1] [UC-10] [UC-10-AS] Implement assigned-editor authorization checks (paper and track scope) in `src/models/editor-assignment-model.js`
+- [X] T018 [US1] [UC-10] [UC-10-AS] Implement available/unavailable API branches, successful-access audit trigger, and FR-006 outcome traceability emission in `src/controllers/review-api-controller.js`
+- [X] T019 [US1] [UC-10] [UC-10-AS] Implement available-review page flow in `src/controllers/review-page-controller.js`, `src/assets/js/editor-reviews.js`, and `src/views/editor-reviews.html`
+- [X] T020 [US1] [UC-10] [UC-10-AS] Add reviewer identity styling and record UC-10-AS completed-review evidence in `src/assets/css/editor-reviews.css` and `specs/001-view-paper-reviews/acceptance-evidence.md`
 
 **Checkpoint**: US1 delivers MVP behavior and is independently verifiable.
 
@@ -69,17 +69,17 @@
 
 ### Validation Tasks
 
-- [ ] T021 [P] [US2] [UC-10] [UC-10-AS] Encode UC-10-AS pending-review scenario checks in `tests/acceptance/uc-10-view-reviews.acceptance.test.js`
-- [ ] T022 [P] [US2] [UC-10] [UC-10-AS] Add integration test coverage for pending response shape on `GET /api/papers/:paperId/reviews` in `tests/integration/review-api-controller.test.js`
-- [ ] T023 [P] [US2] [UC-10] [UC-10-AS] Add unit tests for pending-state response invariants in `tests/unit/review-model.test.js`
+- [X] T021 [P] [US2] [UC-10] [UC-10-AS] Encode UC-10-AS pending-review scenario checks in `tests/acceptance/uc-10-view-reviews.acceptance.test.js`
+- [X] T022 [P] [US2] [UC-10] [UC-10-AS] Add integration test coverage for pending response shape on `GET /api/papers/:paperId/reviews` in `tests/integration/review-api-controller.test.js`
+- [X] T023 [P] [US2] [UC-10] [UC-10-AS] Add unit tests for pending-state response invariants in `tests/unit/review-model.test.js`
 
 ### Implementation Tasks
 
-- [ ] T024 [US2] [UC-10] [UC-10-AS] Implement pending-result construction when no submitted reviews exist in `src/models/review-model.js`
-- [ ] T025 [US2] [UC-10] [UC-10-AS] Implement pending API response branch (`200`, `status=pending`, empty `reviews`) in `src/controllers/review-api-controller.js`
-- [ ] T026 [US2] [UC-10] [UC-10-AS] Implement pending-state rendering logic in `src/assets/js/editor-reviews.js` and `src/views/editor-reviews.html`
-- [ ] T027 [US2] [UC-10] [UC-10-AS] Add pending-status visual treatment and copy in `src/assets/css/editor-reviews.css`
-- [ ] T028 [US2] [UC-10] [UC-10-AS] Execute full `Acceptance Tests/UC-10-AS.md` and record pending-scenario evidence in `specs/001-view-paper-reviews/acceptance-evidence.md`
+- [X] T024 [US2] [UC-10] [UC-10-AS] Implement pending-result construction when no submitted reviews exist in `src/models/review-model.js`
+- [X] T025 [US2] [UC-10] [UC-10-AS] Implement pending API response branch (`200`, `status=pending`, empty `reviews`) in `src/controllers/review-api-controller.js`
+- [X] T026 [US2] [UC-10] [UC-10-AS] Implement pending-state rendering logic in `src/assets/js/editor-reviews.js` and `src/views/editor-reviews.html`
+- [X] T027 [US2] [UC-10] [UC-10-AS] Add pending-status visual treatment and copy in `src/assets/css/editor-reviews.css`
+- [X] T028 [US2] [UC-10] [UC-10-AS] Execute full `Acceptance Tests/UC-10-AS.md` and record pending-scenario evidence in `specs/001-view-paper-reviews/acceptance-evidence.md`
 
 **Checkpoint**: US2 is independently verifiable and preserves US1 behavior.
 
@@ -90,14 +90,14 @@
 **Purpose**: Final hardening, regression safety, and documentation updates across stories.
 
 - [ ] T029 [P] [UC-10] [UC-10-AS] Update FR-001 to FR-011 traceability and evidence links in `specs/001-view-paper-reviews/traceability.md`
-- [ ] T030 [P] [UC-10] [UC-10-AS] Add edge-case unit tests (mixed states, unavailable transitions) in `tests/unit/review-model.test.js` and `tests/unit/editor-assignment-model.test.js`
+- [X] T030 [P] [UC-10] [UC-10-AS] Add edge-case unit tests (mixed states, unavailable transitions) in `tests/unit/review-model.test.js` and `tests/unit/editor-assignment-model.test.js`
 - [ ] T031 [P] [UC-10] [UC-10-AS] Refactor duplicated review-response orchestration while preserving MVC boundaries in `src/controllers/review-api-controller.js` and `src/assets/js/editor-reviews.js`
-- [ ] T032 [P] [UC-10] [UC-10-AS] Add latency/performance integration test for `GET /api/papers/:paperId/reviews` in `tests/integration/review-api-performance.test.js`
+- [X] T032 [P] [UC-10] [UC-10-AS] Add latency/performance integration test for `GET /api/papers/:paperId/reviews` in `tests/integration/review-api-performance.test.js`
 - [ ] T033 [UC-10] [UC-10-AS] Record SC-002 benchmark evidence in `specs/001-view-paper-reviews/performance-report.md`
 - [ ] T034 [P] [UC-10] [UC-10-AS] Define scripted usability protocol for SC-005 in `specs/001-view-paper-reviews/usability-protocol.md`
 - [ ] T035 [UC-10] [UC-10-AS] Record SC-005 usability results in `specs/001-view-paper-reviews/usability-results.md`
 - [ ] T036 [UC-10] [UC-10-AS] Run full acceptance regression and store results in `specs/001-view-paper-reviews/regression-report.md`
-- [ ] T037 [UC-10] [UC-10-AS] Enforce c8 100% thresholds and capture final coverage summary in `specs/001-view-paper-reviews/coverage-report.md`
+- [X] T037 [UC-10] [UC-10-AS] Enforce c8 100% thresholds and capture final coverage summary in `specs/001-view-paper-reviews/coverage-report.md`
 - [ ] T038 [UC-10] [UC-10-AS] Update manual validation and curl examples in `specs/001-view-paper-reviews/quickstart.md`
 
 ---

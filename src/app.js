@@ -46,9 +46,15 @@ import { createStorageService } from './services/storage-service.js';
 import { createAccessRecordsController } from './controllers/access-records.controller.js';
 import { createOutageRetryController } from './controllers/outage-retry.controller.js';
 import { createPaperFileRequestController } from './controllers/paper-file-request.controller.js';
+import { createReviewApiController } from './controllers/review-api-controller.js';
+import { createReviewPageController } from './controllers/review-page-controller.js';
 import { createReviewerPaperAccessController } from './controllers/reviewer-paper-access.controller.js';
+import { createEditorAssignmentModel } from './models/editor-assignment-model.js';
 import { createReviewSubmissionController } from './controllers/review-submission-controller.js';
 import { createOutageRetryWindowModel } from './models/outage-retry-window.model.js';
+import { createPaperModel } from './models/paper-model.js';
+import { createReviewAccessAuditModel } from './models/review-access-audit-model.js';
+import { createReviewModel } from './models/review-model.js';
 import { renderAccessRecordsView } from './views/access-records.view.js';
 import { renderDashboardPage } from './views/dashboard-view.js';
 import { renderLoginPage } from './views/login-view.js';
@@ -208,6 +214,7 @@ export function createApp({
   const indexPageHtml = readFileSync(path.join(__dirname, 'index.html'), 'utf8');
   const submitPaperTemplateHtml = readFileSync(path.join(__dirname, 'views', 'submit-paper.html'), 'utf8');
   const assignReviewersTemplateHtml = readFileSync(path.join(__dirname, 'views', 'assign-reviewers.html'), 'utf8');
+  const editorReviewsTemplateHtml = readFileSync(path.join(__dirname, 'views', 'editor-reviews.html'), 'utf8');
   const emailDeliveryService = createEmailDeliveryService({
     repository: resolvedRepository,
     sendEmail,
@@ -327,6 +334,24 @@ export function createApp({
     nowFn
   });
   const reviewerPaperAssignmentModel = createReviewerPaperAssignmentModel();
+  const reviewVisibilityPaperModel = createPaperModel();
+  const reviewVisibilityModel = createReviewModel();
+  const reviewVisibilityEditorAssignmentModel = createEditorAssignmentModel();
+  const reviewVisibilityAuditModel = createReviewAccessAuditModel({
+    nowFn
+  });
+  const reviewApiController = createReviewApiController({
+    paperModel: reviewVisibilityPaperModel,
+    reviewModel: reviewVisibilityModel,
+    editorAssignmentModel: reviewVisibilityEditorAssignmentModel,
+    reviewAccessAuditModel: reviewVisibilityAuditModel,
+    nowFn
+  });
+  const reviewPageController = createReviewPageController({
+    paperModel: reviewVisibilityPaperModel,
+    editorAssignmentModel: reviewVisibilityEditorAssignmentModel,
+    templateHtml: editorReviewsTemplateHtml
+  });
   const invitationController = createInvitationController({
     invitationModel,
     sendInvitation: sendInvitationFn,
@@ -482,9 +507,23 @@ export function createApp({
     next();
   }
 
+  function attachAuthenticatedSession(req, _res, next) {
+    const session = authController.getAuthenticatedSession(req);
+    if (!session) {
+      next();
+      return;
+    }
+
+    const account = resolvedRepository.findUserById(session.user.id);
+    req.authenticatedSession = session;
+    req.authenticatedUserRole = normalizeUserRole(account?.role);
+    next();
+  }
+
   app.get('/assign-reviewers', requireEditorSession, (_req, res) => {
     res.status(200).type('html').send(assignReviewersTemplateHtml);
   });
+  app.get('/editor/reviews', attachAuthenticatedSession, reviewPageController.getReviewPage);
   app.get('/reviewer/papers', requireReviewerSession, reviewerPaperAccessController.getPaperAccessPage);
   app.get('/reviewer/invitations', requireReviewerSession, (req, res) => {
     const invitations = invitationModel.listInvitationsForReviewer(req.authenticatedReviewerId, {
@@ -588,6 +627,7 @@ export function createApp({
   app.get('/api/submissions/:submissionId/draft/versions/:versionId', sessionAuthMiddleware, draftVersionController.getDraftVersion);
   app.post('/api/submissions/:submissionId/draft/versions/:versionId/restore', sessionAuthMiddleware, draftVersionController.restoreDraftVersion);
   app.post('/api/submissions/:submissionId/draft/retention/prune', draftController.pruneRetention);
+  app.get('/api/papers/:paperId/reviews', attachAuthenticatedSession, reviewApiController.getPaperReviews);
   app.get('/api/papers', requireEditorSession, reviewerAssignmentController.listSubmittedPapers);
   app.get('/api/papers/:paperId/reviewer-candidates', requireEditorSession, reviewerAssignmentController.listReviewerCandidates);
   app.post('/api/papers/:paperId/assignment-attempts', requireEditorSession, reviewerAssignmentController.createAttempt);
@@ -677,6 +717,12 @@ export function createApp({
   app.locals.validationFeedbackModel = validationFeedbackModel;
   app.locals.reviewerPaperAssignmentModel = reviewerPaperAssignmentModel;
   app.locals.reviewSubmissionController = reviewSubmissionController;
+  app.locals.reviewVisibilityPaperModel = reviewVisibilityPaperModel;
+  app.locals.reviewVisibilityModel = reviewVisibilityModel;
+  app.locals.reviewVisibilityEditorAssignmentModel = reviewVisibilityEditorAssignmentModel;
+  app.locals.reviewVisibilityAuditModel = reviewVisibilityAuditModel;
+  app.locals.reviewApiController = reviewApiController;
+  app.locals.reviewPageController = reviewPageController;
 
   return app;
 }

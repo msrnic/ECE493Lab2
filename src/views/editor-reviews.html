@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Editor Review Visibility</title>
+    <link rel="stylesheet" href="/assets/css/editor-reviews.css" />
+  </head>
+  <body>
+    <main class="editor-reviews" data-editor-reviews-app>
+      <h1>Paper Reviews</h1>
+      <p class="editor-reviews__signed-in" data-editor-reviews-user>Signed in as __EDITOR_REVIEWS_USER_EMAIL__.</p>
+
+      <form class="editor-reviews__form" data-editor-reviews-form>
+        <label for="editor-reviews-paper">Selected paper</label>
+        <select id="editor-reviews-paper" name="paperId" data-editor-reviews-paper-select>
+          __EDITOR_REVIEWS_OPTIONS__
+        </select>
+        <button type="submit">View Reviews</button>
+      </form>
+
+      <section class="editor-reviews__status" data-editor-reviews-status>
+        <p data-editor-reviews-outcome>__EDITOR_REVIEWS_INITIAL_MESSAGE__</p>
+      </section>
+
+      <section class="editor-reviews__results" data-editor-reviews-list></section>
+
+      <p class="editor-reviews__back-link"><a href="/dashboard">Back to dashboard</a></p>
+    </main>
+
+    <script type="module">
+      import { bootstrapEditorReviewsPage } from '/assets/js/editor-reviews.js';
+
+      bootstrapEditorReviewsPage();
+    </script>
+  </body>
+</html>
