@@ -35,13 +35,23 @@ describe('ReviewerModel', () => {
             fullName: 'Reviewer Account',
             emailNormalized: 'reviewer.account@example.com',
             status: 'active',
-            lastAssignedRole: 'reviewer'
+            role: 'reviewer',
+            lastAssignedRole: 'editor'
           },
           {
             id: 'acct-2',
+            fullName: 'Legacy Reviewer Only',
+            emailNormalized: 'legacy.reviewer.only@example.com',
+            status: 'active',
+            role: 'editor',
+            lastAssignedRole: 'reviewer'
+          },
+          {
+            id: 'acct-3',
             fullName: 'Editor Account',
             emailNormalized: 'editor.account@example.com',
             status: 'active',
+            role: 'editor',
             lastAssignedRole: 'editor'
           },
           {
@@ -51,10 +61,11 @@ describe('ReviewerModel', () => {
             role: 'reviewer'
           },
           {
-            id: 'acct-3',
+            id: 'acct-5',
             fullName: 'Pending Reviewer',
             emailNormalized: 'pending.reviewer@example.com',
             status: 'pending',
+            role: 'reviewer',
             lastAssignedRole: 'reviewer'
           }
         ])
@@ -65,6 +76,7 @@ describe('ReviewerModel', () => {
     expect(candidates.some((candidate) => candidate.reviewerId === 'account-acct-1')).toBe(true);
     expect(candidates.some((candidate) => candidate.reviewerId === 'account-acct-2')).toBe(false);
     expect(candidates.some((candidate) => candidate.reviewerId === 'account-acct-3')).toBe(false);
+    expect(candidates.some((candidate) => candidate.reviewerId === 'account-acct-5')).toBe(false);
     expect(candidates.some((candidate) => candidate.reviewerId === 'account-acct-4')).toBe(true);
     expect(model.getCandidateById('paper-001', 'account-acct-1')?.displayName).toBe('Reviewer Account');
     expect(model.getCandidateById('paper-001', 'account-acct-4')?.displayName).toBe('role-fallback@example.com');

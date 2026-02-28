@@ -33,6 +33,10 @@ export function resolveRoleUpdateMessage(roleUpdated) {
     return 'Only editor accounts can assign reviewers. Change your role to editor.';
   }
 
+  if (roleUpdated === 'reviewer_required') {
+    return 'Only reviewer accounts can access invitation inbox. Change your role to reviewer.';
+  }
+
   return '';
 }
 
@@ -57,6 +61,9 @@ export function renderDashboardPage({ email, role = 'author', roleUpdated } = {}
   const assignmentSection = normalizedRole === 'editor'
     ? '<p><a href="/assign-reviewers" data-dashboard-assign-reviewers>Assign reviewers</a></p>'
     : '<p data-dashboard-assign-reviewers-disabled>Switch your role to editor to assign reviewers.</p>';
+  const reviewerInboxSection = normalizedRole === 'reviewer'
+    ? '<p><a href="/reviewer/invitations" data-dashboard-reviewer-inbox>Review invitation inbox</a></p>'
+    : '<p data-dashboard-reviewer-inbox-disabled>Switch your role to reviewer to open invitation inbox.</p>';
 
   return `<!doctype html>
 <html lang="en">
@@ -82,6 +89,7 @@ export function renderDashboardPage({ email, role = 'author', roleUpdated } = {}
       <p data-dashboard-role-status>${escapeHtml(roleMessage)}</p>
       ${submitSection}
       ${assignmentSection}
+      ${reviewerInboxSection}
       <p><a href="/account/password-change">Change password</a></p>
       <form method="post" action="/logout">
         <button type="submit" data-dashboard-logout>Log Out</button>

@@ -29,7 +29,7 @@
 - [ ] T009 [P] [UC-07] [UC-07-AS] Implement failure-log persistence helper in `src/models/failure-log-entry.repository.js`
 - [ ] T010 [UC-07] [UC-07-AS] Implement notification-provider abstraction and stub adapter in `src/services/notification-provider.js`
 - [ ] T011 [UC-07] [UC-07-AS] Implement editor/support/admin authorization policy helper in `src/controllers/authorization.policy.js`
-- [ ] T012 [UC-07] [UC-07-AS] Implement OpenAPI contract smoke test scaffold against `contracts/openapi.yaml` in `tests/integration/contracts/reviewer-invitation.openapi.test.js`
+- [X] T012 [UC-07] [UC-07-AS] Implement OpenAPI contract smoke test scaffold against `contracts/openapi.yaml` in `tests/integration/contracts/reviewer-invitation.openapi.test.js`
 
 **Checkpoint**: Foundation complete; user stories can proceed
 
@@ -43,18 +43,18 @@
 
 ### Tests
 
-- [ ] T013 [P] [UC-07] [UC-07-AS] [US1] Add unit tests for invitation creation and `pending -> delivered` transition in `tests/unit/models/review-invitation.model.test.js`
-- [ ] T014 [P] [UC-07] [UC-07-AS] [US1] Add integration tests for `POST /api/reviewer-assignments/{assignmentId}/invitations` and `GET /api/review-invitations/{invitationId}` in `tests/integration/invitation-lifecycle.us1.test.js`
+- [X] T013 [P] [UC-07] [UC-07-AS] [US1] Add unit tests for invitation creation and `pending -> delivered` transition in `tests/unit/models/review-invitation.model.test.js`
+- [X] T014 [P] [UC-07] [UC-07-AS] [US1] Add integration tests for `POST /api/reviewer-assignments/{assignmentId}/invitations` and `GET /api/review-invitations/{invitationId}` in `tests/integration/invitation-lifecycle.us1.test.js`
 - [ ] T015 [UC-07] [UC-07-AS] [US1] Execute main-success scenario from `Acceptance Tests/UC-07-AS.md` and record results in `tests/acceptance/UC-07-US1.md`
 
 ### Implementation
 
-- [ ] T016 [P] [UC-07] [UC-07-AS] [US1] Implement `ReviewInvitation` entity state rules (`pending`, `delivered`, timestamps) in `src/models/review-invitation.model.js`
-- [ ] T017 [P] [UC-07] [UC-07-AS] [US1] Implement initial `DeliveryAttempt` entity rules (`attemptNumber=0`) in `src/models/delivery-attempt.model.js`
-- [ ] T018 [UC-07] [UC-07-AS] [US1] Implement invitation create/reuse and status retrieval flows in `src/controllers/invitation.controller.js`
+- [X] T016 [P] [UC-07] [UC-07-AS] [US1] Implement `ReviewInvitation` entity state rules (`pending`, `delivered`, timestamps) in `src/models/review-invitation.model.js`
+- [X] T017 [P] [UC-07] [UC-07-AS] [US1] Implement initial `DeliveryAttempt` entity rules (`attemptNumber=0`) in `src/models/delivery-attempt.model.js`
+- [X] T018 [UC-07] [UC-07-AS] [US1] Implement invitation create/reuse and status retrieval flows in `src/controllers/invitation.controller.js`
 - [ ] T019 [UC-07] [UC-07-AS] [US1] Implement invitation status page structure and styling in `src/views/invitation-status/invitation-status.html` and `src/views/invitation-status/invitation-status.css`
 - [ ] T020 [UC-07] [UC-07-AS] [US1] Implement invitation status page behavior in `src/views/invitation-status/invitation-status.js`
-- [ ] T021 [UC-07] [UC-07-AS] [US1] Implement delivery-event callback handling for `delivered` outcomes in `src/controllers/invitation.controller.js`
+- [X] T021 [UC-07] [UC-07-AS] [US1] Implement delivery-event callback handling for `delivered` outcomes in `src/controllers/invitation.controller.js`
 - [ ] T022 [UC-07] [UC-07-AS] [US1] Re-run US1 unit/integration checks and save command output in `tests/acceptance/UC-07-US1-test-run.txt`
 
 **Checkpoint**: US1 is independently testable and demonstrates MVP value
@@ -69,19 +69,19 @@
 
 ### Tests
 
-- [ ] T023 [P] [UC-07] [UC-07-AS] [US2] Add unit tests for retry cadence, retry-limit, and cancellation transitions in `tests/unit/models/review-invitation.retry.test.js`
-- [ ] T024 [P] [UC-07] [UC-07-AS] [US2] Add integration tests for retry worker and assignment-removal cancellation endpoint in `tests/integration/invitation-retry.us2.test.js`
+- [X] T023 [P] [UC-07] [UC-07-AS] [US2] Add unit tests for retry cadence, retry-limit, and cancellation transitions in `tests/unit/models/review-invitation.retry.test.js`
+- [X] T024 [P] [UC-07] [UC-07-AS] [US2] Add integration tests for retry worker and assignment-removal cancellation endpoint in `tests/integration/invitation-retry.us2.test.js`
 - [ ] T025 [UC-07] [UC-07-AS] [US2] Execute retry/failure scenario from `Acceptance Tests/UC-07-AS.md` and record results in `tests/acceptance/UC-07-US2.md`
 
 ### Implementation
 
-- [ ] T026 [P] [UC-07] [UC-07-AS] [US2] Extend invitation state logic for `retryCount`, `nextRetryAt`, `failed`, `canceled`, and `followUpRequired` in `src/models/review-invitation.model.js`
-- [ ] T027 [P] [UC-07] [UC-07-AS] [US2] Extend delivery-attempt validation for sequential retry attempts (`1..3`) in `src/models/delivery-attempt.model.js`
-- [ ] T028 [P] [UC-07] [UC-07-AS] [US2] Implement failure-log entry creation rules for failed and terminal outcomes in `src/models/failure-log-entry.model.js`
-- [ ] T029 [UC-07] [UC-07-AS] [US2] Implement retry scheduling/processing worker for due invitations in `src/services/invitation-retry.worker.js`
-- [ ] T030 [UC-07] [UC-07-AS] [US2] Implement `POST /api/internal/review-invitations/retry-due` processing flow in `src/controllers/invitation.controller.js`
-- [ ] T031 [UC-07] [UC-07-AS] [US2] Implement `POST /api/reviewer-assignments/{assignmentId}/invitations/cancel` cancellation flow in `src/controllers/invitation.controller.js`
-- [ ] T032 [UC-07] [UC-07-AS] [US2] Extend delivery-event handling for retry stop-on-success and late-callback ignore behavior in `src/controllers/invitation.controller.js`
+- [X] T026 [P] [UC-07] [UC-07-AS] [US2] Extend invitation state logic for `retryCount`, `nextRetryAt`, `failed`, `canceled`, and `followUpRequired` in `src/models/review-invitation.model.js`
+- [X] T027 [P] [UC-07] [UC-07-AS] [US2] Extend delivery-attempt validation for sequential retry attempts (`1..3`) in `src/models/delivery-attempt.model.js`
+- [X] T028 [P] [UC-07] [UC-07-AS] [US2] Implement failure-log entry creation rules for failed and terminal outcomes in `src/models/failure-log-entry.model.js`
+- [X] T029 [UC-07] [UC-07-AS] [US2] Implement retry scheduling/processing worker for due invitations in `src/services/invitation-retry.worker.js`
+- [X] T030 [UC-07] [UC-07-AS] [US2] Implement `POST /api/internal/review-invitations/retry-due` processing flow in `src/controllers/invitation.controller.js`
+- [X] T031 [UC-07] [UC-07-AS] [US2] Implement `POST /api/reviewer-assignments/{assignmentId}/invitations/cancel` cancellation flow in `src/controllers/invitation.controller.js`
+- [X] T032 [UC-07] [UC-07-AS] [US2] Extend delivery-event handling for retry stop-on-success and late-callback ignore behavior in `src/controllers/invitation.controller.js`
 - [ ] T033 [UC-07] [UC-07-AS] [US2] Re-run US2 unit/integration checks and save command output in `tests/acceptance/UC-07-US2-test-run.txt`
 
 **Checkpoint**: US2 retry reliability and cancellation behavior are independently verifiable
@@ -97,16 +97,16 @@
 ### Tests
 
 - [ ] T034 [P] [UC-07] [UC-07-AS] [US3] Add unit tests for failure-log authorization policy allow/deny decisions in `tests/unit/controllers/failure-log.authorization.test.js`
-- [ ] T035 [P] [UC-07] [UC-07-AS] [US3] Add integration tests for `GET /api/papers/{paperId}/invitation-failure-logs` including pagination and 403 responses in `tests/integration/failure-log.us3.test.js`
+- [X] T035 [P] [UC-07] [UC-07-AS] [US3] Add integration tests for `GET /api/papers/{paperId}/invitation-failure-logs` including pagination and 403 responses in `tests/integration/failure-log.us3.test.js`
 - [ ] T036 [UC-07] [UC-07-AS] [US3] Execute failure-evidence access scenario and record results in `tests/acceptance/UC-07-US3.md`
 
 ### Implementation
 
-- [ ] T037 [P] [UC-07] [UC-07-AS] [US3] Implement failure-log query helpers with paper filter and pagination in `src/models/failure-log-entry.model.js`
-- [ ] T038 [UC-07] [UC-07-AS] [US3] Implement failure-log endpoint and RBAC checks in `src/controllers/failure-log.controller.js`
+- [X] T037 [P] [UC-07] [UC-07-AS] [US3] Implement failure-log query helpers with paper filter and pagination in `src/models/failure-log-entry.model.js`
+- [X] T038 [UC-07] [UC-07-AS] [US3] Implement failure-log endpoint and RBAC checks in `src/controllers/failure-log.controller.js`
 - [ ] T039 [UC-07] [UC-07-AS] [US3] Implement failure-log page structure and styling in `src/views/failure-log/failure-log.html` and `src/views/failure-log/failure-log.css`
 - [ ] T040 [UC-07] [UC-07-AS] [US3] Implement failure-log page behavior for authenticated fetch/render in `src/views/failure-log/failure-log.js`
-- [ ] T041 [UC-07] [UC-07-AS] [US3] Register failure-log routes and middleware wiring in `src/controllers/http-app.js`
+- [X] T041 [UC-07] [UC-07-AS] [US3] Register failure-log routes and middleware wiring in `src/controllers/http-app.js`
 - [ ] T042 [UC-07] [UC-07-AS] [US3] Re-run US3 unit/integration checks and save command output in `tests/acceptance/UC-07-US3-test-run.txt`
 
 **Checkpoint**: US3 failure visibility and access control are independently verifiable

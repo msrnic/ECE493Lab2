@@ -51,6 +51,7 @@ describe('app bootstrap', () => {
         { path: '/register', methods: ['get'] },
         { path: '/login', methods: ['get'] },
         { path: '/submit-paper', methods: ['get'] },
+        { path: '/reviewer/invitations', methods: ['get'] },
         { path: '/logout', methods: ['post'] },
         { path: '/account/role', methods: ['post'] },
         { path: '/account/password-change', methods: ['get'] },
@@ -58,6 +59,7 @@ describe('app bootstrap', () => {
         { path: '/api/registrations', methods: ['post'] },
         { path: '/api/registrations/confirm', methods: ['get'] },
         { path: '/api/v1/account/password-change', methods: ['post'] },
+        { path: '/api/reviewer/invitations', methods: ['get'] },
         { path: '/api/submissions/:submissionId/draft', methods: ['put'] },
         { path: '/api/submissions/:submissionId/draft', methods: ['get'] },
         { path: '/api/submissions/:submissionId/draft/versions', methods: ['get'] },
@@ -102,6 +104,20 @@ describe('app bootstrap', () => {
     });
     expect(assignReviewersRedirect.statusCode).toBe(302);
     expect(assignReviewersRedirect.redirectLocation).toBe('/login');
+
+    const reviewerInboxRedirect = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/reviewer/invitations'
+    });
+    expect(reviewerInboxRedirect.statusCode).toBe(302);
+    expect(reviewerInboxRedirect.redirectLocation).toBe('/login');
+
+    const reviewerInboxApiUnauthenticated = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/api/reviewer/invitations'
+    });
+    expect(reviewerInboxApiUnauthenticated.statusCode).toBe(401);
+    expect(reviewerInboxApiUnauthenticated.body.code).toBe('AUTHENTICATION_REQUIRED');
 
     const passwordPageRedirect = await invokeHandler(passwordPageHandler);
     expect(passwordPageRedirect.statusCode).toBe(302);
@@ -167,6 +183,26 @@ describe('app bootstrap', () => {
     expect(assignReviewersAsEditor.statusCode).toBe(200);
     expect(assignReviewersAsEditor.text).toContain('data-assignment-root');
 
+    const reviewerInboxAsEditor = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/reviewer/invitations',
+      headers: {
+        cookie: sessionCookie
+      }
+    });
+    expect(reviewerInboxAsEditor.statusCode).toBe(302);
+    expect(reviewerInboxAsEditor.redirectLocation).toBe('/dashboard?roleUpdated=reviewer_required');
+
+    const reviewerInboxApiAsEditor = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/api/reviewer/invitations',
+      headers: {
+        cookie: sessionCookie
+      }
+    });
+    expect(reviewerInboxApiAsEditor.statusCode).toBe(403);
+    expect(reviewerInboxApiAsEditor.body.code).toBe('INVITATION_FORBIDDEN');
+
     const roleUpdate = await invokeHandler(roleHandler, {
       headers: {
         cookie: sessionCookie
@@ -225,6 +261,48 @@ describe('app bootstrap', () => {
     });
     expect(assignReviewersAsAuthor.statusCode).toBe(302);
     expect(assignReviewersAsAuthor.redirectLocation).toBe('/dashboard?roleUpdated=editor_required');
+
+    const reviewerRoleUpdate = await invokeHandler(roleHandler, {
+      headers: {
+        cookie: sessionCookie
+      },
+      body: {
+        role: 'reviewer'
+      }
+    });
+    expect(reviewerRoleUpdate.statusCode).toBe(302);
+    expect(reviewerRoleUpdate.redirectLocation).toBe('/dashboard?roleUpdated=updated');
+
+    const dashboardReviewer = await invokeHandler(dashboardHandler, {
+      headers: {
+        cookie: sessionCookie
+      }
+    });
+    expect(dashboardReviewer.statusCode).toBe(200);
+    expect(dashboardReviewer.text).toContain('Current role: Reviewer');
+    expect(dashboardReviewer.text).toContain('data-dashboard-reviewer-inbox');
+    expect(dashboardReviewer.text).not.toContain('data-dashboard-reviewer-inbox-disabled');
+
+    const reviewerInboxPage = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/reviewer/invitations',
+      headers: {
+        cookie: sessionCookie
+      }
+    });
+    expect(reviewerInboxPage.statusCode).toBe(200);
+    expect(reviewerInboxPage.text).toContain('Review Invitation Inbox');
+    expect(reviewerInboxPage.text).toContain('data-reviewer-invitation-empty');
+
+    const reviewerInboxApi = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/api/reviewer/invitations',
+      headers: {
+        cookie: sessionCookie
+      }
+    });
+    expect(reviewerInboxApi.statusCode).toBe(200);
+    expect(reviewerInboxApi.body.invitations).toEqual([]);
 
     const logoutResponse = await invokeHandler(logoutHandler, {
       headers: {

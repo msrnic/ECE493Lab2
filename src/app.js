@@ -91,6 +91,36 @@ function renderSubmitPaperPage(template, {
     .replaceAll('__SUBMIT_ROLE_OPTIONS__', renderRoleOptions(role));
 }
 
+function renderReviewerInvitationInboxPage({ email, invitations }) {
+  const invitationRows = invitations.map((invitation) => {
+    return `<li data-reviewer-invitation-item="${escapeHtml(invitation.id)}">
+      <span data-reviewer-invitation-paper>${escapeHtml(invitation.paperId)}</span>
+      <span data-reviewer-invitation-status>${escapeHtml(invitation.status)}</span>
+    </li>`;
+  }).join('');
+
+  const invitationSection = invitationRows.length > 0
+    ? `<ul data-reviewer-invitation-list>${invitationRows}</ul>`
+    : '<p data-reviewer-invitation-empty>No invitations available.</p>';
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Review Invitation Inbox</title>
+  </head>
+  <body>
+    <main>
+      <h1>Review Invitation Inbox</h1>
+      <p data-reviewer-inbox-user>Signed in as ${escapeHtml(email)}.</p>
+      ${invitationSection}
+      <p><a href="/dashboard">Back to dashboard</a></p>
+    </main>
+  </body>
+</html>`;
+}
+
 /* c8 ignore start */
 function shouldGenerateSyntheticCoverage() {
   const entryPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
@@ -330,8 +360,54 @@ export function createApp({
     next();
   }
 
+  function requireReviewerSession(req, res, next) {
+    const isApiRequest = String(req.path ?? req.originalUrl ?? '').startsWith('/api/');
+    const session = authController.getAuthenticatedSession(req);
+    if (!session) {
+      if (isApiRequest) {
+        res.status(401).json({
+          code: 'AUTHENTICATION_REQUIRED',
+          message: 'Authentication is required.'
+        });
+        return;
+      }
+
+      res.status(302).redirect('/login');
+      return;
+    }
+
+    const account = resolvedRepository.findUserById(session.user.id);
+    if (normalizeUserRole(account?.role) !== 'reviewer') {
+      if (isApiRequest) {
+        res.status(403).json({
+          code: 'INVITATION_FORBIDDEN',
+          message: 'Only reviewers can view invitation inbox.'
+        });
+        return;
+      }
+
+      res.status(302).redirect('/dashboard?roleUpdated=reviewer_required');
+      return;
+    }
+
+    req.authenticatedReviewerId = `account-${session.user.id}`;
+    req.authenticatedSession = session;
+    next();
+  }
+
   app.get('/assign-reviewers', requireEditorSession, (_req, res) => {
     res.status(200).type('html').send(assignReviewersTemplateHtml);
+  });
+  app.get('/reviewer/invitations', requireReviewerSession, (req, res) => {
+    const invitations = invitationModel.listInvitationsForReviewer(req.authenticatedReviewerId, {
+      includeInactive: true
+    });
+    res.status(200).type('html').send(
+      renderReviewerInvitationInboxPage({
+        email: req.authenticatedSession?.user?.email,
+        invitations
+      })
+    );
   });
   app.get('/submit-paper', (req, res) => {
     const session = authController.getAuthenticatedSession(req);
@@ -423,6 +499,13 @@ export function createApp({
   app.get('/api/invitations/:invitationId', invitationController.getStatus);
   app.post('/api/invitations/:invitationId/cancel', invitationController.cancel);
   app.get('/api/invitations/:invitationId/failure-log', invitationController.getFailureLog);
+  app.post('/api/reviewer-assignments/:assignmentId/invitations', invitationController.triggerByAssignment);
+  app.get('/api/review-invitations/:invitationId', invitationController.getContractStatus);
+  app.post('/api/review-invitations/:invitationId/delivery-events', invitationController.recordDeliveryEvent);
+  app.post('/api/reviewer-assignments/:assignmentId/invitations/cancel', invitationController.cancelByAssignment);
+  app.post('/api/internal/review-invitations/retry-due', invitationController.retryDue);
+  app.get('/api/papers/:paperId/invitation-failure-logs', invitationController.listFailureLogsByPaper);
+  app.get('/api/reviewer/invitations', requireReviewerSession, invitationController.listReviewerInbox);
   app.use('/api/auth', createAuthRoutes({ authController }));
 
   app.use((error, _req, res, _next) => {

@@ -321,7 +321,7 @@ describe('integration: assign-reviewers api', () => {
     expect(unknownInvitation.statusCode).toBe(404);
   });
 
-  it('lists reviewer-role user accounts as reviewer candidates', async () => {
+  it('lists registered users as reviewer candidates only when current role is reviewer', async () => {
     const app = createApp();
     const editorCookie = await loginAs(app, {
       id: 'editor-candidates',
@@ -333,6 +333,17 @@ describe('integration: assign-reviewers api', () => {
       emailNormalized: 'registered.reviewer@example.com',
       passwordHash: hashPassword('StrongPass!2026'),
       role: 'reviewer',
+      lastAssignedRole: 'editor',
+      status: 'active',
+      createdAt: '2026-02-01T00:00:00.000Z',
+      activatedAt: '2026-02-01T00:00:00.000Z'
+    });
+    app.locals.repository.createUserAccount({
+      id: 'not-reviewer-account',
+      fullName: 'No Longer Reviewer',
+      emailNormalized: 'not.reviewer@example.com',
+      passwordHash: hashPassword('StrongPass!2026'),
+      role: 'editor',
       lastAssignedRole: 'reviewer',
       status: 'active',
       createdAt: '2026-02-01T00:00:00.000Z',
@@ -348,9 +359,10 @@ describe('integration: assign-reviewers api', () => {
 
     expect(candidates.statusCode).toBe(200);
     expect(candidates.body.candidates.some((candidate) => candidate.reviewerId === 'account-reviewer-account')).toBe(true);
+    expect(candidates.body.candidates.some((candidate) => candidate.reviewerId === 'account-not-reviewer-account')).toBe(false);
   });
 
-  it('persists registered accounts and last assigned role so they can log in and appear as reviewers', async () => {
+  it('persists registered accounts and current reviewer role so they can log in and appear as reviewers', async () => {
     const paths = createTempPersistencePaths('ece493-auth-persistence-');
     const appOne = createApp({
       authNodeEnv: 'test',

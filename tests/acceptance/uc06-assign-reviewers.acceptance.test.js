@@ -214,4 +214,44 @@ describe('UC-06-AS Assign Reviewers acceptance', () => {
     expect(staleOutcome.statusCode).toBe(200);
     expect(staleOutcome.body.outcome).toBe('rejected_stale');
   });
+
+  it('Given registered users exist, when editor loads reviewer candidates, then only users with current reviewer role appear', async () => {
+    const app = createApp();
+    const { cookie } = await loginAsEditor(app, 'account-candidates');
+    const headers = { cookie };
+
+    app.locals.repository.createUserAccount({
+      id: 'acct-reviewer-current',
+      fullName: 'Current Reviewer',
+      emailNormalized: 'current.reviewer@example.com',
+      passwordHash: hashPassword('StrongPass!2026'),
+      role: 'reviewer',
+      lastAssignedRole: 'editor',
+      status: 'active',
+      createdAt: '2026-02-01T00:00:00.000Z',
+      activatedAt: '2026-02-01T00:00:00.000Z'
+    });
+    app.locals.repository.createUserAccount({
+      id: 'acct-not-reviewer-current',
+      fullName: 'Historical Reviewer',
+      emailNormalized: 'historical.reviewer@example.com',
+      passwordHash: hashPassword('StrongPass!2026'),
+      role: 'editor',
+      lastAssignedRole: 'reviewer',
+      status: 'active',
+      createdAt: '2026-02-01T00:00:00.000Z',
+      activatedAt: '2026-02-01T00:00:00.000Z'
+    });
+
+    const candidates = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/api/papers/:paperId/reviewer-candidates',
+      headers,
+      params: { paperId: 'paper-001' }
+    });
+
+    expect(candidates.statusCode).toBe(200);
+    expect(candidates.body.candidates.some((candidate) => candidate.reviewerId === 'account-acct-reviewer-current')).toBe(true);
+    expect(candidates.body.candidates.some((candidate) => candidate.reviewerId === 'account-acct-not-reviewer-current')).toBe(false);
+  });
 });

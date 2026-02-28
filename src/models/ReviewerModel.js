@@ -134,7 +134,7 @@ export function createReviewerModel({ candidatesByPaper = defaultCandidatesByPap
     return repository
       .listUserAccounts()
       .filter((account) => account.status === 'active')
-      .filter((account) => normalizeUserRole(account.lastAssignedRole ?? account.role) === 'reviewer')
+      .filter((account) => normalizeUserRole(account.role) === 'reviewer')
       .map((account) => ({
         reviewerId: `account-${account.id}`,
         displayName: account.fullName ?? account.emailNormalized,

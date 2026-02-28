@@ -8,6 +8,42 @@ function mapInvitationError(error) {
   };
 }
 
+function parsePositiveInteger(value, fallback) {
+  const parsed = Number.parseInt(String(value ?? ''), 10);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function normalizeRole(value) {
+  return String(value ?? '').trim().toLowerCase();
+}
+
+function parseEditorPaperIds(value) {
+  if (Array.isArray(value)) {
+    return value
+      .flatMap((entry) => String(entry).split(','))
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  }
+
+  if (typeof value === 'string') {
+    return value
+      .split(',')
+      .map((entry) => entry.trim())
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function parseIncludeInactive(value) {
+  const normalized = String(value ?? '').trim().toLowerCase();
+  if (normalized === 'false') {
+    return false;
+  }
+
+  return true;
+}
+
 export function createInvitationController({
   invitationModel,
   sendInvitation = async () => ({ accepted: true })
@@ -82,9 +118,157 @@ export function createInvitationController({
 
   async function getFailureLog(req, res) {
     try {
-      const actorRole = String(req.headers?.['x-user-role'] ?? '').toLowerCase();
+      const actorRole = normalizeRole(req.headers?.['x-user-role']);
       const result = invitationModel.getFailureLog(req.params.invitationId, actorRole);
       return res.status(200).json(result);
+    } catch (error) {
+      const mapped = mapInvitationError(error);
+      return res.status(mapped.status).json(mapped.body);
+    }
+  }
+
+  async function triggerByAssignment(req, res) {
+    try {
+      const payload = {
+        reviewerAssignmentId: req.params.assignmentId,
+        paperId: req.body?.paperId,
+        reviewerId: req.body?.reviewerId
+      };
+
+      if (!payload.paperId || !payload.reviewerId) {
+        return res.status(400).json({
+          code: 'INVITATION_BAD_REQUEST',
+          message: 'paperId and reviewerId are required'
+        });
+      }
+
+      const { invitation, reused } = await invitationModel.triggerInvitationDelivery(payload, sendInvitation);
+      return res.status(reused ? 200 : 202).json(invitation);
+    } catch (error) {
+      const mapped = mapInvitationError(error);
+      return res.status(mapped.status).json(mapped.body);
+    }
+  }
+
+  async function getContractStatus(req, res) {
+    try {
+      const invitation = invitationModel.getInvitationStatus(req.params.invitationId);
+      if (!invitation) {
+        return res.status(404).json({
+          code: 'INVITATION_NOT_FOUND',
+          message: 'invitation was not found'
+        });
+      }
+
+      return res.status(200).json(invitation);
+    } catch (error) {
+      const mapped = mapInvitationError(error);
+      return res.status(mapped.status).json(mapped.body);
+    }
+  }
+
+  async function recordDeliveryEvent(req, res) {
+    try {
+      const payload = req.body ?? {};
+      if (!payload.attemptId || !payload.eventType || !payload.occurredAt) {
+        return res.status(400).json({
+          code: 'INVITATION_BAD_REQUEST',
+          message: 'attemptId, eventType, and occurredAt are required'
+        });
+      }
+
+      const invitation = invitationModel.recordDeliveryEvent(req.params.invitationId, payload);
+      return res.status(200).json(invitation);
+    } catch (error) {
+      const mapped = mapInvitationError(error);
+      return res.status(mapped.status).json(mapped.body);
+    }
+  }
+
+  async function cancelByAssignment(req, res) {
+    try {
+      const payload = req.body ?? {};
+      if (payload.reason !== 'assignment_removed') {
+        return res.status(400).json({
+          code: 'INVITATION_BAD_REQUEST',
+          message: 'reason must be assignment_removed'
+        });
+      }
+
+      if (!payload.occurredAt) {
+        return res.status(400).json({
+          code: 'INVITATION_BAD_REQUEST',
+          message: 'occurredAt is required'
+        });
+      }
+
+      const invitation = invitationModel.cancelInvitationByAssignment(
+        req.params.assignmentId,
+        payload.reason,
+        payload.occurredAt
+      );
+      return res.status(200).json(invitation);
+    } catch (error) {
+      const mapped = mapInvitationError(error);
+      return res.status(mapped.status).json(mapped.body);
+    }
+  }
+
+  async function retryDue(req, res) {
+    try {
+      const payload = req.body ?? {};
+      if (!payload.runAt) {
+        return res.status(400).json({
+          code: 'INVITATION_BAD_REQUEST',
+          message: 'runAt is required'
+        });
+      }
+
+      const summary = await invitationModel.processDueRetries({ runAt: payload.runAt }, sendInvitation);
+      return res.status(200).json(summary);
+    } catch (error) {
+      const mapped = mapInvitationError(error);
+      return res.status(mapped.status).json(mapped.body);
+    }
+  }
+
+  async function listFailureLogsByPaper(req, res) {
+    try {
+      const actorRole = normalizeRole(req.headers?.['x-user-role']);
+      const editorPaperIds = parseEditorPaperIds(req.headers?.['x-editor-paper-ids']);
+      const page = parsePositiveInteger(req.query?.page, 1);
+      const pageSize = parsePositiveInteger(req.query?.pageSize, 20);
+
+      const response = invitationModel.listFailureLogsByPaper(req.params.paperId, {
+        page,
+        pageSize,
+        actorRole,
+        editorPaperIds
+      });
+      return res.status(200).json(response);
+    } catch (error) {
+      const mapped = mapInvitationError(error);
+      return res.status(mapped.status).json(mapped.body);
+    }
+  }
+
+  async function listReviewerInbox(req, res) {
+    try {
+      if (!req.authenticatedReviewerId) {
+        return res.status(401).json({
+          code: 'AUTHENTICATION_REQUIRED',
+          message: 'Authentication is required.'
+        });
+      }
+
+      const includeInactive = parseIncludeInactive(req.query?.includeInactive);
+      const invitations = invitationModel.listInvitationsForReviewer(req.authenticatedReviewerId, {
+        includeInactive
+      });
+      return res.status(200).json({
+        reviewerId: req.authenticatedReviewerId,
+        invitations
+      });
     } catch (error) {
       const mapped = mapInvitationError(error);
       return res.status(mapped.status).json(mapped.body);
@@ -97,6 +281,13 @@ export function createInvitationController({
     getStatus,
     dispatchForOutcome,
     cancel,
-    getFailureLog
+    getFailureLog,
+    triggerByAssignment,
+    getContractStatus,
+    recordDeliveryEvent,
+    cancelByAssignment,
+    retryDue,
+    listFailureLogsByPaper,
+    listReviewerInbox
   };
 }
