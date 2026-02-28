@@ -1,3 +1,5 @@
+import { assertCanViewInvitationFailureLogs } from './authorization.policy.js';
+
 function mapInvitationError(error) {
   return {
     status: error.status ?? 500,
@@ -37,16 +39,14 @@ function parseEditorPaperIds(value) {
 
 function parseIncludeInactive(value) {
   const normalized = String(value ?? '').trim().toLowerCase();
-  if (normalized === 'false') {
-    return false;
-  }
-
-  return true;
+  return normalized === 'true';
 }
 
 export function createInvitationController({
   invitationModel,
-  sendInvitation = async () => ({ accepted: true })
+  sendInvitation = async () => ({ accepted: true }),
+  onInvitationAccepted = async () => {},
+  onInvitationDeclined = async () => {}
 } = {}) {
   async function dispatch(req, res) {
     try {
@@ -239,6 +239,12 @@ export function createInvitationController({
       const page = parsePositiveInteger(req.query?.page, 1);
       const pageSize = parsePositiveInteger(req.query?.pageSize, 20);
 
+      assertCanViewInvitationFailureLogs({
+        actorRole,
+        paperId: req.params.paperId,
+        editorPaperIds
+      });
+
       const response = invitationModel.listFailureLogsByPaper(req.params.paperId, {
         page,
         pageSize,
@@ -275,6 +281,50 @@ export function createInvitationController({
     }
   }
 
+  async function acceptReviewerInvitation(req, res) {
+    try {
+      if (!req.authenticatedReviewerId) {
+        return res.status(401).json({
+          code: 'AUTHENTICATION_REQUIRED',
+          message: 'Authentication is required.'
+        });
+      }
+
+      const invitation = invitationModel.acceptInvitation(req.params.invitationId, {
+        reviewerId: req.authenticatedReviewerId,
+        occurredAt: req.body?.occurredAt
+      });
+      await onInvitationAccepted(invitation);
+
+      return res.status(200).json(invitation);
+    } catch (error) {
+      const mapped = mapInvitationError(error);
+      return res.status(mapped.status).json(mapped.body);
+    }
+  }
+
+  async function declineReviewerInvitation(req, res) {
+    try {
+      if (!req.authenticatedReviewerId) {
+        return res.status(401).json({
+          code: 'AUTHENTICATION_REQUIRED',
+          message: 'Authentication is required.'
+        });
+      }
+
+      const invitation = invitationModel.declineInvitation(req.params.invitationId, {
+        reviewerId: req.authenticatedReviewerId,
+        occurredAt: req.body?.occurredAt
+      });
+      await onInvitationDeclined(invitation);
+
+      return res.status(200).json(invitation);
+    } catch (error) {
+      const mapped = mapInvitationError(error);
+      return res.status(mapped.status).json(mapped.body);
+    }
+  }
+
   return {
     dispatch,
     retry,
@@ -288,6 +338,8 @@ export function createInvitationController({
     cancelByAssignment,
     retryDue,
     listFailureLogsByPaper,
-    listReviewerInbox
+    listReviewerInbox,
+    acceptReviewerInvitation,
+    declineReviewerInvitation
   };
 }

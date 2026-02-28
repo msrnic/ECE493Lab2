@@ -76,8 +76,10 @@ Build tests that map directly to `UC-08-AS` and FR-001 through FR-011:
 Run project test and coverage commands (examples):
 
 ```bash
-node --test /home/m_srnic/ece493/lab2/ECE493Lab2/tests/unit/**/*.test.js
-node --test /home/m_srnic/ece493/lab2/ECE493Lab2/tests/acceptance/uc-08-as.test.js
+npx vitest run /home/m_srnic/ece493/lab2/ECE493Lab2/tests/acceptance/uc-08-as.test.js
+npx vitest run /home/m_srnic/ece493/lab2/ECE493Lab2/tests/acceptance/uc-08-performance.test.js
+npm run lint
+npm test
 ```
 
 Coverage gate:
@@ -92,3 +94,9 @@ Before merge:
 - Re-run `UC-08-AS` tests and previously passing acceptance suites.
 - Confirm no existing acceptance suite regresses.
 - Confirm traceability remains from UC-08 -> FRs -> code modules -> acceptance tests.
+
+## 8. Verification Snapshot
+
+- `npm run lint`: PASS
+- `npm test`: PASS
+- Coverage: 100% statements / branches / functions / lines

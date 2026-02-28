@@ -14,6 +14,7 @@ describe('Reviewer invitation OpenAPI contract smoke', () => {
       '/api/reviewer-assignments/{assignmentId}/invitations',
       '/api/review-invitations/{invitationId}',
       '/api/review-invitations/{invitationId}/delivery-events',
+      '/api/reviewer/invitations/{invitationId}/decline',
       '/api/reviewer-assignments/{assignmentId}/invitations/cancel',
       '/api/internal/review-invitations/retry-due',
       '/api/papers/{paperId}/invitation-failure-logs'

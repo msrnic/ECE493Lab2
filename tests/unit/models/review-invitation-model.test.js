@@ -16,6 +16,7 @@ describe('ReviewInvitationModel', () => {
     const model = createModel();
     const created = model.createInvitation({
       assignmentId: 'assignment-1',
+      paperId: 'paper-1',
       reviewerId: 'reviewer-1',
       displayName: 'One'
     });
@@ -26,6 +27,7 @@ describe('ReviewInvitationModel', () => {
     });
 
     expect(deduped.invitationId).toBe(created.invitationId);
+    expect(model.getInvitationStatus(created.invitationId)?.paperId).toBe('paper-1');
     expect(model.getInvitation('missing')).toBeNull();
   });
 
@@ -55,6 +57,31 @@ describe('ReviewInvitationModel', () => {
 
     const unchanged = await model.dispatchInvitation(created.invitationId, async () => ({ accepted: true }));
     expect(unchanged.status).toBe('canceled');
+  });
+
+  it('keeps delivered invitations active for reviewer decision and supports decline terminal behavior', async () => {
+    const model = createModel();
+    const created = model.createInvitation({
+      assignmentId: 'assignment-decline',
+      reviewerId: 'reviewer-decline',
+      displayName: 'Decline User'
+    });
+
+    await model.dispatchInvitation(created.invitationId, async () => ({ accepted: true }));
+    const active = model.listInvitationsForReviewer('reviewer-decline', { includeInactive: false });
+    expect(active.map((invitation) => invitation.id)).toEqual([created.invitationId]);
+
+    const declined = model.declineInvitation(created.invitationId, {
+      reviewerId: 'reviewer-decline'
+    });
+    expect(declined.status).toBe('declined');
+    expect(declined.declinedAt).toBeDefined();
+
+    const activeAfterDecline = model.listInvitationsForReviewer('reviewer-decline', { includeInactive: false });
+    expect(activeAfterDecline).toHaveLength(0);
+
+    const unchangedDeclined = model.cancelInvitation(created.invitationId);
+    expect(unchangedDeclined.status).toBe('declined');
   });
 
   it('uses default failure messages and supports retry success transition', async () => {

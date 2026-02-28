@@ -41,6 +41,42 @@ async function collectJavaScriptFiles(rootDir) {
   return collected.sort();
 }
 
+function installBrowserGlobalsForImports() {
+  if (typeof globalThis.window === 'undefined') {
+    globalThis.window = {
+      location: {
+        search: ''
+      }
+    };
+  } else if (!globalThis.window.location) {
+    globalThis.window.location = { search: '' };
+  } else if (typeof globalThis.window.location.search !== 'string') {
+    globalThis.window.location.search = '';
+  }
+
+  if (typeof globalThis.document === 'undefined') {
+    globalThis.document = {
+      querySelector() {
+        return null;
+      },
+      querySelectorAll() {
+        return [];
+      },
+      createElement() {
+        return {
+          innerHTML: '',
+          textContent: '',
+          appendChild() {},
+          addEventListener() {},
+          removeEventListener() {}
+        };
+      },
+      addEventListener() {},
+      removeEventListener() {}
+    };
+  }
+}
+
 function postInspector(session, method, params = {}) {
   return new Promise((resolve, reject) => {
     session.post(method, params, (error, result) => {
@@ -57,6 +93,8 @@ function postInspector(session, method, params = {}) {
 const sourceFiles = await collectJavaScriptFiles(sourceDirectory);
 const sourcePrefix = pathToFileURL(`${sourceDirectory}${path.sep}`).href;
 const session = new inspector.Session();
+
+installBrowserGlobalsForImports();
 
 session.connect();
 await postInspector(session, 'Profiler.enable');

@@ -60,6 +60,8 @@ describe('app bootstrap', () => {
         { path: '/api/registrations/confirm', methods: ['get'] },
         { path: '/api/v1/account/password-change', methods: ['post'] },
         { path: '/api/reviewer/invitations', methods: ['get'] },
+        { path: '/api/reviewer/invitations/:invitationId/accept', methods: ['post'] },
+        { path: '/api/reviewer/invitations/:invitationId/decline', methods: ['post'] },
         { path: '/api/submissions/:submissionId/draft', methods: ['put'] },
         { path: '/api/submissions/:submissionId/draft', methods: ['get'] },
         { path: '/api/submissions/:submissionId/draft/versions', methods: ['get'] },
@@ -88,6 +90,7 @@ describe('app bootstrap', () => {
     expect(rootResponse.text).toContain('href="/register"');
     expect(rootResponse.text).toContain('href="/login"');
     expect(rootResponse.text).not.toContain('href="/assign-reviewers"');
+    expect(rootResponse.text).not.toContain('href="/reviewer/papers"');
 
     const loginResponse = await invokeHandler(loginPageHandler);
     expect(loginResponse.statusCode).toBe(200);
@@ -164,6 +167,7 @@ describe('app bootstrap', () => {
     expect(dashboardEditor.text).toContain('data-dashboard-submit-paper-disabled');
     expect(dashboardEditor.text).toContain('data-dashboard-assign-reviewers');
     expect(dashboardEditor.text).not.toContain('data-dashboard-assign-reviewers-disabled');
+    expect(dashboardEditor.text).not.toContain('data-dashboard-reviewer-paper-access');
 
     const submitPaperAsEditor = await invokeHandler(submitPaperHandler, {
       headers: {
@@ -282,6 +286,7 @@ describe('app bootstrap', () => {
     expect(dashboardReviewer.text).toContain('Current role: Reviewer');
     expect(dashboardReviewer.text).toContain('data-dashboard-reviewer-inbox');
     expect(dashboardReviewer.text).not.toContain('data-dashboard-reviewer-inbox-disabled');
+    expect(dashboardReviewer.text).toContain('data-dashboard-reviewer-paper-access');
 
     const reviewerInboxPage = await invokeAppRoute(app, {
       method: 'get',

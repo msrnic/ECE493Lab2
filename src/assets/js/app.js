@@ -1,6 +1,7 @@
 import { enhanceLoginForm } from '../../controllers/login-controller.js';
 import { enhancePasswordChangeForm } from '../../controllers/password-change-form-controller.js';
 import { redirectAuthenticatedUser } from '../../controllers/session-controller.js';
+import { bootstrapReviewerPaperAccessPage } from './reviewer-paper-access-page.js';
 
 export async function bootstrapLoginPage({
   documentRef = globalThis.document,
@@ -44,3 +45,5 @@ export function bootstrapPasswordChangePage({
     enhanced: Boolean(enhanced)
   };
 }
+
+export { bootstrapReviewerPaperAccessPage };

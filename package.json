@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "node src/server.js",
+    "dev": "node src/server.js",
     "test": "vitest run --coverage",
+    "coverage": "npm run test:coverage:c8",
     "test:coverage:c8": "vitest run --coverage && c8 --all=false --reporter=none node scripts/assert-branch-coverage.mjs coverage/lcov.info",
     "test:acceptance": "vitest run tests/acceptance/*.acceptance.test.js",
     "test:acceptance:uc01": "vitest run tests/acceptance/uc-01-registration.acceptance.test.js",
@@ -16,6 +18,8 @@
     "test:acceptance:uc03": "vitest run tests/acceptance/uc03-change-password.acceptance.test.js",
     "test:acceptance:uc04": "vitest run tests/acceptance/uc-04-submission.acceptance.test.js",
     "test:acceptance:uc04:performance": "vitest run tests/acceptance/uc-04-performance.test.js",
+    "test:acceptance:uc08": "vitest run tests/acceptance/uc-08-as.test.js",
+    "test:acceptance:uc08:performance": "vitest run tests/acceptance/uc-08-performance.test.js",
     "test:integration:auth": "vitest run tests/integration/auth-api.integration.test.js",
     "test:integration:password-change": "vitest run tests/integration/password-change-*.integration.test.js",
     "test:integration:submission": "vitest run tests/integration/paper-submission.integration.test.js",

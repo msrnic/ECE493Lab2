@@ -9,11 +9,11 @@
 
 **Purpose**: Establish runnable project scaffolding and quality tooling
 
-- [ ] T001 [UC-07] [UC-07-AS] Create MVC/test directory scaffold in `src/models/`, `src/controllers/`, `src/services/`, `src/views/invitation-status/`, `src/views/failure-log/`, `tests/unit/`, `tests/integration/`, and `tests/acceptance/`
-- [ ] T002 [UC-07] [UC-07-AS] Initialize project scripts (`dev`, `test`, `lint`, `coverage`) in `package.json`
-- [ ] T003 [P] [UC-07] [UC-07-AS] Configure JavaScript/CSS linting in `.eslintrc.cjs` and `.stylelintrc.json`
-- [ ] T004 [P] [UC-07] [UC-07-AS] Configure test and coverage runners in `vitest.config.js` and `c8.config.json`
-- [ ] T005 [P] [UC-07] [UC-07-AS] Create UC-07 acceptance evidence template in `tests/acceptance/UC-07-evidence-template.md`
+- [X] T001 [UC-07] [UC-07-AS] Create MVC/test directory scaffold in `src/models/`, `src/controllers/`, `src/services/`, `src/views/invitation-status/`, `src/views/failure-log/`, `tests/unit/`, `tests/integration/`, and `tests/acceptance/`
+- [X] T002 [UC-07] [UC-07-AS] Initialize project scripts (`dev`, `test`, `lint`, `coverage`) in `package.json`
+- [X] T003 [P] [UC-07] [UC-07-AS] Configure JavaScript/CSS linting in `.eslintrc.cjs` and `.stylelintrc.json`
+- [X] T004 [P] [UC-07] [UC-07-AS] Configure test and coverage runners in `vitest.config.js` and `c8.config.json`
+- [X] T005 [P] [UC-07] [UC-07-AS] Create UC-07 acceptance evidence template in `tests/acceptance/UC-07-evidence-template.md`
 
 ---
 
@@ -23,12 +23,12 @@
 
 **⚠️ CRITICAL**: No user-story phase starts before this phase is complete
 
-- [ ] T006 [UC-07] [UC-07-AS] Implement HTTP app/router bootstrap and endpoint registration shell in `src/controllers/http-app.js`
-- [ ] T007 [P] [UC-07] [UC-07-AS] Implement active-invitation uniqueness persistence helper in `src/models/review-invitation.repository.js`
-- [ ] T008 [P] [UC-07] [UC-07-AS] Implement delivery-attempt persistence helper in `src/models/delivery-attempt.repository.js`
-- [ ] T009 [P] [UC-07] [UC-07-AS] Implement failure-log persistence helper in `src/models/failure-log-entry.repository.js`
-- [ ] T010 [UC-07] [UC-07-AS] Implement notification-provider abstraction and stub adapter in `src/services/notification-provider.js`
-- [ ] T011 [UC-07] [UC-07-AS] Implement editor/support/admin authorization policy helper in `src/controllers/authorization.policy.js`
+- [X] T006 [UC-07] [UC-07-AS] Implement HTTP app/router bootstrap and endpoint registration shell in `src/controllers/http-app.js`
+- [X] T007 [P] [UC-07] [UC-07-AS] Implement active-invitation uniqueness persistence helper in `src/models/review-invitation.repository.js`
+- [X] T008 [P] [UC-07] [UC-07-AS] Implement delivery-attempt persistence helper in `src/models/delivery-attempt.repository.js`
+- [X] T009 [P] [UC-07] [UC-07-AS] Implement failure-log persistence helper in `src/models/failure-log-entry.repository.js`
+- [X] T010 [UC-07] [UC-07-AS] Implement notification-provider abstraction and stub adapter in `src/services/notification-provider.js`
+- [X] T011 [UC-07] [UC-07-AS] Implement editor/support/admin authorization policy helper in `src/controllers/authorization.policy.js`
 - [X] T012 [UC-07] [UC-07-AS] Implement OpenAPI contract smoke test scaffold against `contracts/openapi.yaml` in `tests/integration/contracts/reviewer-invitation.openapi.test.js`
 
 **Checkpoint**: Foundation complete; user stories can proceed
@@ -45,17 +45,17 @@
 
 - [X] T013 [P] [UC-07] [UC-07-AS] [US1] Add unit tests for invitation creation and `pending -> delivered` transition in `tests/unit/models/review-invitation.model.test.js`
 - [X] T014 [P] [UC-07] [UC-07-AS] [US1] Add integration tests for `POST /api/reviewer-assignments/{assignmentId}/invitations` and `GET /api/review-invitations/{invitationId}` in `tests/integration/invitation-lifecycle.us1.test.js`
-- [ ] T015 [UC-07] [UC-07-AS] [US1] Execute main-success scenario from `Acceptance Tests/UC-07-AS.md` and record results in `tests/acceptance/UC-07-US1.md`
+- [X] T015 [UC-07] [UC-07-AS] [US1] Execute main-success scenario from `Acceptance Tests/UC-07-AS.md` and record results in `tests/acceptance/UC-07-US1.md`
 
 ### Implementation
 
 - [X] T016 [P] [UC-07] [UC-07-AS] [US1] Implement `ReviewInvitation` entity state rules (`pending`, `delivered`, timestamps) in `src/models/review-invitation.model.js`
 - [X] T017 [P] [UC-07] [UC-07-AS] [US1] Implement initial `DeliveryAttempt` entity rules (`attemptNumber=0`) in `src/models/delivery-attempt.model.js`
 - [X] T018 [UC-07] [UC-07-AS] [US1] Implement invitation create/reuse and status retrieval flows in `src/controllers/invitation.controller.js`
-- [ ] T019 [UC-07] [UC-07-AS] [US1] Implement invitation status page structure and styling in `src/views/invitation-status/invitation-status.html` and `src/views/invitation-status/invitation-status.css`
-- [ ] T020 [UC-07] [UC-07-AS] [US1] Implement invitation status page behavior in `src/views/invitation-status/invitation-status.js`
+- [X] T019 [UC-07] [UC-07-AS] [US1] Implement invitation status page structure and styling in `src/views/invitation-status/invitation-status.html` and `src/views/invitation-status/invitation-status.css`
+- [X] T020 [UC-07] [UC-07-AS] [US1] Implement invitation status page behavior in `src/views/invitation-status/invitation-status.js`
 - [X] T021 [UC-07] [UC-07-AS] [US1] Implement delivery-event callback handling for `delivered` outcomes in `src/controllers/invitation.controller.js`
-- [ ] T022 [UC-07] [UC-07-AS] [US1] Re-run US1 unit/integration checks and save command output in `tests/acceptance/UC-07-US1-test-run.txt`
+- [X] T022 [UC-07] [UC-07-AS] [US1] Re-run US1 unit/integration checks and save command output in `tests/acceptance/UC-07-US1-test-run.txt`
 
 **Checkpoint**: US1 is independently testable and demonstrates MVP value
 
@@ -71,7 +71,7 @@
 
 - [X] T023 [P] [UC-07] [UC-07-AS] [US2] Add unit tests for retry cadence, retry-limit, and cancellation transitions in `tests/unit/models/review-invitation.retry.test.js`
 - [X] T024 [P] [UC-07] [UC-07-AS] [US2] Add integration tests for retry worker and assignment-removal cancellation endpoint in `tests/integration/invitation-retry.us2.test.js`
-- [ ] T025 [UC-07] [UC-07-AS] [US2] Execute retry/failure scenario from `Acceptance Tests/UC-07-AS.md` and record results in `tests/acceptance/UC-07-US2.md`
+- [X] T025 [UC-07] [UC-07-AS] [US2] Execute retry/failure scenario from `Acceptance Tests/UC-07-AS.md` and record results in `tests/acceptance/UC-07-US2.md`
 
 ### Implementation
 
@@ -82,7 +82,7 @@
 - [X] T030 [UC-07] [UC-07-AS] [US2] Implement `POST /api/internal/review-invitations/retry-due` processing flow in `src/controllers/invitation.controller.js`
 - [X] T031 [UC-07] [UC-07-AS] [US2] Implement `POST /api/reviewer-assignments/{assignmentId}/invitations/cancel` cancellation flow in `src/controllers/invitation.controller.js`
 - [X] T032 [UC-07] [UC-07-AS] [US2] Extend delivery-event handling for retry stop-on-success and late-callback ignore behavior in `src/controllers/invitation.controller.js`
-- [ ] T033 [UC-07] [UC-07-AS] [US2] Re-run US2 unit/integration checks and save command output in `tests/acceptance/UC-07-US2-test-run.txt`
+- [X] T033 [UC-07] [UC-07-AS] [US2] Re-run US2 unit/integration checks and save command output in `tests/acceptance/UC-07-US2-test-run.txt`
 
 **Checkpoint**: US2 retry reliability and cancellation behavior are independently verifiable
 
@@ -96,18 +96,18 @@
 
 ### Tests
 
-- [ ] T034 [P] [UC-07] [UC-07-AS] [US3] Add unit tests for failure-log authorization policy allow/deny decisions in `tests/unit/controllers/failure-log.authorization.test.js`
+- [X] T034 [P] [UC-07] [UC-07-AS] [US3] Add unit tests for failure-log authorization policy allow/deny decisions in `tests/unit/controllers/failure-log.authorization.test.js`
 - [X] T035 [P] [UC-07] [UC-07-AS] [US3] Add integration tests for `GET /api/papers/{paperId}/invitation-failure-logs` including pagination and 403 responses in `tests/integration/failure-log.us3.test.js`
-- [ ] T036 [UC-07] [UC-07-AS] [US3] Execute failure-evidence access scenario and record results in `tests/acceptance/UC-07-US3.md`
+- [X] T036 [UC-07] [UC-07-AS] [US3] Execute failure-evidence access scenario and record results in `tests/acceptance/UC-07-US3.md`
 
 ### Implementation
 
 - [X] T037 [P] [UC-07] [UC-07-AS] [US3] Implement failure-log query helpers with paper filter and pagination in `src/models/failure-log-entry.model.js`
 - [X] T038 [UC-07] [UC-07-AS] [US3] Implement failure-log endpoint and RBAC checks in `src/controllers/failure-log.controller.js`
-- [ ] T039 [UC-07] [UC-07-AS] [US3] Implement failure-log page structure and styling in `src/views/failure-log/failure-log.html` and `src/views/failure-log/failure-log.css`
-- [ ] T040 [UC-07] [UC-07-AS] [US3] Implement failure-log page behavior for authenticated fetch/render in `src/views/failure-log/failure-log.js`
+- [X] T039 [UC-07] [UC-07-AS] [US3] Implement failure-log page structure and styling in `src/views/failure-log/failure-log.html` and `src/views/failure-log/failure-log.css`
+- [X] T040 [UC-07] [UC-07-AS] [US3] Implement failure-log page behavior for authenticated fetch/render in `src/views/failure-log/failure-log.js`
 - [X] T041 [UC-07] [UC-07-AS] [US3] Register failure-log routes and middleware wiring in `src/controllers/http-app.js`
-- [ ] T042 [UC-07] [UC-07-AS] [US3] Re-run US3 unit/integration checks and save command output in `tests/acceptance/UC-07-US3-test-run.txt`
+- [X] T042 [UC-07] [UC-07-AS] [US3] Re-run US3 unit/integration checks and save command output in `tests/acceptance/UC-07-US3-test-run.txt`
 
 **Checkpoint**: US3 failure visibility and access control are independently verifiable
 
@@ -117,18 +117,19 @@
 
 **Purpose**: Final regression, coverage, documentation, and traceability updates
 
-- [ ] T043 [P] [UC-07] [UC-07-AS] Execute full `Acceptance Tests/UC-07-AS.md` regression and record evidence in `tests/acceptance/UC-07-regression.md`
-- [ ] T044 [UC-07] [UC-07-AS] Execute full unit/integration suite and record summary in `tests/acceptance/UC-07-test-summary.md`
-- [ ] T045 [UC-07] [UC-07-AS] Enforce c8 line-coverage target and store report in `tests/acceptance/UC-07-coverage.txt`
-- [ ] T046 [P] [UC-07] [UC-07-AS] Update FR-to-code traceability matrix in `specs/001-receive-review-invitation/traceability.md`
-- [ ] T047 [P] [UC-07] [UC-07-AS] Update final runbook commands/endpoints in `specs/001-receive-review-invitation/quickstart.md`
-- [ ] T048 [UC-07] [UC-07-AS] Document final MVC boundary compliance and non-regression notes in `specs/001-receive-review-invitation/implementation-notes.md`
-- [ ] T049 [UC-07] [UC-07-AS] Capture baseline list of previously passing acceptance suites in `tests/acceptance/pre-uc07-passing-suites.txt`
-- [ ] T050 [UC-07] [UC-07-AS] Execute all suites listed in `tests/acceptance/pre-uc07-passing-suites.txt` and record results in `tests/acceptance/full-regression-post-uc07.md`
-- [ ] T051 [P] [UC-07] [UC-07-AS] Add latency measurement integration test for SC-002 in `tests/integration/performance/invitation-latency.sc002.test.js`
-- [ ] T052 [UC-07] [UC-07-AS] Record SC-002 measurement report and threshold results in `tests/acceptance/UC-07-SC002-latency.md`
-- [ ] T053 [P] [UC-07] [UC-07-AS] Add retry scheduler drift test for NFR-002 in `tests/integration/retry-scheduler-drift.nfr.test.js`
-- [ ] T054 [UC-07] [UC-07-AS] Document retry scheduler drift evidence in `tests/acceptance/UC-07-retry-drift.md`
+- [X] T043 [P] [UC-07] [UC-07-AS] Execute full `Acceptance Tests/UC-07-AS.md` regression and record evidence in `tests/acceptance/UC-07-regression.md`
+- [X] T044 [UC-07] [UC-07-AS] Execute full unit/integration suite and record summary in `tests/acceptance/UC-07-test-summary.md`
+- [X] T045 [UC-07] [UC-07-AS] Enforce c8 line-coverage target and store report in `tests/acceptance/UC-07-coverage.txt`
+- [X] T046 [P] [UC-07] [UC-07-AS] Update FR-to-code traceability matrix in `specs/001-receive-review-invitation/traceability.md`
+- [X] T047 [P] [UC-07] [UC-07-AS] Update final runbook commands/endpoints in `specs/001-receive-review-invitation/quickstart.md`
+- [X] T048 [UC-07] [UC-07-AS] Document final MVC boundary compliance and non-regression notes in `specs/001-receive-review-invitation/implementation-notes.md`
+- [X] T049 [UC-07] [UC-07-AS] Capture baseline list of previously passing acceptance suites in `tests/acceptance/pre-uc07-passing-suites.txt`
+- [X] T050 [UC-07] [UC-07-AS] Execute all suites listed in `tests/acceptance/pre-uc07-passing-suites.txt` and record results in `tests/acceptance/full-regression-post-uc07.md`
+- [X] T051 [P] [UC-07] [UC-07-AS] Add latency measurement integration test for SC-002 in `tests/integration/performance/invitation-latency.sc002.test.js`
+- [X] T052 [UC-07] [UC-07-AS] Record SC-002 measurement report and threshold results in `tests/acceptance/UC-07-SC002-latency.md`
+- [X] T053 [P] [UC-07] [UC-07-AS] Add retry scheduler drift test for NFR-002 in `tests/integration/retry-scheduler-drift.nfr.test.js`
+- [X] T054 [UC-07] [UC-07-AS] Document retry scheduler drift evidence in `tests/acceptance/UC-07-retry-drift.md`
+- [X] T055 [UC-07] [UC-07-AS] Extend reviewer invitation lifecycle with explicit decline decision handling and active-inbox filtering in `src/models/ReviewInvitationModel.js`, `src/controllers/InvitationController.js`, `src/app.js`, and invitation acceptance/integration suites.
 
 ---
 

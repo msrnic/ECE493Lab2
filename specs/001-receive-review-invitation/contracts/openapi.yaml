@@ -81,6 +81,64 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
 
+  /api/reviewer/invitations/{invitationId}/accept:
+    post:
+      tags: [InvitationLifecycle]
+      summary: Accept a delivered invitation as the authenticated reviewer
+      operationId: acceptReviewerInvitation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/InvitationId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewerDecisionRequest'
+      responses:
+        '200':
+          description: Invitation accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationStatusResponse'
+        '401':
+          $ref: '#/components/responses/Forbidden'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/reviewer/invitations/{invitationId}/decline:
+    post:
+      tags: [InvitationLifecycle]
+      summary: Decline a delivered invitation as the authenticated reviewer
+      operationId: declineReviewerInvitation
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/InvitationId'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewerDecisionRequest'
+      responses:
+        '200':
+          description: Invitation declined
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvitationStatusResponse'
+        '401':
+          $ref: '#/components/responses/Forbidden'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/reviewer-assignments/{assignmentId}/invitations/cancel:
     post:
       tags: [InvitationLifecycle]
@@ -246,6 +304,13 @@ components:
           type: string
           format: date-time
 
+    ReviewerDecisionRequest:
+      type: object
+      properties:
+        occurredAt:
+          type: string
+          format: date-time
+
     RetryRunResponse:
       type: object
       required: [runAt, processedInvitations, attemptsCreated, completed, failed, canceled]
@@ -287,7 +352,7 @@ components:
           type: string
         status:
           type: string
-          enum: [pending, delivered, failed, canceled]
+          enum: [pending, delivered, accepted, declined, failed, canceled]
         retryCount:
           type: integer
           minimum: 0
@@ -305,6 +370,14 @@ components:
           type: string
           nullable: true
         deliveredAt:
+          type: string
+          format: date-time
+          nullable: true
+        acceptedAt:
+          type: string
+          format: date-time
+          nullable: true
+        declinedAt:
           type: string
           format: date-time
           nullable: true

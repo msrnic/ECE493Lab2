@@ -1,0 +1,11 @@
+
+ RUN  v3.2.4 /home/m_srnic/ece493/lab2/ECE493Lab2
+
+ ✓ tests/unit/models/review-invitation-model.test.js (8 tests) 28ms
+ ✓ tests/integration/invitation-retry.us2.test.js (3 tests) 34ms
+
+ Test Files  2 passed (2)
+      Tests  11 passed (11)
+   Start at  22:32:30
+   Duration  1.59s (transform 379ms, setup 0ms, collect 707ms, tests 62ms, environment 1ms, prepare 501ms)
+

@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Invitation Status</title>
+    <link rel="stylesheet" href="./invitation-status.css" />
+  </head>
+  <body>
+    <main class="invitation-status">
+      <h1>Review Invitation Status</h1>
+      <p class="meta">Invitation: <span data-field="invitation-id">-</span></p>
+      <p class="meta">Assignment: <span data-field="assignment-id">-</span></p>
+      <p class="meta">Paper: <span data-field="paper-id">-</span></p>
+      <p class="meta">Reviewer: <span data-field="reviewer-id">-</span></p>
+      <p class="status-row">Status: <strong data-field="status">Loading...</strong></p>
+      <p class="status-row">Retry count: <span data-field="retry-count">0</span>/<span data-field="max-retries">3</span></p>
+      <p class="status-row">Next retry: <span data-field="next-retry-at">-</span></p>
+      <p class="status-row">Last failure: <span data-field="last-failure-reason">-</span></p>
+      <p class="status-row">Follow up required: <span data-field="follow-up-required">No</span></p>
+      <p class="error" data-role="error" hidden></p>
+    </main>
+
+    <script type="module" src="./invitation-status.js"></script>
+  </body>
+</html>

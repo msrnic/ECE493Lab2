@@ -278,4 +278,36 @@ describe('UC-07-AS Receive Review Invitation acceptance', () => {
     expect(inboxApi.statusCode).toBe(200);
     expect(inboxApi.body.invitations.length).toBeGreaterThan(0);
   });
+
+  it('Given a reviewer declines a delivered invitation, when the inbox refreshes, then that invitation disappears', async () => {
+    const app = createApp({
+      sendInvitationFn: async () => ({ accepted: true, providerMessageId: 'provider-decline-1' })
+    });
+    const reviewerSession = await loginAsReviewer(app, 'decline');
+    const triggered = await triggerInvitation(app, {
+      assignmentId: 'asg-acceptance-inbox-decline',
+      paperId: 'paper-acceptance-inbox-decline',
+      reviewerId: reviewerSession.reviewerId
+    });
+    expect(triggered.statusCode).toBe(202);
+    expect(triggered.body.status).toBe('delivered');
+
+    const declined = await invokeAppRoute(app, {
+      method: 'post',
+      path: '/api/reviewer/invitations/:invitationId/decline',
+      params: { invitationId: triggered.body.id },
+      headers: { cookie: reviewerSession.cookie }
+    });
+    expect(declined.statusCode).toBe(200);
+    expect(declined.body.status).toBe('declined');
+
+    const inboxApi = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/api/reviewer/invitations',
+      headers: { cookie: reviewerSession.cookie },
+      query: { includeInactive: 'false' }
+    });
+    expect(inboxApi.statusCode).toBe(200);
+    expect(inboxApi.body.invitations.find((invitation) => invitation.id === triggered.body.id)).toBeUndefined();
+  });
 });

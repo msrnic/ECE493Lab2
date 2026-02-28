@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Submit Review</title>
+    <link rel="stylesheet" href="/assets/css/review-form.css" />
+  </head>
+  <body>
+    <main data-review-form-page data-assignment-id="__ASSIGNMENT_ID__">
+      <h1>Submit Review</h1>
+      <form data-review-form data-assignment-id="__ASSIGNMENT_ID__" novalidate>
+        <label>
+          Recommendation
+          <select name="recommendation" data-review-field="recommendation" required>
+            <option value="">Select a recommendation</option>
+            <option value="STRONG_ACCEPT">Strong Accept</option>
+            <option value="ACCEPT">Accept</option>
+            <option value="WEAK_ACCEPT">Weak Accept</option>
+            <option value="WEAK_REJECT">Weak Reject</option>
+            <option value="REJECT">Reject</option>
+            <option value="STRONG_REJECT">Strong Reject</option>
+          </select>
+        </label>
+
+        <label>
+          Overall Score (1-5)
+          <input type="number" name="overallScore" min="1" max="5" data-review-field="overallScore" required />
+        </label>
+
+        <label>
+          Confidence Score (1-5)
+          <input type="number" name="confidenceScore" min="1" max="5" data-review-field="confidenceScore" required />
+        </label>
+
+        <label>
+          Summary
+          <textarea name="summary" data-review-field="summary" required></textarea>
+        </label>
+
+        <label>
+          Strengths
+          <textarea name="strengths" data-review-field="strengths"></textarea>
+        </label>
+
+        <label>
+          Weaknesses
+          <textarea name="weaknesses" data-review-field="weaknesses"></textarea>
+        </label>
+
+        <label>
+          Comments for Chair
+          <textarea name="commentsForChair" data-review-field="commentsForChair"></textarea>
+        </label>
+
+        <button type="submit">Submit Review</button>
+      </form>
+
+      <p data-review-form-status role="status" aria-live="polite"></p>
+      <div data-review-form-errors role="alert" aria-live="assertive"></div>
+      <p><a href="/dashboard">Back to dashboard</a></p>
+    </main>
+    <script type="module" src="/assets/js/review-form-page.js"></script>
+  </body>
+</html>

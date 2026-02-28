@@ -39,7 +39,8 @@ describe('US1 invitation lifecycle integration', () => {
       }
     });
 
-    expect(reused.statusCode).toBe(202);
+    expect(reused.statusCode).toBe(200);
+    expect(reused.body.id).toBe(created.body.id);
 
     const status = await invokeAppRoute(app, {
       method: 'get',

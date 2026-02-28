@@ -22,6 +22,10 @@ function mapContractToLegacyStatus(invitation) {
     return 'sent';
   }
 
+  if (invitation.status === 'accepted') {
+    return 'accepted';
+  }
+
   if (invitation.status === 'failed') {
     return 'failed_terminal';
   }
@@ -60,6 +64,8 @@ function cloneContractInvitation(invitation) {
     followUpRequired: invitation.followUpRequired,
     lastFailureReason: invitation.lastFailureReason,
     deliveredAt: invitation.deliveredAt,
+    acceptedAt: invitation.acceptedAt,
+    declinedAt: invitation.declinedAt,
     canceledAt: invitation.canceledAt,
     updatedAt: invitation.updatedAt
   };
@@ -205,8 +211,28 @@ export function createReviewInvitationModel({
     invitation.nextRetryAt = null;
     invitation.lastFailureReason = null;
     invitation.followUpRequired = false;
-    invitation.isActive = false;
+    invitation.isActive = true;
     invitation.updatedAt = deliveredAt;
+  }
+
+  function setAccepted(invitation, acceptedAt) {
+    invitation.status = 'accepted';
+    invitation.acceptedAt = acceptedAt;
+    invitation.nextRetryAt = null;
+    invitation.lastFailureReason = null;
+    invitation.followUpRequired = false;
+    invitation.isActive = false;
+    invitation.updatedAt = acceptedAt;
+  }
+
+  function setDeclined(invitation, declinedAt) {
+    invitation.status = 'declined';
+    invitation.declinedAt = declinedAt;
+    invitation.nextRetryAt = null;
+    invitation.lastFailureReason = null;
+    invitation.followUpRequired = false;
+    invitation.isActive = false;
+    invitation.updatedAt = declinedAt;
   }
 
   function scheduleRetry(invitation, baseTimeIso, failureReason) {
@@ -350,6 +376,8 @@ export function createReviewInvitationModel({
       followUpRequired: false,
       lastFailureReason: null,
       deliveredAt: null,
+      acceptedAt: null,
+      declinedAt: null,
       canceledAt: null,
       isActive: true,
       createdAt,
@@ -365,9 +393,10 @@ export function createReviewInvitationModel({
     };
   }
 
-  function createInvitation({ assignmentId, reviewerId, displayName }) {
+  function createInvitation({ assignmentId, paperId = 'paper-unknown', reviewerId, displayName }) {
     const { invitation } = createOrReuseInvitation({
       reviewerAssignmentId: assignmentId,
+      paperId,
       reviewerId,
       displayName
     });
@@ -403,9 +432,65 @@ export function createReviewInvitationModel({
     };
   }
 
+  function acceptInvitation(invitationId, {
+    reviewerId,
+    occurredAt
+  } = {}) {
+    const invitation = getInvitationOrThrow(invitationId);
+    if (invitation.reviewerId !== reviewerId) {
+      throw invitationError('INVITATION_FORBIDDEN', 'you do not have access to this invitation', {
+        status: 403,
+        invitationId
+      });
+    }
+
+    if (invitation.status === 'accepted') {
+      return cloneContractInvitation(invitation);
+    }
+
+    if (invitation.status !== 'delivered') {
+      throw invitationError('INVITATION_NOT_ACCEPTABLE', 'invitation cannot be accepted in its current state', {
+        status: 409,
+        invitationId
+      });
+    }
+
+    const acceptedAt = toIsoString(occurredAt ?? nowIso(nowFn));
+    setAccepted(invitation, acceptedAt);
+    return cloneContractInvitation(invitation);
+  }
+
+  function declineInvitation(invitationId, {
+    reviewerId,
+    occurredAt
+  } = {}) {
+    const invitation = getInvitationOrThrow(invitationId);
+    if (invitation.reviewerId !== reviewerId) {
+      throw invitationError('INVITATION_FORBIDDEN', 'you do not have access to this invitation', {
+        status: 403,
+        invitationId
+      });
+    }
+
+    if (invitation.status === 'declined') {
+      return cloneContractInvitation(invitation);
+    }
+
+    if (invitation.status !== 'delivered') {
+      throw invitationError('INVITATION_NOT_DECLINABLE', 'invitation cannot be declined in its current state', {
+        status: 409,
+        invitationId
+      });
+    }
+
+    const declinedAt = toIsoString(occurredAt ?? nowIso(nowFn));
+    setDeclined(invitation, declinedAt);
+    return cloneContractInvitation(invitation);
+  }
+
   async function dispatchInvitation(invitationId, sendFn = createDefaultSender()) {
     const invitation = getInvitationOrThrow(invitationId);
-    if (invitation.status === 'canceled') {
+    if (invitation.status === 'canceled' || invitation.status === 'accepted' || invitation.status === 'declined') {
       return cloneLegacyInvitation(invitation);
     }
 
@@ -423,7 +508,10 @@ export function createReviewInvitationModel({
 
   async function retryInvitation(invitationId, sendFn = createDefaultSender()) {
     const invitation = getInvitationOrThrow(invitationId);
-    if (invitation.status === 'canceled' || invitation.status === 'failed') {
+    if (invitation.status === 'canceled'
+      || invitation.status === 'failed'
+      || invitation.status === 'accepted'
+      || invitation.status === 'declined') {
       return cloneLegacyInvitation(invitation);
     }
 
@@ -441,6 +529,12 @@ export function createReviewInvitationModel({
 
   function cancelInvitation(invitationId, reason = 'assignment_removed') {
     const invitation = getInvitationOrThrow(invitationId);
+    if (invitation.status === 'canceled'
+      || invitation.status === 'accepted'
+      || invitation.status === 'declined') {
+      return cloneLegacyInvitation(invitation);
+    }
+
     const canceledAt = nowIso(nowFn);
     setCanceled(invitation, canceledAt, reason);
     trackFailureLog(invitation, {
@@ -497,7 +591,10 @@ export function createReviewInvitationModel({
   }) {
     const eventTime = toIsoString(occurredAt);
 
-    if (invitation.status === 'failed' || invitation.status === 'canceled') {
+    if (invitation.status === 'failed'
+      || invitation.status === 'canceled'
+      || invitation.status === 'accepted'
+      || invitation.status === 'declined') {
       markAttemptCompleted(attempt, {
         completedAt: eventTime,
         outcome: 'ignored',
@@ -623,7 +720,10 @@ export function createReviewInvitationModel({
   function cancelInvitationByAssignment(reviewerAssignmentId, reason = 'assignment_removed', occurredAt = nowIso(nowFn)) {
     const invitation = getAssignmentInvitationOrThrow(reviewerAssignmentId);
 
-    if (invitation.status === 'delivered' || invitation.status === 'failed' || invitation.status === 'canceled') {
+    if (invitation.status === 'accepted'
+      || invitation.status === 'declined'
+      || invitation.status === 'failed'
+      || invitation.status === 'canceled') {
       return cloneContractInvitation(invitation);
     }
 
@@ -714,6 +814,8 @@ export function createReviewInvitationModel({
     retryInvitation,
     cancelInvitation,
     getFailureLog,
+    acceptInvitation,
+    declineInvitation,
     triggerInvitationDelivery,
     getInvitationStatus,
     recordDeliveryEvent,
