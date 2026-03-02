@@ -179,6 +179,100 @@ function toIsoString(value) {
   return value instanceof Date ? value.toISOString() : String(value);
 }
 
+const DEFAULT_PRICING_MISSING_MESSAGE = 'Pricing is currently unavailable.';
+const DEFAULT_PRICING_TEMPORARY_MESSAGE = 'Pricing is temporarily unavailable. Please try again.';
+
+function sanitizePricingItems(items) {
+  if (!Array.isArray(items)) {
+    return [];
+  }
+
+  return items
+    .filter((item) => (
+      item
+      && typeof item.itemId === 'string'
+      && item.itemId.trim().length > 0
+      && typeof item.label === 'string'
+      && item.label.trim().length > 0
+      && typeof item.attendeeType === 'string'
+      && ['standard', 'student', 'other'].includes(item.attendeeType)
+      && Number.isInteger(item.amountMinor)
+      && item.amountMinor >= 0
+    ))
+    .map((item) => {
+      const normalized = {
+        itemId: item.itemId,
+        label: item.label,
+        attendeeType: item.attendeeType,
+        amountMinor: item.amountMinor
+      };
+
+      if (
+        item.discount
+        && typeof item.discount.label === 'string'
+        && item.discount.label.trim().length > 0
+        && Number.isInteger(item.discount.amountMinor)
+        && item.discount.amountMinor >= 0
+        && item.discount.amountMinor <= item.amountMinor
+      ) {
+        normalized.discount = {
+          label: item.discount.label,
+          amountMinor: item.discount.amountMinor
+        };
+      }
+
+      return normalized;
+    });
+}
+
+async function defaultPricingOutcomeProvider() {
+  return {
+    status: 'pricing-missing',
+    message: DEFAULT_PRICING_MISSING_MESSAGE
+  };
+}
+
+function toPricingApiResponse(outcome) {
+  if (outcome?.status === 'pricing-temporarily-unavailable') {
+    return {
+      statusCode: 503,
+      body: {
+        status: 'pricing-temporarily-unavailable',
+        message: typeof outcome.message === 'string' && outcome.message.trim().length > 0
+          ? outcome.message
+          : DEFAULT_PRICING_TEMPORARY_MESSAGE,
+        retryAllowed: true
+      }
+    };
+  }
+
+  if (outcome?.status === 'pricing-displayed') {
+    const currencyCode = typeof outcome.currencyCode === 'string' ? outcome.currencyCode.trim().toUpperCase() : '';
+    const items = sanitizePricingItems(outcome.items);
+
+    if (/^[A-Z]{3}$/.test(currencyCode) && items.length > 0) {
+      return {
+        statusCode: 200,
+        body: {
+          status: 'pricing-displayed',
+          currencyCode,
+          items
+        }
+      };
+    }
+  }
+
+  return {
+    statusCode: 200,
+    body: {
+      status: 'pricing-missing',
+      message: typeof outcome?.message === 'string' && outcome.message.trim().length > 0
+        ? outcome.message
+        : DEFAULT_PRICING_MISSING_MESSAGE
+    }
+  };
+}
+
 /* c8 ignore start */
 function shouldGenerateSyntheticCoverage() {
   const entryPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
@@ -222,7 +316,8 @@ export function createApp({
   notificationInternalServiceKey,
   persistenceRootDirectory,
   databaseDirectory,
-  uploadsDirectory
+  uploadsDirectory,
+  pricingOutcomeProvider = defaultPricingOutcomeProvider
 } = {}) {
   const processNodeEnv = process.env.NODE_ENV;
   const authRuntimeEnv = authNodeEnv ?? processNodeEnv;
@@ -258,6 +353,7 @@ export function createApp({
   const indexPageHtml = readFileSync(path.join(__dirname, 'index.html'), 'utf8');
   const submitPaperTemplateHtml = readFileSync(path.join(__dirname, 'views', 'submit-paper.html'), 'utf8');
   const assignReviewersTemplateHtml = readFileSync(path.join(__dirname, 'views', 'assign-reviewers.html'), 'utf8');
+  const pricingPageTemplateHtml = readFileSync(path.join(__dirname, 'views', 'pricing-view.html'), 'utf8');
   const editorReviewsTemplateHtml = readFileSync(path.join(__dirname, 'views', 'editor-reviews.html'), 'utf8');
   const adminScheduleGenerationTemplateHtml = readFileSync(
     path.join(__dirname, 'views', 'admin', 'schedule-generation.html'),
@@ -556,6 +652,9 @@ export function createApp({
   app.get('/login', (_req, res) => {
     res.status(200).type('html').send(renderLoginPage());
   });
+  app.get('/pricing', (_req, res) => {
+    res.status(200).type('html').send(pricingPageTemplateHtml);
+  });
   app.get('/admin/schedule-generation', (_req, res) => {
     res.status(200).type('html').send(adminScheduleGenerationTemplateHtml);
   });
@@ -787,6 +886,20 @@ export function createApp({
   app.post('/api/v1/submissions/:submissionId/validate', sessionAuthMiddleware, submissionController.validateSubmission);
   app.post('/api/v1/submissions/:submissionId/submit', sessionAuthMiddleware, submissionController.finalizeSubmission);
   app.get('/api/v1/submissions/:submissionId', sessionAuthMiddleware, statusController.getSubmission);
+  app.get('/api/public/pricing', async (_req, res) => {
+    try {
+      const outcome = await pricingOutcomeProvider();
+      const response = toPricingApiResponse(outcome);
+      res.status(response.statusCode).json(response.body);
+      return;
+    } catch {
+      res.status(503).json({
+        status: 'pricing-temporarily-unavailable',
+        message: DEFAULT_PRICING_TEMPORARY_MESSAGE,
+        retryAllowed: true
+      });
+    }
+  });
   app.put('/api/submissions/:submissionId/draft', sessionAuthMiddleware, draftController.saveDraft);
   app.get('/api/submissions/:submissionId/draft', sessionAuthMiddleware, draftController.getLatestDraft);
   app.get('/api/submissions/:submissionId/draft/versions', sessionAuthMiddleware, draftVersionController.listDraftVersions);
@@ -952,6 +1065,7 @@ export function createApp({
   app.locals.scheduleGenerationController = scheduleGenerationController;
   app.locals.scheduleRunController = scheduleRunController;
   app.locals.scheduleReviewController = scheduleReviewController;
+  app.locals.pricingOutcomeProvider = pricingOutcomeProvider;
 
   return app;
 }
