@@ -31,8 +31,43 @@ mkdir -p src/models src/views src/controllers src/services src/assets/css src/as
 
 ```bash
 cd /home/m_srnic/ece493/lab2/ECE493Lab2
-npm test
-npx c8 --reporter=text --reporter=lcov npm test
+npx vitest run \
+  tests/unit/final-schedule-model.test.js \
+  tests/unit/final-schedule-view.test.js \
+  tests/unit/final-schedule-controller.test.js \
+  tests/unit/final-schedule-api.test.js \
+  tests/unit/viewer-context-model.test.js \
+  tests/unit/assets/final-schedule-app-bootstrap.test.js \
+  tests/unit/app.node.test.js \
+  tests/integration/final-schedule-integration.test.js \
+  tests/acceptance/uc-15-final-schedule.acceptance.test.js
+
+npx vitest run \
+  tests/unit/assets/login-app-bootstrap.test.js \
+  tests/unit/assets/password-change-app-bootstrap.test.js \
+  tests/unit/final-schedule-model.test.js \
+  tests/unit/final-schedule-view.test.js \
+  tests/unit/final-schedule-controller.test.js \
+  tests/unit/final-schedule-api.test.js \
+  tests/unit/viewer-context-model.test.js \
+  tests/unit/assets/final-schedule-app-bootstrap.test.js \
+  tests/unit/app.node.test.js \
+  tests/integration/final-schedule-integration.test.js \
+  tests/acceptance/uc-15-final-schedule.acceptance.test.js \
+  --coverage.enabled=true \
+  --coverage.provider=v8 \
+  --coverage.reporter=text \
+  --coverage.reporter=json-summary \
+  --coverage.include=src/models/final-schedule-model.js \
+  --coverage.include=src/models/viewer-context-model.js \
+  --coverage.include=src/services/final-schedule-api.js \
+  --coverage.include=src/views/final-schedule-view.js \
+  --coverage.include=src/controllers/final-schedule-controller.js \
+  --coverage.include=src/assets/js/app.js \
+  --coverage.thresholds.branches=100 \
+  --coverage.thresholds.functions=100 \
+  --coverage.thresholds.lines=100 \
+  --coverage.thresholds.statements=100
 ```
 
 ## 5. Traceability checklist before merge

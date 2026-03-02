@@ -73,3 +73,35 @@
 
 - Check items off as completed: `[x]`
 - Add review notes inline next to each checklist item
+
+## UC-15 Implementation Evidence (2026-03-02)
+
+### US1 + US2 acceptance/unit/integration execution
+
+- Command:
+  - `npx vitest run tests/unit/final-schedule-model.test.js tests/unit/final-schedule-view.test.js tests/unit/final-schedule-controller.test.js tests/unit/final-schedule-api.test.js tests/unit/viewer-context-model.test.js tests/unit/assets/final-schedule-app-bootstrap.test.js tests/unit/app.node.test.js tests/integration/final-schedule-integration.test.js tests/acceptance/uc-15-final-schedule.acceptance.test.js`
+- Result:
+  - `9 passed (9)` test files
+  - `68 passed (68)` tests
+
+### UC-15 branch/line/function/statement coverage (100%)
+
+- Command:
+  - `npx vitest run tests/unit/assets/login-app-bootstrap.test.js tests/unit/assets/password-change-app-bootstrap.test.js tests/unit/final-schedule-model.test.js tests/unit/final-schedule-view.test.js tests/unit/final-schedule-controller.test.js tests/unit/final-schedule-api.test.js tests/unit/viewer-context-model.test.js tests/unit/assets/final-schedule-app-bootstrap.test.js tests/unit/app.node.test.js tests/integration/final-schedule-integration.test.js tests/acceptance/uc-15-final-schedule.acceptance.test.js --coverage.enabled=true --coverage.provider=v8 --coverage.reporter=text --coverage.reporter=json-summary --coverage.include=src/models/final-schedule-model.js --coverage.include=src/models/viewer-context-model.js --coverage.include=src/services/final-schedule-api.js --coverage.include=src/views/final-schedule-view.js --coverage.include=src/controllers/final-schedule-controller.js --coverage.include=src/assets/js/app.js --coverage.thresholds.branches=100 --coverage.thresholds.functions=100 --coverage.thresholds.lines=100 --coverage.thresholds.statements=100`
+- Result:
+  - `11 passed (11)` test files
+  - `72 passed (72)` tests
+  - Coverage summary: `All files 100% statements / 100% branches / 100% functions / 100% lines`
+
+### Additional route-regression spot check
+
+- Command:
+  - `npx vitest run tests/unit/app.test.js tests/integration/api/view-routes.test.js tests/unit/assets/decision-workflow-page.test.js`
+- Result:
+  - `3 passed (3)` test files
+  - `14 passed (14)` tests
+
+### Open items
+
+- T041 (full regression suite) remains pending.
+- T046 (stakeholder clarity survey result capture) remains pending until stakeholder sample data is collected.

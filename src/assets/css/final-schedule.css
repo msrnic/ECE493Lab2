@@ -1,0 +1,74 @@
+:root {
+  --bg: #f3f4f6;
+  --surface: #ffffff;
+  --text: #15202b;
+  --muted: #52606d;
+  --accent: #d97706;
+  --notice: #b42318;
+  --border: #d0d7de;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+  color: var(--text);
+  background: radial-gradient(circle at top right, #fff4e8, var(--bg) 45%);
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.schedule-shell {
+  width: min(100%, 960px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+}
+
+.final-schedule__sessions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.final-schedule__session {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  background: #fdfdfd;
+}
+
+.final-schedule__session--mine {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.final-schedule__title {
+  margin: 0 0 0.5rem;
+}
+
+.final-schedule__room,
+.final-schedule__track,
+.final-schedule__time,
+.final-schedule__notice,
+.final-schedule__action-hint {
+  margin: 0.25rem 0;
+  color: var(--muted);
+}
+
+.final-schedule__notice {
+  color: var(--notice);
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .schedule-shell {
+    padding: 0.75rem;
+  }
+}

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conference Pricing</title>
+    <link rel="stylesheet" href="/views/styles/pricing.css" />
+  </head>
+  <body>
+    <main class="pricing-shell" data-pricing-root data-state="loading">
+      <h1>Conference Pricing</h1>
+      <p class="pricing-live-region" aria-live="polite" data-pricing-live></p>
+      <p class="pricing-message" data-pricing-message aria-live="polite">Loading pricing information.</p>
+      <p class="pricing-currency" data-pricing-currency hidden></p>
+      <ul class="pricing-list" data-pricing-list></ul>
+      <button class="pricing-retry" type="button" data-pricing-retry hidden>Try Again</button>
+    </main>
+    <script type="module">
+      import { registerPricingPageOnLoad } from '/assets/js/pricing-page.js';
+
+      registerPricingPageOnLoad();
+    </script>
+  </body>
+</html>

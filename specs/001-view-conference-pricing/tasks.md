@@ -11,7 +11,7 @@
 
 **Purpose**: Create baseline project and verification scaffolding for UC-16.
 
-- [ ] T001 [UC-16] [UC-16-AS] Create MVC and test directory scaffolding in `src/models/`, `src/views/`, `src/views/styles/`, `src/controllers/`, `src/assets/js/`, `tests/unit/`, and `tests/acceptance/`
+- [X] T001 [UC-16] [UC-16-AS] Create MVC and test directory scaffolding in `src/models/`, `src/views/`, `src/views/styles/`, `src/controllers/`, `src/assets/js/`, `tests/unit/`, and `tests/acceptance/`
 - [ ] T002 [UC-16] [UC-16-AS] Create UC-16 to UC-16-AS traceability checklist in `specs/001-view-conference-pricing/checklists/traceability.md`
 - [ ] T003 [P] [UC-16] [UC-16-AS] Initialize Node tooling scripts and dependencies for lint, Vitest, Playwright, c8, and axe-core in `package.json`
 - [ ] T004 [P] [UC-16] [UC-16-AS] Configure Vitest unit test environment for DOM-based view/controller tests in `vitest.config.js`
@@ -25,13 +25,13 @@
 
 **Critical**: No user-story implementation starts before this phase completes.
 
-- [ ] T006 [UC-16] [UC-16-AS] Define shared pricing outcome enums and normalization helpers in `src/models/pricing-model.js`
-- [ ] T007 [P] [UC-16] [UC-16-AS] Implement base `/pricing` page semantic shell and ARIA live regions in `src/views/pricing-view.html`
-- [ ] T008 [P] [UC-16] [UC-16-AS] Implement baseline WCAG 2.1 AA typography, spacing, and contrast tokens in `src/views/styles/pricing.css`
-- [ ] T009 [UC-16] [UC-16-AS] Implement view state-rendering interface (loading/displayed/missing/unavailable) in `src/views/pricing-view.js`
-- [ ] T010 [UC-16] [UC-16-AS] Implement controller bootstrap and dependency wiring for model/view composition in `src/controllers/pricing-controller.js`
-- [ ] T011 [P] [UC-16] [UC-16-AS] Wire page entrypoint to initialize pricing controller on page load in `src/assets/js/pricing-page.js`
-- [ ] T012 [UC-16] [UC-16-AS] Configure c8 coverage thresholds and reporting scripts for in-scope JavaScript in `package.json`
+- [X] T006 [UC-16] [UC-16-AS] Define shared pricing outcome enums and normalization helpers in `src/models/pricing-model.js`
+- [X] T007 [P] [UC-16] [UC-16-AS] Implement base `/pricing` page semantic shell and ARIA live regions in `src/views/pricing-view.html`
+- [X] T008 [P] [UC-16] [UC-16-AS] Implement baseline WCAG 2.1 AA typography, spacing, and contrast tokens in `src/views/styles/pricing.css`
+- [X] T009 [UC-16] [UC-16-AS] Implement view state-rendering interface (loading/displayed/missing/unavailable) in `src/views/pricing-view.js`
+- [X] T010 [UC-16] [UC-16-AS] Implement controller bootstrap and dependency wiring for model/view composition in `src/controllers/pricing-controller.js`
+- [X] T011 [P] [UC-16] [UC-16-AS] Wire page entrypoint to initialize pricing controller on page load in `src/assets/js/pricing-page.js`
+- [X] T012 [UC-16] [UC-16-AS] Configure c8 coverage thresholds and reporting scripts for in-scope JavaScript in `package.json`
 
 **Checkpoint**: Foundation complete, user stories can begin.
 
@@ -47,22 +47,22 @@
 
 ### Validation Tasks
 
-- [ ] T013 [P] [US1] [UC-16] [UC-16-AS] Implement UC-16-AS configured-pricing acceptance checks in `tests/acceptance/uc16-pricing.spec.js`
-- [ ] T014 [P] [US1] [UC-16] [UC-16-AS] Add model unit tests for successful `GET /api/public/pricing` parsing and incomplete-item filtering in `tests/unit/pricing-model.test.js`
-- [ ] T015 [P] [US1] [UC-16] [UC-16-AS] Add view unit tests for pricing rows, discount rows, and currency display rendering in `tests/unit/pricing-view.test.js`
+- [X] T013 [P] [US1] [UC-16] [UC-16-AS] Implement UC-16-AS configured-pricing acceptance checks in `tests/acceptance/uc16-pricing.spec.js`
+- [X] T014 [P] [US1] [UC-16] [UC-16-AS] Add model unit tests for successful `GET /api/public/pricing` parsing and incomplete-item filtering in `tests/unit/pricing-model.test.js`
+- [X] T015 [P] [US1] [UC-16] [UC-16-AS] Add view unit tests for pricing rows, discount rows, and currency display rendering in `tests/unit/pricing-view.test.js`
 
 ### Implementation Tasks
 
-- [ ] T016 [US1] [UC-16] [UC-16-AS] Implement `pricing-displayed` fetch and normalization flow for `GET /api/public/pricing` in `src/models/pricing-model.js`
-- [ ] T017 [US1] [UC-16] [UC-16-AS] Implement rendering for pricing items and precomputed discounts in `src/views/pricing-view.js`
-- [ ] T018 [US1] [UC-16] [UC-16-AS] Add pricing list and currency output containers for displayed state in `src/views/pricing-view.html`
-- [ ] T019 [US1] [UC-16] [UC-16-AS] Implement initial-load controller flow for configured-pricing outcome in `src/controllers/pricing-controller.js`
-- [ ] T020 [US1] [UC-16] [UC-16-AS] Implement `Intl.NumberFormat` currency formatting helper for configured conference currency in `src/views/pricing-view.js`
+- [X] T016 [US1] [UC-16] [UC-16-AS] Implement `pricing-displayed` fetch and normalization flow for `GET /api/public/pricing` in `src/models/pricing-model.js`
+- [X] T017 [US1] [UC-16] [UC-16-AS] Implement rendering for pricing items and precomputed discounts in `src/views/pricing-view.js`
+- [X] T018 [US1] [UC-16] [UC-16-AS] Add pricing list and currency output containers for displayed state in `src/views/pricing-view.html`
+- [X] T019 [US1] [UC-16] [UC-16-AS] Implement initial-load controller flow for configured-pricing outcome in `src/controllers/pricing-controller.js`
+- [X] T020 [US1] [UC-16] [UC-16-AS] Implement `Intl.NumberFormat` currency formatting helper for configured conference currency in `src/views/pricing-view.js`
 - [ ] T021 [US1] [UC-16] [UC-16-AS] Record configured-pricing acceptance evidence for UC-16-AS in `specs/001-view-conference-pricing/checklists/us1-acceptance.md`
 - [ ] T022 [P] [US1] [UC-16] [UC-16-AS] Add Playwright timing measurement and SC-002 threshold assertion in `tests/acceptance/uc16-pricing.spec.js`
 - [ ] T023 [US1] [UC-16] [UC-16-AS] Record SC-002 timing evidence and percentile calculation in `specs/001-view-conference-pricing/checklists/performance.md`
-- [ ] T024 [P] [US1] [UC-16] [UC-16-AS] Add acceptance coverage for direct URL access to `/pricing` without login in `tests/acceptance/uc16-pricing.spec.js`
-- [ ] T025 [P] [US1] [UC-16] [UC-16-AS] Add zero-dollar pricing-item rendering tests in `tests/unit/pricing-view.test.js`
+- [X] T024 [P] [US1] [UC-16] [UC-16-AS] Add acceptance coverage for direct URL access to `/pricing` without login in `tests/acceptance/uc16-pricing.spec.js`
+- [X] T025 [P] [US1] [UC-16] [UC-16-AS] Add zero-dollar pricing-item rendering tests in `tests/unit/pricing-view.test.js`
 
 **Checkpoint**: US1 delivers MVP pricing display and is independently testable.
 
@@ -78,17 +78,17 @@
 
 ### Validation Tasks
 
-- [ ] T026 [P] [US2] [UC-16] [UC-16-AS] Extend UC-16-AS acceptance coverage for `pricing-missing` and `pricing-temporarily-unavailable` outcomes in `tests/acceptance/uc16-pricing.spec.js`
-- [ ] T027 [P] [US2] [UC-16] [UC-16-AS] Add model unit tests for missing-pricing vs temporary-failure outcome mapping in `tests/unit/pricing-model.test.js`
-- [ ] T028 [P] [US2] [UC-16] [UC-16-AS] Add view unit tests for distinct messages, live-region announcements, and retry button visibility in `tests/unit/pricing-view.test.js`
+- [X] T026 [P] [US2] [UC-16] [UC-16-AS] Extend UC-16-AS acceptance coverage for `pricing-missing` and `pricing-temporarily-unavailable` outcomes in `tests/acceptance/uc16-pricing.spec.js`
+- [X] T027 [P] [US2] [UC-16] [UC-16-AS] Add model unit tests for missing-pricing vs temporary-failure outcome mapping in `tests/unit/pricing-model.test.js`
+- [X] T028 [P] [US2] [UC-16] [UC-16-AS] Add view unit tests for distinct messages, live-region announcements, and retry button visibility in `tests/unit/pricing-view.test.js`
 
 ### Implementation Tasks
 
-- [ ] T029 [US2] [UC-16] [UC-16-AS] Implement `pricing-missing` and `pricing-temporarily-unavailable` parsing logic for `GET /api/public/pricing` in `src/models/pricing-model.js`
-- [ ] T030 [US2] [UC-16] [UC-16-AS] Implement distinct missing/unavailable messaging and retry-action rendering in `src/views/pricing-view.js`
-- [ ] T031 [US2] [UC-16] [UC-16-AS] Add informational-message and retry-button markup with ARIA attributes in `src/views/pricing-view.html`
-- [ ] T032 [US2] [UC-16] [UC-16-AS] Implement user-initiated `Try Again` controller flow with no automatic retries in `src/controllers/pricing-controller.js`
-- [ ] T033 [US2] [UC-16] [UC-16-AS] Add style rules for informational states, retry focus visibility, and contrast compliance in `src/views/styles/pricing.css`
+- [X] T029 [US2] [UC-16] [UC-16-AS] Implement `pricing-missing` and `pricing-temporarily-unavailable` parsing logic for `GET /api/public/pricing` in `src/models/pricing-model.js`
+- [X] T030 [US2] [UC-16] [UC-16-AS] Implement distinct missing/unavailable messaging and retry-action rendering in `src/views/pricing-view.js`
+- [X] T031 [US2] [UC-16] [UC-16-AS] Add informational-message and retry-button markup with ARIA attributes in `src/views/pricing-view.html`
+- [X] T032 [US2] [UC-16] [UC-16-AS] Implement user-initiated `Try Again` controller flow with no automatic retries in `src/controllers/pricing-controller.js`
+- [X] T033 [US2] [UC-16] [UC-16-AS] Add style rules for informational states, retry focus visibility, and contrast compliance in `src/views/styles/pricing.css`
 - [ ] T034 [US2] [UC-16] [UC-16-AS] Record missing/unavailable and retry acceptance evidence for UC-16-AS in `specs/001-view-conference-pricing/checklists/us2-acceptance.md`
 - [ ] T035 [US2] [UC-16] [UC-16-AS] Create scripted usability protocol for SC-004 in `specs/001-view-conference-pricing/checklists/usability-script.md`
 - [ ] T036 [US2] [UC-16] [UC-16-AS] Execute SC-004 usability protocol and capture results in `specs/001-view-conference-pricing/checklists/usability-results.md`
@@ -106,7 +106,7 @@
 - [ ] T039 [UC-16] [UC-16-AS] Run UC-16 acceptance regression and summarize results in `specs/001-view-conference-pricing/checklists/final-verification.md`
 - [ ] T040 [UC-16] [UC-16-AS] Enforce and record c8 line-coverage results for in-scope JS modules in `specs/001-view-conference-pricing/checklists/coverage.md`
 - [ ] T041 [UC-16] [UC-16-AS] Update final requirement-to-test traceability status in `specs/001-view-conference-pricing/checklists/traceability.md`
-- [ ] T042 [P] [UC-16] [UC-16-AS] Add final controller/model/view integration regression tests in `tests/unit/pricing-controller.test.js`
+- [X] T042 [P] [UC-16] [UC-16-AS] Add final controller/model/view integration regression tests in `tests/unit/pricing-controller.test.js`
 - [ ] T043 [UC-16] [UC-16-AS] Document final MVC boundaries, retry policy, and currency/discount constraints in `specs/001-view-conference-pricing/quickstart.md`
 
 ---
