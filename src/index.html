@@ -4,6 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Conference Management System</title>
+    <link rel="stylesheet" href="/assets/css/editor-decision.css" />
   </head>
   <body>
     <main>
@@ -11,6 +12,46 @@
       <p>Choose an action to continue:</p>
       <p><a href="/register">Register a new account</a></p>
       <p><a href="/login">Log in to your account</a></p>
+      <p><a href="/editor/decisions">Open the editor decision workflow</a></p>
+
+      <section class="editor-decision-shell" data-decision-workflow-app>
+        <h2>Editor Decision Workflow</h2>
+        <p data-decision-status data-state="idle" aria-live="polite"></p>
+        <p data-decision-current-state>Current decision: UNDECIDED</p>
+
+        <form data-decision-form>
+          <label for="decision-paper-id">Paper ID</label>
+          <input id="decision-paper-id" data-decision-paper-id name="paperId" value="PAPER-123" />
+
+          <label for="decision-version">Expected Version</label>
+          <input id="decision-version" data-decision-version name="expectedVersion" value="1" />
+
+          <label for="decision-action">Action</label>
+          <select id="decision-action" data-decision-action name="action">
+            <option value="DEFER">DEFER</option>
+            <option value="FINAL">FINAL</option>
+          </select>
+
+          <label for="decision-final-outcome">Final Outcome</label>
+          <select id="decision-final-outcome" data-decision-final-outcome name="finalOutcome" disabled>
+            <option value="">Select outcome</option>
+            <option value="ACCEPT">ACCEPT</option>
+            <option value="REJECT">REJECT</option>
+            <option value="REVISE">REVISE</option>
+          </select>
+
+          <button type="submit" data-decision-save>Save decision</button>
+        </form>
+
+        <a data-decision-override-link hidden href="#">Open override workflow</a>
+        <section data-decision-evaluations></section>
+      </section>
     </main>
+
+    <script type="module">
+      import { bootstrapDecisionWorkflowPage } from '/assets/js/decision-workflow-page.js';
+
+      bootstrapDecisionWorkflowPage();
+    </script>
   </body>
 </html>

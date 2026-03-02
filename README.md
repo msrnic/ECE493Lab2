@@ -73,3 +73,14 @@ npm run test:acceptance:uc02
 npm run test:integration:auth
 npm run test:performance:auth
 ```
+
+## Editor Decision Feature (UC-11)
+
+### Validation Commands
+
+```bash
+npm run test:acceptance:uc11
+npm run test:integration:decision
+npm test
+npm run lint
+```

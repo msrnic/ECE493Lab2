@@ -1,7 +1,7 @@
 # Acceptance Regression Report
 
 ## Run Metadata
-- Date: 2026-02-28
+- Date: 2026-03-02
 - Command: `npm test`
 
 ## Acceptance Suites
@@ -14,6 +14,8 @@
 - `tests/acceptance/uc07-review-invitation.acceptance.test.js`: PASS
 - `tests/acceptance/uc-08-as.test.js`: PASS
 - `tests/acceptance/uc-08-performance.test.js`: PASS
+- `tests/acceptance/uc-10-view-reviews.acceptance.test.js`: PASS
+- `tests/acceptance/uc-11-as.test.js`: PASS
 
 ## Result
 - Regression status: PASS

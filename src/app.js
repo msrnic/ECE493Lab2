@@ -49,7 +49,10 @@ import { createPaperFileRequestController } from './controllers/paper-file-reque
 import { createReviewApiController } from './controllers/review-api-controller.js';
 import { createReviewPageController } from './controllers/review-page-controller.js';
 import { createReviewerPaperAccessController } from './controllers/reviewer-paper-access.controller.js';
+import { createEditorDecisionController } from './controllers/editor-decision-controller.js';
 import { createEditorAssignmentModel } from './models/editor-assignment-model.js';
+import { createDecisionAuditModel } from './models/decision-audit-model.js';
+import { createDecisionModel } from './models/decision-model.js';
 import { createReviewSubmissionController } from './controllers/review-submission-controller.js';
 import { createOutageRetryWindowModel } from './models/outage-retry-window.model.js';
 import { createPaperModel } from './models/paper-model.js';
@@ -352,6 +355,18 @@ export function createApp({
     editorAssignmentModel: reviewVisibilityEditorAssignmentModel,
     templateHtml: editorReviewsTemplateHtml
   });
+  const decisionModel = createDecisionModel();
+  const decisionAuditModel = createDecisionAuditModel({
+    nowFn
+  });
+  const editorDecisionController = createEditorDecisionController({
+    paperModel: reviewVisibilityPaperModel,
+    reviewModel: reviewVisibilityModel,
+    editorAssignmentModel: reviewVisibilityEditorAssignmentModel,
+    decisionModel,
+    decisionAuditModel,
+    nowFn
+  });
   const invitationController = createInvitationController({
     invitationModel,
     sendInvitation: sendInvitationFn,
@@ -524,6 +539,9 @@ export function createApp({
     res.status(200).type('html').send(assignReviewersTemplateHtml);
   });
   app.get('/editor/reviews', attachAuthenticatedSession, reviewPageController.getReviewPage);
+  app.get('/editor/decisions', requireEditorSession, (_req, res) => {
+    res.status(200).type('html').send(indexPageHtml);
+  });
   app.get('/reviewer/papers', requireReviewerSession, reviewerPaperAccessController.getPaperAccessPage);
   app.get('/reviewer/invitations', requireReviewerSession, (req, res) => {
     const invitations = invitationModel.listInvitationsForReviewer(req.authenticatedReviewerId, {
@@ -628,6 +646,8 @@ export function createApp({
   app.post('/api/submissions/:submissionId/draft/versions/:versionId/restore', sessionAuthMiddleware, draftVersionController.restoreDraftVersion);
   app.post('/api/submissions/:submissionId/draft/retention/prune', draftController.pruneRetention);
   app.get('/api/papers/:paperId/reviews', attachAuthenticatedSession, reviewApiController.getPaperReviews);
+  app.get('/api/papers/:paperId/decision-workflow', attachAuthenticatedSession, editorDecisionController.getDecisionWorkflow);
+  app.post('/api/papers/:paperId/decisions', attachAuthenticatedSession, editorDecisionController.savePaperDecision);
   app.get('/api/papers', requireEditorSession, reviewerAssignmentController.listSubmittedPapers);
   app.get('/api/papers/:paperId/reviewer-candidates', requireEditorSession, reviewerAssignmentController.listReviewerCandidates);
   app.post('/api/papers/:paperId/assignment-attempts', requireEditorSession, reviewerAssignmentController.createAttempt);
@@ -723,6 +743,9 @@ export function createApp({
   app.locals.reviewVisibilityAuditModel = reviewVisibilityAuditModel;
   app.locals.reviewApiController = reviewApiController;
   app.locals.reviewPageController = reviewPageController;
+  app.locals.decisionModel = decisionModel;
+  app.locals.decisionAuditModel = decisionAuditModel;
+  app.locals.editorDecisionController = editorDecisionController;
 
   return app;
 }
