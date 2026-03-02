@@ -66,12 +66,31 @@ import { createReviewRecordModel } from './models/review-record-model.js';
 import { createValidationFeedbackModel } from './models/validation-feedback-model.js';
 import { createReviewerPaperAssignmentModel } from './models/reviewer-paper-assignment-model.js';
 import { registerReviewSubmissionRoutes } from './api/review-submission-routes.js';
+import { createFinalizedDecisionModel } from './models/finalized-decision-model.js';
+import { createDecisionNotificationModel } from './models/decision-notification-model.js';
+import { createDeliveryAttemptModel } from './models/delivery-attempt-model.js';
+import { createUnresolvedFailureModel } from './models/unresolved-failure-model.js';
+import { createNotificationController } from './controllers/notification-controller.js';
+import { createAdminFailureLogController } from './controllers/admin-failure-log-controller.js';
+import { createInternalServiceAuth } from './middleware/internal-service-auth.js';
+import { createAdminRoleAuth } from './middleware/admin-role-auth.js';
+import { createNotificationEmailDeliveryService } from './services/email-delivery-service.js';
+import { createRetrySchedulerService } from './services/retry-scheduler-service.js';
+import { registerNotificationRoutes } from './routes/notification-routes.js';
+import { registerAdminFailureRoutes } from './routes/admin-routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const __filename = fileURLToPath(import.meta.url);
 
 async function defaultSendEmail() {
   return { accepted: true };
+}
+
+async function defaultSendDecisionEmail() {
+  return {
+    accepted: true,
+    providerMessageId: 'provider-message-id'
+  };
 }
 
 function escapeHtml(value) {
@@ -179,6 +198,8 @@ export function createApp({
   authSessionTtlMs,
   authNodeEnv,
   sendInvitationFn,
+  sendDecisionEmailFn = defaultSendDecisionEmail,
+  notificationInternalServiceKey,
   persistenceRootDirectory,
   databaseDirectory,
   uploadsDirectory
@@ -337,6 +358,35 @@ export function createApp({
     nowFn
   });
   const reviewerPaperAssignmentModel = createReviewerPaperAssignmentModel();
+  const finalizedDecisionModel = createFinalizedDecisionModel({ nowFn });
+  const decisionNotificationModel = createDecisionNotificationModel({ nowFn });
+  const deliveryAttemptModel = createDeliveryAttemptModel({ nowFn });
+  const unresolvedFailureModel = createUnresolvedFailureModel({ nowFn });
+  const retrySchedulerService = createRetrySchedulerService({
+    decisionNotificationModel,
+    nowFn
+  });
+  const notificationEmailDeliveryService = createNotificationEmailDeliveryService({
+    sendEmail: sendDecisionEmailFn,
+    decisionNotificationModel,
+    deliveryAttemptModel,
+    unresolvedFailureModel,
+    retrySchedulerService,
+    nowFn
+  });
+  const notificationController = createNotificationController({
+    finalizedDecisionModel,
+    decisionNotificationModel,
+    deliveryAttemptModel,
+    emailDeliveryService: notificationEmailDeliveryService
+  });
+  const adminFailureLogController = createAdminFailureLogController({
+    unresolvedFailureModel
+  });
+  const internalServiceAuth = createInternalServiceAuth({
+    serviceKey: notificationInternalServiceKey
+  });
+  const adminRoleAuth = createAdminRoleAuth();
   const reviewVisibilityPaperModel = createPaperModel();
   const reviewVisibilityModel = createReviewModel();
   const reviewVisibilityEditorAssignmentModel = createEditorAssignmentModel();
@@ -419,6 +469,7 @@ export function createApp({
   app.use('/controllers', express.static(path.join(__dirname, 'controllers')));
   app.use('/models', express.static(path.join(__dirname, 'models')));
   app.use('/views', express.static(path.join(__dirname, 'views')));
+  app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
   app.get('/', (_req, res) => {
     res.status(200).type('html').send(indexPageHtml);
@@ -677,6 +728,16 @@ export function createApp({
   app.post('/api/reviewer-assignments/:assignmentId/invitations/cancel', invitationController.cancelByAssignment);
   app.post('/api/internal/review-invitations/retry-due', invitationController.retryDue);
   app.get('/api/papers/:paperId/invitation-failure-logs', invitationController.listFailureLogsByPaper);
+  registerNotificationRoutes({
+    app,
+    notificationController,
+    internalServiceAuth
+  });
+  registerAdminFailureRoutes({
+    app,
+    adminFailureLogController,
+    adminRoleAuth
+  });
   registerReviewSubmissionRoutes({
     app,
     reviewSubmissionController,
@@ -737,6 +798,16 @@ export function createApp({
   app.locals.validationFeedbackModel = validationFeedbackModel;
   app.locals.reviewerPaperAssignmentModel = reviewerPaperAssignmentModel;
   app.locals.reviewSubmissionController = reviewSubmissionController;
+  app.locals.finalizedDecisionModel = finalizedDecisionModel;
+  app.locals.decisionNotificationModel = decisionNotificationModel;
+  app.locals.deliveryAttemptModel = deliveryAttemptModel;
+  app.locals.unresolvedFailureModel = unresolvedFailureModel;
+  app.locals.retrySchedulerService = retrySchedulerService;
+  app.locals.notificationEmailDeliveryService = notificationEmailDeliveryService;
+  app.locals.notificationController = notificationController;
+  app.locals.adminFailureLogController = adminFailureLogController;
+  app.locals.internalServiceAuth = internalServiceAuth;
+  app.locals.adminRoleAuth = adminRoleAuth;
   app.locals.reviewVisibilityPaperModel = reviewVisibilityPaperModel;
   app.locals.reviewVisibilityModel = reviewVisibilityModel;
   app.locals.reviewVisibilityEditorAssignmentModel = reviewVisibilityEditorAssignmentModel;

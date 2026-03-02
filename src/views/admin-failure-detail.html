@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Notification Failure Detail</title>
+    <link rel="stylesheet" href="/public/css/admin-failures.css" />
+  </head>
+  <body>
+    <main class="admin-failure-layout">
+      <h1>Failure Record Detail</h1>
+      <dl data-admin-failure-detail>
+        <dt>Failure Record ID</dt><dd data-field="failureRecordId"></dd>
+        <dt>Notification ID</dt><dd data-field="notificationId"></dd>
+        <dt>Submission ID</dt><dd data-field="submissionId"></dd>
+        <dt>Author ID</dt><dd data-field="authorId"></dd>
+        <dt>Failure Reason</dt><dd data-field="failureReason"></dd>
+        <dt>Attempt Number</dt><dd data-field="attemptNumber"></dd>
+        <dt>Final Delivery Status</dt><dd data-field="finalDeliveryStatus"></dd>
+        <dt>Retained Until</dt><dd data-field="retainedUntil"></dd>
+      </dl>
+      <a href="/admin/notification-failures">Back to failure list</a>
+    </main>
+  </body>
+</html>

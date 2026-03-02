@@ -1,0 +1,37 @@
+:root {
+  --failure-bg: #f4f5f7;
+  --failure-surface: #ffffff;
+  --failure-border: #d5d9e0;
+  --failure-text: #1c2530;
+  --failure-accent: #005ea2;
+}
+
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(180deg, #eef3f8 0%, var(--failure-bg) 100%);
+  color: var(--failure-text);
+}
+
+.admin-failure-layout {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 1.25rem;
+}
+
+[data-admin-failure-table],
+[data-admin-failure-detail] {
+  border: 1px solid var(--failure-border);
+  border-radius: 0.5rem;
+  background: var(--failure-surface);
+  padding: 1rem;
+}
+
+button {
+  background: var(--failure-accent);
+  border: none;
+  border-radius: 0.25rem;
+  color: #fff;
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+}

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Notification Failure Log</title>
+    <link rel="stylesheet" href="/public/css/admin-failures.css" />
+  </head>
+  <body>
+    <main class="admin-failure-layout">
+      <h1>Unresolved Notification Failures</h1>
+      <form data-admin-failure-filter-form>
+        <label>Submission ID <input name="submissionId" /></label>
+        <label>Author ID <input name="authorId" /></label>
+        <button type="submit">Filter</button>
+      </form>
+      <section data-admin-failure-table aria-live="polite"></section>
+      <nav data-admin-failure-pagination></nav>
+    </main>
+    <script src="/public/js/admin-failures-controller.js" type="module"></script>
+  </body>
+</html>
