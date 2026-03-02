@@ -1,0 +1,78 @@
+{
+  "happyPath": {
+    "acceptedPapers": [
+      {
+        "paperId": "paper-1",
+        "title": "AI Planning",
+        "trackId": "ai",
+        "durationMinutes": 30,
+        "authorIds": ["a1"],
+        "status": "accepted"
+      },
+      {
+        "paperId": "paper-2",
+        "title": "Systems Reliability",
+        "trackId": "systems",
+        "durationMinutes": 30,
+        "authorIds": ["a2"],
+        "status": "accepted"
+      }
+    ],
+    "sessionSlots": [
+      {
+        "sessionSlotId": "slot-1",
+        "trackId": "ai",
+        "roomId": "r1",
+        "startAt": "2026-06-01T09:00:00.000Z",
+        "endAt": "2026-06-01T10:00:00.000Z",
+        "capacity": 2
+      },
+      {
+        "sessionSlotId": "slot-2",
+        "trackId": "systems",
+        "roomId": "r2",
+        "startAt": "2026-06-01T09:00:00.000Z",
+        "endAt": "2026-06-01T10:00:00.000Z",
+        "capacity": 2
+      }
+    ]
+  },
+  "conflictHeavy": {
+    "acceptedPapers": [
+      {
+        "paperId": "paper-10",
+        "title": "UX Methods",
+        "trackId": "ux",
+        "durationMinutes": 30,
+        "authorIds": ["u1"],
+        "status": "accepted"
+      },
+      {
+        "paperId": "paper-11",
+        "title": "Security Patterns",
+        "trackId": "security",
+        "durationMinutes": 30,
+        "authorIds": ["u2"],
+        "status": "accepted"
+      },
+      {
+        "paperId": "paper-12",
+        "title": "Compilers 101",
+        "trackId": "pl",
+        "durationMinutes": 30,
+        "authorIds": ["u3"],
+        "status": "accepted"
+      }
+    ],
+    "sessionSlots": [
+      {
+        "sessionSlotId": "slot-10",
+        "trackId": "ai",
+        "roomId": "r10",
+        "startAt": "2026-06-01T09:00:00.000Z",
+        "endAt": "2026-06-01T10:00:00.000Z",
+        "capacity": 1
+      }
+    ]
+  }
+}
