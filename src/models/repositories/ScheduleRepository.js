@@ -7,7 +7,9 @@ const DEFAULT_DATA = {
   generationRuns: [],
   generatedSchedules: [],
   sessionAssignments: [],
-  conflictFlags: []
+  conflictFlags: [],
+  scheduleEditConflicts: [],
+  scheduleOverrideAudits: []
 };
 
 export default class ScheduleRepository {

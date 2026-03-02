@@ -55,7 +55,7 @@
 
 - [ ] T019 [P] [UC-14] [UC-14-AS] [US1] Author unit tests for session edit application, version checks, and unsaved-change retention in `tests/unit/schedule-model.test.js`
 - [ ] T020 [P] [UC-14] [UC-14-AS] [US1] Author contract tests for `GET /api/schedules/{scheduleId}` and success/stale responses of `POST /api/schedules/{scheduleId}/save-attempts` in `tests/contract/save-attempt.contract.test.js`
-- [ ] T021 [UC-14] [UC-14-AS] [US1] Translate UC-14 main-success and stale-state scenarios into executable acceptance checks in `tests/acceptance/UC-14-AS-us1.test.js`
+- [X] T021 [UC-14] [UC-14-AS] [US1] Translate UC-14 main-success and stale-state scenarios into executable acceptance checks in `tests/acceptance/UC-14-AS-us1.test.js`
 
 ### Implementation Tasks
 
@@ -65,11 +65,11 @@
 - [ ] T025 [UC-14] [UC-14-AS] [US1] Implement event orchestration for select, edit, save, reload, and reapply actions in `src/controllers/edit-schedule-controller.js`
 - [ ] T026 [UC-14] [UC-14-AS] [US1] Add session selection and edit form markup hooks in `src/index.html`
 - [ ] T027 [UC-14] [UC-14-AS] [US1] Add styles for editable rows, success confirmation, and stale warning states in `src/assets/css/edit-schedule.css`
-- [ ] T028 [UC-14] [UC-14-AS] [US1] Implement `GET /api/schedules/{scheduleId}` endpoint handler in `backend/routes/schedules.js`
-- [ ] T029 [UC-14] [UC-14-AS] [US1] Implement `POST /api/schedules/{scheduleId}/save-attempts` endpoint handler in `backend/routes/saves.js`
-- [ ] T030 [UC-14] [UC-14-AS] [US1] Implement schedule fetch, stale guard, and save-attempt service logic in `backend/services/schedule-service.js`
-- [ ] T031 [UC-14] [UC-14-AS] [US1] Execute `Acceptance Tests/UC-14-AS.md` scenarios mapped to US1 and capture evidence in `tests/acceptance/UC-14-AS-us1-results.md`
-- [ ] T032 [UC-14] [UC-14-AS] [US1] Run c8 coverage for US1-scoped modules and document uncovered lines in `tests/acceptance/coverage-us1.md`
+- [X] T028 [UC-14] [UC-14-AS] [US1] Implement `GET /api/schedules/{scheduleId}` endpoint handler in `backend/routes/schedules.js`
+- [X] T029 [UC-14] [UC-14-AS] [US1] Implement `POST /api/schedules/{scheduleId}/save-attempts` endpoint handler in `backend/routes/saves.js`
+- [X] T030 [UC-14] [UC-14-AS] [US1] Implement schedule fetch, stale guard, and save-attempt service logic in `backend/services/schedule-service.js`
+- [X] T031 [UC-14] [UC-14-AS] [US1] Execute `Acceptance Tests/UC-14-AS.md` scenarios mapped to US1 and capture evidence in `tests/acceptance/UC-14-AS-us1-results.md`
+- [X] T032 [UC-14] [UC-14-AS] [US1] Run c8 coverage for US1-scoped modules and document uncovered lines in `tests/acceptance/coverage-us1.md`
 
 **Checkpoint**: US1 is complete and independently verifiable
 
@@ -84,23 +84,23 @@
 ### Validation & Test Tasks
 
 - [ ] T033 [P] [UC-14] [UC-14-AS] [US2] Author unit tests for unresolved-conflict state transitions and override reason validation in `tests/unit/conflict-and-override-model.test.js`
-- [ ] T034 [P] [UC-14] [UC-14-AS] [US2] Author contract tests for warning `409`, override save `200`, and publish-block `409` responses in `tests/contract/override-and-publish.contract.test.js`
-- [ ] T035 [UC-14] [UC-14-AS] [US2] Translate conflict warning, cancel, override, and publish-block scenarios into executable acceptance checks in `tests/acceptance/UC-14-AS-us2.test.js`
+- [X] T034 [P] [UC-14] [UC-14-AS] [US2] Author contract tests for warning `409`, override save `200`, and publish-block `409` responses in `tests/contract/override-and-publish.contract.test.js`
+- [X] T035 [UC-14] [UC-14-AS] [US2] Translate conflict warning, cancel, override, and publish-block scenarios into executable acceptance checks in `tests/acceptance/UC-14-AS-us2.test.js`
 
 ### Implementation Tasks
 
 - [ ] T036 [UC-14] [UC-14-AS] [US2] Implement unresolved-conflict persistence and visible flagging rules in `src/models/conflict-model.js`
 - [ ] T037 [UC-14] [UC-14-AS] [US2] Implement override audit payload builder with required reason, actor, timestamp, and affected conflicts in `src/models/override-audit-model.js`
 - [ ] T038 [P] [UC-14] [UC-14-AS] [US2] Implement conflict warning modal, decision token handling, and override reason input rendering in `src/views/conflict-warning-view.js`
-- [ ] T039 [UC-14] [UC-14-AS] [US2] Implement warning decision flow and override save submission in `src/controllers/save-attempt-controller.js`
-- [ ] T040 [UC-14] [UC-14-AS] [US2] Implement publish/finalization guard controller flow and block messaging in `src/controllers/publish-guard-controller.js`
+- [X] T039 [UC-14] [UC-14-AS] [US2] Implement warning decision flow and override save submission in `src/controllers/save-attempt-controller.js`
+- [X] T040 [UC-14] [UC-14-AS] [US2] Implement publish/finalization guard controller flow and block messaging in `src/controllers/publish-guard-controller.js`
 - [ ] T041 [UC-14] [UC-14-AS] [US2] Integrate unresolved-conflict and publish-action UI hooks in `src/index.html`
 - [ ] T042 [UC-14] [UC-14-AS] [US2] Add styles for conflict badges, warning modal states, and publish-block alerts in `src/assets/css/edit-schedule.css`
-- [ ] T043 [UC-14] [UC-14-AS] [US2] Implement `POST /api/schedules/{scheduleId}/override-saves` endpoint handler in `backend/routes/saves.js`
-- [ ] T044 [UC-14] [UC-14-AS] [US2] Implement `POST /api/schedules/{scheduleId}/publish-attempts` endpoint handler in `backend/routes/publish.js`
-- [ ] T045 [UC-14] [UC-14-AS] [US2] Implement override-audit persistence and publish-block service logic in `backend/services/schedule-service.js`
+- [X] T043 [UC-14] [UC-14-AS] [US2] Implement `POST /api/schedules/{scheduleId}/override-saves` endpoint handler in `backend/routes/saves.js`
+- [X] T044 [UC-14] [UC-14-AS] [US2] Implement `POST /api/schedules/{scheduleId}/publish-attempts` endpoint handler in `backend/routes/publish.js`
+- [X] T045 [UC-14] [UC-14-AS] [US2] Implement override-audit persistence and publish-block service logic in `backend/services/schedule-service.js`
 - [ ] T046 [UC-14] [UC-14-AS] [US2] Execute `Acceptance Tests/UC-14-AS.md` scenarios mapped to US2 and capture evidence in `tests/acceptance/UC-14-AS-us2-results.md`
-- [ ] T047 [UC-14] [UC-14-AS] [US2] Run c8 coverage for US2-scoped modules and document uncovered lines in `tests/acceptance/coverage-us2.md`
+- [X] T047 [UC-14] [UC-14-AS] [US2] Run c8 coverage for US2-scoped modules and document uncovered lines in `tests/acceptance/coverage-us2.md`
 
 **Checkpoint**: US2 is complete and independently verifiable
 
@@ -119,7 +119,7 @@
 - [ ] T054 [UC-14] [UC-14-AS] Run SC-001 timed edit-save study (>=20 trials, >=95% under 2 minutes) and capture evidence in `tests/acceptance/sc-001-results.md`
 - [ ] T055 [UC-14] [UC-14-AS] Run SC-004 immediate-refresh consistency study (>=100 trials, >=98% success) and capture evidence in `tests/acceptance/sc-004-results.md`
 - [ ] T056 [UC-14] [UC-14-AS] Run SC-005 warning-clarity survey (>=20 participants, >=85% score >=4/5) and capture evidence in `tests/acceptance/sc-005-results.md`
-- [ ] T057 [UC-14] [UC-14-AS] Enforce final 100% in-scope JavaScript line coverage gate and log report in `tests/acceptance/coverage-final.md`
+- [X] T057 [UC-14] [UC-14-AS] Enforce final 100% in-scope JavaScript line coverage gate and log report in `tests/acceptance/coverage-final.md`
 - [ ] T058 [P] [UC-14] [UC-14-AS] Update final implementation/run commands and verification notes in `specs/001-edit-session-schedule/quickstart.md`
 
 ---

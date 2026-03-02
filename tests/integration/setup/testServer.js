@@ -10,7 +10,9 @@ const EMPTY_STATE = {
   generationRuns: [],
   generatedSchedules: [],
   sessionAssignments: [],
-  conflictFlags: []
+  conflictFlags: [],
+  scheduleEditConflicts: [],
+  scheduleOverrideAudits: []
 };
 
 export function createTestServer(seed = {}, options = {}) {

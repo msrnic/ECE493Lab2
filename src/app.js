@@ -88,6 +88,8 @@ import GenerationPreconditionService from './models/services/GenerationPrecondit
 import ScheduleGenerationController from './controllers/ScheduleGenerationController.js';
 import ScheduleRunController from './controllers/ScheduleRunController.js';
 import ScheduleReviewController from './controllers/ScheduleReviewController.js';
+import ScheduleEditController from './controllers/ScheduleEditController.js';
+import ScheduleEditService from './models/services/ScheduleEditService.js';
 import authorizeRole from './controllers/middleware/authorizeRole.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -524,10 +526,18 @@ export function createApp({
     generationRunModel,
     generatedScheduleModel
   });
+  const scheduleEditService = new ScheduleEditService(scheduleRepository, {
+    now: scheduleNow,
+    makeId
+  });
+  const scheduleEditController = new ScheduleEditController({
+    scheduleEditService
+  });
   const scheduleReviewController = new ScheduleReviewController({
     generatedScheduleModel,
     sessionAssignmentModel,
-    conflictFlagModel
+    conflictFlagModel,
+    scheduleEditService
   });
 
   app.use(express.json());
@@ -819,6 +829,24 @@ export function createApp({
   app.get('/api/schedule-runs/:runId', attachScheduleActor, authorizeRole('admin', 'editor'), scheduleRunController.getRun);
   app.get('/api/schedules', attachScheduleActor, authorizeRole('admin', 'editor'), scheduleReviewController.listSchedules);
   app.get('/api/schedules/:scheduleId', attachScheduleActor, authorizeRole('admin', 'editor'), scheduleReviewController.getSchedule);
+  app.post(
+    '/api/schedules/:scheduleId/save-attempts',
+    attachScheduleActor,
+    authorizeRole('admin', 'editor'),
+    scheduleEditController.saveAttempt
+  );
+  app.post(
+    '/api/schedules/:scheduleId/override-saves',
+    attachScheduleActor,
+    authorizeRole('admin', 'editor'),
+    scheduleEditController.overrideSave
+  );
+  app.post(
+    '/api/schedules/:scheduleId/publish-attempts',
+    attachScheduleActor,
+    authorizeRole('admin', 'editor'),
+    scheduleEditController.publishAttempt
+  );
   app.get(
     '/api/schedules/:scheduleId/conflicts',
     attachScheduleActor,
@@ -919,6 +947,8 @@ export function createApp({
   app.locals.generatedScheduleModel = generatedScheduleModel;
   app.locals.sessionAssignmentModel = sessionAssignmentModel;
   app.locals.conflictFlagModel = conflictFlagModel;
+  app.locals.scheduleEditService = scheduleEditService;
+  app.locals.scheduleEditController = scheduleEditController;
   app.locals.scheduleGenerationController = scheduleGenerationController;
   app.locals.scheduleRunController = scheduleRunController;
   app.locals.scheduleReviewController = scheduleReviewController;
