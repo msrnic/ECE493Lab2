@@ -33,3 +33,17 @@
 
 - Validation completed in 1 iteration with all items passing.
 - No [NEEDS CLARIFICATION] markers were required for this feature scope.
+
+## FR-to-Test Traceability And Completion (2026-03-02)
+
+| Requirement | Validation Tests | Status |
+|-------------|------------------|--------|
+| FR-001 | `tests/acceptance/uc-15-final-schedule.acceptance.test.js` (`given published schedule when any viewer opens view then full schedule is displayed`) | Complete |
+| FR-002 | `tests/acceptance/uc-15-final-schedule.acceptance.test.js`, `tests/unit/final-schedule-view.test.js` | Complete |
+| FR-003 | `tests/acceptance/uc-15-final-schedule.acceptance.test.js`, `tests/unit/final-schedule-model.test.js`, `tests/unit/final-schedule-view.test.js` | Complete |
+| FR-004 | `tests/acceptance/uc-15-final-schedule.acceptance.test.js`, `tests/unit/final-schedule-model.test.js`, `tests/unit/final-schedule-view.test.js` | Complete |
+| FR-005 | `tests/acceptance/uc-15-final-schedule.acceptance.test.js`, `tests/integration/final-schedule-integration.test.js`, `tests/unit/final-schedule-model.test.js` | Complete |
+| FR-006 | `tests/unit/viewer-context-model.test.js`, `tests/unit/final-schedule-model.test.js`, `tests/unit/final-schedule-controller.test.js` | Complete |
+| FR-008 | `tests/acceptance/uc-15-final-schedule.acceptance.test.js`, `tests/unit/final-schedule-model.test.js`, `tests/unit/final-schedule-view.test.js` | Complete |
+
+All in-scope functional requirements for UC-15 are implemented and mapped to automated acceptance/unit/integration validation.

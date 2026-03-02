@@ -30,10 +30,6 @@ async function collectJavaScriptFiles(rootDir) {
         continue;
       }
 
-      if (fullPath.endsWith(path.join('src', 'server.js'))) {
-        continue;
-      }
-
       collected.push(fullPath);
     }
   }
@@ -95,6 +91,7 @@ const sourcePrefix = pathToFileURL(`${sourceDirectory}${path.sep}`).href;
 const session = new inspector.Session();
 
 installBrowserGlobalsForImports();
+process.env.NODE_ENV = 'test';
 
 session.connect();
 await postInspector(session, 'Profiler.enable');
@@ -113,7 +110,7 @@ await postInspector(session, 'Profiler.disable');
 session.disconnect();
 
 const normalizedResult = coverageSnapshot.result
-  .filter((entry) => entry.url.startsWith(sourcePrefix) && !entry.url.endsWith('/src/server.js'))
+  .filter((entry) => entry.url.startsWith(sourcePrefix))
   .map((entry) => ({
     ...entry,
     functions: entry.functions.map((fn) => ({
