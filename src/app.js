@@ -78,6 +78,17 @@ import { createNotificationEmailDeliveryService } from './services/email-deliver
 import { createRetrySchedulerService } from './services/retry-scheduler-service.js';
 import { registerNotificationRoutes } from './routes/notification-routes.js';
 import { registerAdminFailureRoutes } from './routes/admin-routes.js';
+import ScheduleRepository from './models/repositories/ScheduleRepository.js';
+import GenerationRunModel from './models/GenerationRunModel.js';
+import GeneratedScheduleModel from './models/GeneratedScheduleModel.js';
+import SessionAssignmentModel from './models/SessionAssignmentModel.js';
+import ConflictFlagModel from './models/ConflictFlagModel.js';
+import ScheduleGenerationEngine from './models/services/ScheduleGenerationEngine.js';
+import GenerationPreconditionService from './models/services/GenerationPreconditionService.js';
+import ScheduleGenerationController from './controllers/ScheduleGenerationController.js';
+import ScheduleRunController from './controllers/ScheduleRunController.js';
+import ScheduleReviewController from './controllers/ScheduleReviewController.js';
+import authorizeRole from './controllers/middleware/authorizeRole.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const __filename = fileURLToPath(import.meta.url);
@@ -162,6 +173,10 @@ function renderReviewerInvitationInboxPage({ email, invitations }) {
 </html>`;
 }
 
+function toIsoString(value) {
+  return value instanceof Date ? value.toISOString() : String(value);
+}
+
 /* c8 ignore start */
 function shouldGenerateSyntheticCoverage() {
   const entryPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
@@ -191,7 +206,10 @@ export function createApp({
   sendEmail = defaultSendEmail,
   nowFn = () => new Date(),
   now,
+  repositoryFilePath,
   idFactory,
+  makeId,
+  scheduleTask,
   internalServiceToken,
   tokenTtlMs,
   hashPasswordFn,
@@ -239,6 +257,14 @@ export function createApp({
   const submitPaperTemplateHtml = readFileSync(path.join(__dirname, 'views', 'submit-paper.html'), 'utf8');
   const assignReviewersTemplateHtml = readFileSync(path.join(__dirname, 'views', 'assign-reviewers.html'), 'utf8');
   const editorReviewsTemplateHtml = readFileSync(path.join(__dirname, 'views', 'editor-reviews.html'), 'utf8');
+  const adminScheduleGenerationTemplateHtml = readFileSync(
+    path.join(__dirname, 'views', 'admin', 'schedule-generation.html'),
+    'utf8'
+  );
+  const editorScheduleConflictsTemplateHtml = readFileSync(
+    path.join(__dirname, 'views', 'editor', 'schedule-conflicts.html'),
+    'utf8'
+  );
   const emailDeliveryService = createEmailDeliveryService({
     repository: resolvedRepository,
     sendEmail,
@@ -462,6 +488,47 @@ export function createApp({
     validationFeedbackModel,
     reviewerPaperAssignmentModel
   });
+  const scheduleNow = typeof now === 'function'
+    ? () => toIsoString(now())
+    : () => toIsoString(nowFn());
+  const scheduleRepository = new ScheduleRepository(repositoryFilePath);
+  const generationRunModel = new GenerationRunModel(scheduleRepository, {
+    now: scheduleNow,
+    makeId
+  });
+  const generatedScheduleModel = new GeneratedScheduleModel(scheduleRepository, {
+    now: scheduleNow,
+    makeId
+  });
+  const sessionAssignmentModel = new SessionAssignmentModel(scheduleRepository, {
+    now: scheduleNow,
+    makeId
+  });
+  const conflictFlagModel = new ConflictFlagModel(scheduleRepository, {
+    now: scheduleNow,
+    makeId
+  });
+  const preconditionService = new GenerationPreconditionService();
+  const generationEngine = new ScheduleGenerationEngine();
+  const scheduleGenerationController = new ScheduleGenerationController({
+    repository: scheduleRepository,
+    generationRunModel,
+    generatedScheduleModel,
+    sessionAssignmentModel,
+    conflictFlagModel,
+    preconditionService,
+    generationEngine,
+    ...(typeof scheduleTask === 'function' ? { scheduleTask } : {})
+  });
+  const scheduleRunController = new ScheduleRunController({
+    generationRunModel,
+    generatedScheduleModel
+  });
+  const scheduleReviewController = new ScheduleReviewController({
+    generatedScheduleModel,
+    sessionAssignmentModel,
+    conflictFlagModel
+  });
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
@@ -479,6 +546,26 @@ export function createApp({
   app.get('/login', (_req, res) => {
     res.status(200).type('html').send(renderLoginPage());
   });
+  app.get('/admin/schedule-generation', (_req, res) => {
+    res.status(200).type('html').send(adminScheduleGenerationTemplateHtml);
+  });
+  app.get('/editor/schedule-conflicts', (_req, res) => {
+    res.status(200).type('html').send(editorScheduleConflictsTemplateHtml);
+  });
+
+  function attachScheduleActor(req, _res, next) {
+    const roleHeader = req.headers?.['x-user-role'];
+    const userIdHeader = req.headers?.['x-user-id'];
+    const role = Array.isArray(roleHeader) ? roleHeader[0] : roleHeader;
+    const userId = Array.isArray(userIdHeader) ? userIdHeader[0] : userIdHeader;
+
+    req.user = {
+      role: typeof role === 'string' ? role.trim().toLowerCase() : undefined,
+      userId: typeof userId === 'string' && userId.trim() ? userId.trim() : undefined
+    };
+    next();
+  }
+
   function requireEditorSession(req, res, next) {
     const isApiRequest = String(req.path ?? req.originalUrl ?? '').startsWith('/api/');
     const session = authController.getAuthenticatedSession(req);
@@ -728,6 +815,16 @@ export function createApp({
   app.post('/api/reviewer-assignments/:assignmentId/invitations/cancel', invitationController.cancelByAssignment);
   app.post('/api/internal/review-invitations/retry-due', invitationController.retryDue);
   app.get('/api/papers/:paperId/invitation-failure-logs', invitationController.listFailureLogsByPaper);
+  app.post('/api/schedule-runs', attachScheduleActor, authorizeRole('admin'), scheduleGenerationController.createRun);
+  app.get('/api/schedule-runs/:runId', attachScheduleActor, authorizeRole('admin', 'editor'), scheduleRunController.getRun);
+  app.get('/api/schedules', attachScheduleActor, authorizeRole('admin', 'editor'), scheduleReviewController.listSchedules);
+  app.get('/api/schedules/:scheduleId', attachScheduleActor, authorizeRole('admin', 'editor'), scheduleReviewController.getSchedule);
+  app.get(
+    '/api/schedules/:scheduleId/conflicts',
+    attachScheduleActor,
+    authorizeRole('admin', 'editor'),
+    scheduleReviewController.listConflicts
+  );
   registerNotificationRoutes({
     app,
     notificationController,
@@ -817,6 +914,14 @@ export function createApp({
   app.locals.decisionModel = decisionModel;
   app.locals.decisionAuditModel = decisionAuditModel;
   app.locals.editorDecisionController = editorDecisionController;
+  app.locals.scheduleRepository = scheduleRepository;
+  app.locals.generationRunModel = generationRunModel;
+  app.locals.generatedScheduleModel = generatedScheduleModel;
+  app.locals.sessionAssignmentModel = sessionAssignmentModel;
+  app.locals.conflictFlagModel = conflictFlagModel;
+  app.locals.scheduleGenerationController = scheduleGenerationController;
+  app.locals.scheduleRunController = scheduleRunController;
+  app.locals.scheduleReviewController = scheduleReviewController;
 
   return app;
 }

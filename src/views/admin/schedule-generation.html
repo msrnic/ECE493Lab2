@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Schedule Generation</title>
+    <link rel="stylesheet" href="/assets/css/schedule-generation.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Generate Conference Schedule</h1>
+      <form id="generation-form">
+        <label for="notes">Notes</label>
+        <textarea id="notes" name="notes"></textarea>
+        <button type="submit" id="generate-btn">Start Generation</button>
+      </form>
+      <p id="status-message" aria-live="polite"></p>
+      <pre id="schedule-output"></pre>
+    </main>
+    <script type="module" src="/assets/js/admin-schedule-generation.js"></script>
+  </body>
+</html>
