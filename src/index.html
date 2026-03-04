@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Conference Management System</title>
     <link rel="stylesheet" href="/assets/css/editor-decision.css" />
+    <link rel="stylesheet" href="/assets/css/final-schedule.css" />
   </head>
   <body>
     <main>
@@ -43,12 +44,19 @@
         <a data-decision-override-link hidden href="#">Open override workflow</a>
         <section data-decision-evaluations></section>
       </section>
+
+      <section class="schedule-shell" id="final-schedule">
+        <h2>Final Schedule</h2>
+        <div data-final-schedule-root></div>
+      </section>
     </main>
 
     <script type="module">
       import { bootstrapDecisionWorkflowPage } from '/assets/js/decision-workflow-page.js';
+      import { registerFinalScheduleOnLoad } from '/assets/js/app.js';
 
       bootstrapDecisionWorkflowPage();
+      registerFinalScheduleOnLoad();
     </script>
   </body>
 </html>
