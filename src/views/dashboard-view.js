@@ -61,6 +61,9 @@ export function renderDashboardPage({ email, role = 'author', roleUpdated } = {}
   const assignmentSection = normalizedRole === 'editor'
     ? '<p><a href="/assign-reviewers" data-dashboard-assign-reviewers>Assign reviewers</a></p>'
     : '<p data-dashboard-assign-reviewers-disabled>Switch your role to editor to assign reviewers.</p>';
+  const editorDecisionSection = normalizedRole === 'editor'
+    ? '<p><a href="/editor/decisions" data-dashboard-editor-decisions>Open editor decision workflow</a></p>'
+    : '<p data-dashboard-editor-decisions-disabled>Switch your role to editor to make paper decisions.</p>';
   const reviewerInboxSection = normalizedRole === 'reviewer'
     ? '<p><a href="/reviewer/invitations" data-dashboard-reviewer-inbox>Review invitation inbox</a></p>'
     : '<p data-dashboard-reviewer-inbox-disabled>Switch your role to reviewer to open invitation inbox.</p>';
@@ -92,6 +95,7 @@ export function renderDashboardPage({ email, role = 'author', roleUpdated } = {}
       <p data-dashboard-role-status>${escapeHtml(roleMessage)}</p>
       ${submitSection}
       ${assignmentSection}
+      ${editorDecisionSection}
       ${reviewerInboxSection}
       ${reviewerPaperAccessSection}
       <p><a href="/account/password-change">Change password</a></p>

@@ -89,6 +89,8 @@ describe('app bootstrap', () => {
     expect(rootResponse.text).toContain('Conference Management System');
     expect(rootResponse.text).toContain('href="/register"');
     expect(rootResponse.text).toContain('href="/login"');
+    expect(rootResponse.text).not.toContain('href="/editor/decisions"');
+    expect(rootResponse.text).not.toContain('data-decision-workflow-app');
     expect(rootResponse.text).not.toContain('href="/assign-reviewers"');
     expect(rootResponse.text).not.toContain('href="/reviewer/papers"');
 
@@ -167,7 +169,21 @@ describe('app bootstrap', () => {
     expect(dashboardEditor.text).toContain('data-dashboard-submit-paper-disabled');
     expect(dashboardEditor.text).toContain('data-dashboard-assign-reviewers');
     expect(dashboardEditor.text).not.toContain('data-dashboard-assign-reviewers-disabled');
+    expect(dashboardEditor.text).toContain('data-dashboard-editor-decisions');
+    expect(dashboardEditor.text).not.toContain('data-dashboard-editor-decisions-disabled');
     expect(dashboardEditor.text).not.toContain('data-dashboard-reviewer-paper-access');
+
+    const decisionPageAsEditor = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/editor/decisions',
+      headers: {
+        cookie: sessionCookie
+      }
+    });
+    expect(decisionPageAsEditor.statusCode).toBe(200);
+    expect(decisionPageAsEditor.text).toContain('Editor Decision Workflow');
+    expect(decisionPageAsEditor.text).not.toContain('href="/register"');
+    expect(decisionPageAsEditor.text).not.toContain('href="/login"');
 
     const submitPaperAsEditor = await invokeHandler(submitPaperHandler, {
       headers: {
@@ -231,6 +247,17 @@ describe('app bootstrap', () => {
     expect(dashboardAuthor.text).toContain('Role updated successfully.');
     expect(dashboardAuthor.text).toContain('data-dashboard-submit-paper');
     expect(dashboardAuthor.text).toContain('data-dashboard-assign-reviewers-disabled');
+    expect(dashboardAuthor.text).toContain('data-dashboard-editor-decisions-disabled');
+
+    const decisionPageAsAuthor = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/editor/decisions',
+      headers: {
+        cookie: sessionCookie
+      }
+    });
+    expect(decisionPageAsAuthor.statusCode).toBe(302);
+    expect(decisionPageAsAuthor.redirectLocation).toBe('/dashboard?roleUpdated=editor_required');
 
     const submitPaperAsAuthor = await invokeHandler(submitPaperHandler, {
       headers: {
@@ -284,6 +311,7 @@ describe('app bootstrap', () => {
     });
     expect(dashboardReviewer.statusCode).toBe(200);
     expect(dashboardReviewer.text).toContain('Current role: Reviewer');
+    expect(dashboardReviewer.text).toContain('data-dashboard-editor-decisions-disabled');
     expect(dashboardReviewer.text).toContain('data-dashboard-reviewer-inbox');
     expect(dashboardReviewer.text).not.toContain('data-dashboard-reviewer-inbox-disabled');
     expect(dashboardReviewer.text).toContain('data-dashboard-reviewer-paper-access');

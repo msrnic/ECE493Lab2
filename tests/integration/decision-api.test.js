@@ -102,6 +102,11 @@ describe('integration: decision-api', () => {
       email: 'editor.unassigned@example.com',
       role: 'editor'
     });
+    const authorCookie = await loginAs(app, {
+      id: 'author-decision-1',
+      email: 'author.decision1@example.com',
+      role: 'author'
+    });
 
     const loadUnauthenticated = await invokeAppRoute(app, {
       method: 'get',
@@ -117,6 +122,15 @@ describe('integration: decision-api', () => {
       headers: { cookie: unassignedCookie }
     });
     expect(loadUnassigned.statusCode).toBe(403);
+
+    const loadAsAuthor = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/api/papers/:paperId/decision-workflow',
+      params: { paperId: 'PAPER-DEC-1' },
+      headers: { cookie: authorCookie }
+    });
+    expect(loadAsAuthor.statusCode).toBe(403);
+    expect(loadAsAuthor.body.code).toBe('ASSIGNMENT_FORBIDDEN');
 
     const loadAssigned = await invokeAppRoute(app, {
       method: 'get',
@@ -141,6 +155,19 @@ describe('integration: decision-api', () => {
     });
     expect(saveUnassigned.statusCode).toBe(403);
     expect(saveUnassigned.body.code).toBe('DENIED_UNASSIGNED');
+
+    const saveAsAuthor = await invokeAppRoute(app, {
+      method: 'post',
+      path: '/api/papers/:paperId/decisions',
+      params: { paperId: 'PAPER-DEC-1' },
+      headers: { cookie: authorCookie },
+      body: {
+        action: 'DEFER',
+        expectedVersion: 1
+      }
+    });
+    expect(saveAsAuthor.statusCode).toBe(403);
+    expect(saveAsAuthor.body.code).toBe('ASSIGNMENT_FORBIDDEN');
 
     const invalidOutcome = await invokeAppRoute(app, {
       method: 'post',

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Final Schedule</title>
+    <link rel="stylesheet" href="/assets/css/final-schedule.css" />
+  </head>
+  <body>
+    <main>
+      <h1>Conference Final Schedule</h1>
+      <section data-final-schedule-root>
+        <p data-final-schedule-status>Loading final schedule...</p>
+      </section>
+      <p><a href="/dashboard">Back to dashboard</a></p>
+    </main>
+    <script type="module">
+      import { bootstrapFinalSchedulePage } from '/assets/js/final-schedule-page.js';
+
+      bootstrapFinalSchedulePage();
+    </script>
+  </body>
+</html>

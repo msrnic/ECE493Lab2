@@ -91,6 +91,19 @@ describe('UC-11-AS Make Paper Decision acceptance', () => {
       email: 'editor.as2@example.com',
       role: 'editor'
     });
+    const authorCookie = await loginAs(app, {
+      id: 'author-as-1',
+      email: 'author.as1@example.com',
+      role: 'author'
+    });
+
+    const dashboardAsEditor = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/dashboard',
+      headers: { cookie: editorOneCookie }
+    });
+    expect(dashboardAsEditor.statusCode).toBe(200);
+    expect(dashboardAsEditor.text).toContain('data-dashboard-editor-decisions');
 
     const decisionPage = await invokeAppRoute(app, {
       method: 'get',
@@ -99,6 +112,33 @@ describe('UC-11-AS Make Paper Decision acceptance', () => {
     });
     expect(decisionPage.statusCode).toBe(200);
     expect(decisionPage.text).toContain('Editor Decision Workflow');
+    expect(decisionPage.text).not.toContain('href="/register"');
+    expect(decisionPage.text).not.toContain('href="/login"');
+
+    const dashboardAsAuthor = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/dashboard',
+      headers: { cookie: authorCookie }
+    });
+    expect(dashboardAsAuthor.statusCode).toBe(200);
+    expect(dashboardAsAuthor.text).toContain('data-dashboard-editor-decisions-disabled');
+
+    const authorDecisionPage = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/editor/decisions',
+      headers: { cookie: authorCookie }
+    });
+    expect(authorDecisionPage.statusCode).toBe(302);
+    expect(authorDecisionPage.redirectLocation).toBe('/dashboard?roleUpdated=editor_required');
+
+    const authorWorkflowApi = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/api/papers/:paperId/decision-workflow',
+      params: { paperId: 'PAPER-AS-DECISION' },
+      headers: { cookie: authorCookie }
+    });
+    expect(authorWorkflowApi.statusCode).toBe(403);
+    expect(authorWorkflowApi.body.code).toBe('ASSIGNMENT_FORBIDDEN');
 
     const workflowBeforeSave = await invokeAppRoute(app, {
       method: 'get',

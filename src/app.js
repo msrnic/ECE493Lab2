@@ -255,7 +255,8 @@ export function createApp({
     databaseFilePath: persistencePaths.deduplicationDataFilePath
   });
   const app = express();
-  const indexPageHtml = readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+  const decisionWorkflowPageHtml = readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+  const homePageHtml = readFileSync(path.join(__dirname, 'views', 'index.html'), 'utf8');
   const submitPaperTemplateHtml = readFileSync(path.join(__dirname, 'views', 'submit-paper.html'), 'utf8');
   const assignReviewersTemplateHtml = readFileSync(path.join(__dirname, 'views', 'assign-reviewers.html'), 'utf8');
   const editorReviewsTemplateHtml = readFileSync(path.join(__dirname, 'views', 'editor-reviews.html'), 'utf8');
@@ -549,7 +550,7 @@ export function createApp({
   app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
   app.get('/', (_req, res) => {
-    res.status(200).type('html').send(indexPageHtml);
+    res.status(200).type('html').send(homePageHtml);
   });
 
   app.get('/register', getRegistrationPage);
@@ -688,7 +689,7 @@ export function createApp({
   });
   app.get('/editor/reviews', attachAuthenticatedSession, reviewPageController.getReviewPage);
   app.get('/editor/decisions', requireEditorSession, (_req, res) => {
-    res.status(200).type('html').send(indexPageHtml);
+    res.status(200).type('html').send(decisionWorkflowPageHtml);
   });
   app.get('/reviewer/papers', requireReviewerSession, reviewerPaperAccessController.getPaperAccessPage);
   app.get('/reviewer/invitations', requireReviewerSession, (req, res) => {
@@ -794,8 +795,8 @@ export function createApp({
   app.post('/api/submissions/:submissionId/draft/versions/:versionId/restore', sessionAuthMiddleware, draftVersionController.restoreDraftVersion);
   app.post('/api/submissions/:submissionId/draft/retention/prune', draftController.pruneRetention);
   app.get('/api/papers/:paperId/reviews', attachAuthenticatedSession, reviewApiController.getPaperReviews);
-  app.get('/api/papers/:paperId/decision-workflow', attachAuthenticatedSession, editorDecisionController.getDecisionWorkflow);
-  app.post('/api/papers/:paperId/decisions', attachAuthenticatedSession, editorDecisionController.savePaperDecision);
+  app.get('/api/papers/:paperId/decision-workflow', requireEditorSession, editorDecisionController.getDecisionWorkflow);
+  app.post('/api/papers/:paperId/decisions', requireEditorSession, editorDecisionController.savePaperDecision);
   app.get('/api/papers', requireEditorSession, reviewerAssignmentController.listSubmittedPapers);
   app.get('/api/papers/:paperId/reviewer-candidates', requireEditorSession, reviewerAssignmentController.listReviewerCandidates);
   app.post('/api/papers/:paperId/assignment-attempts', requireEditorSession, reviewerAssignmentController.createAttempt);

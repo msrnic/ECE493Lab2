@@ -110,6 +110,7 @@ describe('UC-02-AS acceptance suite', () => {
     const homeResponse = await invokeHandler(homeHandler);
     expect(homeResponse.statusCode).toBe(200);
     expect(homeResponse.text).toContain('Conference Management System');
+    expect(homeResponse.text).not.toContain('data-decision-workflow-app');
 
     const dashboardHandler = getRouteHandler(app, 'get', '/dashboard');
     const dashboardAfterLogout = await invokeHandler(dashboardHandler, {
