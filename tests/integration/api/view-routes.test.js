@@ -21,6 +21,9 @@ describe('view routes', () => {
     expect(homePage.text).toContain('Conference Management System');
     expect(homePage.text).toContain('href="/register"');
     expect(homePage.text).toContain('href="/login"');
+    expect(homePage.text).toContain('Final Schedule Preview');
+    expect(homePage.text).toContain('data-final-schedule-root');
+    expect(homePage.text).toContain('/assets/js/home-page.js');
     expect(homePage.text).not.toContain('data-decision-workflow-app');
 
     const registerPage = await invokeApp(context.app, { path: '/register' });

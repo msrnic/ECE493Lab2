@@ -24,6 +24,9 @@ describe('UC-01-AS acceptance suite', () => {
     expect(response.contentType).toBe('html');
     expect(response.text).toContain('href="/register"');
     expect(response.text).toContain('href="/login"');
+    expect(response.text).toContain('Final Schedule Preview');
+    expect(response.text).toContain('data-final-schedule-root');
+    expect(response.text).toContain('/assets/js/home-page.js');
   });
 
   it('creates pending account and sends or queues confirmation email for valid registration', async () => {

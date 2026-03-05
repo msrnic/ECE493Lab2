@@ -4,40 +4,49 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Conference Management System</title>
+    <link rel="stylesheet" href="/assets/css/final-schedule.css" />
     <style>
       body {
         margin: 0;
         font-family: "Segoe UI", Tahoma, sans-serif;
         min-height: 100vh;
-        display: grid;
-        place-items: center;
         background: linear-gradient(160deg, #eef6ff, #fff9ef);
         color: #102a43;
+        padding: 1.5rem;
       }
 
       main {
-        width: min(90vw, 520px);
+        width: min(96vw, 980px);
+        margin: 0 auto;
         background: #fff;
         border: 1px solid #d9e2ec;
         border-radius: 10px;
         padding: 1.5rem;
         box-shadow: 0 12px 32px rgba(16, 42, 67, 0.08);
+        display: grid;
+        gap: 1.5rem;
       }
 
       h1 {
         margin-top: 0;
       }
 
-      nav {
+      .home-header {
         display: grid;
         gap: 0.75rem;
       }
 
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+      }
+
       a {
-        display: block;
+        display: inline-block;
         text-decoration: none;
         text-align: center;
-        padding: 0.75rem;
+        padding: 0.65rem 1rem;
         border-radius: 8px;
         border: 1px solid #bcccdc;
         color: #102a43;
@@ -47,16 +56,36 @@
       a:hover {
         background: #e6f0ff;
       }
+
+      [data-final-schedule-root] {
+        border: 1px solid #d9e2ec;
+        border-radius: 8px;
+        padding: 1rem;
+        background: #fbfdff;
+      }
     </style>
   </head>
   <body>
     <main>
-      <h1>Conference Management System</h1>
-      <p>Select an option to continue.</p>
-      <nav>
-        <a href="/register">Register</a>
-        <a href="/login">Login</a>
-      </nav>
+      <header class="home-header">
+        <h1>Conference Management System</h1>
+        <p>Select an option to continue.</p>
+        <nav>
+          <a href="/register">Register</a>
+          <a href="/login">Login</a>
+        </nav>
+      </header>
+      <section>
+        <h2>Final Schedule Preview</h2>
+        <section data-final-schedule-root>
+          <p data-final-schedule-status>Loading final schedule...</p>
+        </section>
+      </section>
     </main>
+    <script type="module">
+      import { bootstrapHomePage } from '/assets/js/home-page.js';
+
+      bootstrapHomePage();
+    </script>
   </body>
 </html>

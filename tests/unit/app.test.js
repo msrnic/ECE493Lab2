@@ -89,6 +89,9 @@ describe('app bootstrap', () => {
     expect(rootResponse.text).toContain('Conference Management System');
     expect(rootResponse.text).toContain('href="/register"');
     expect(rootResponse.text).toContain('href="/login"');
+    expect(rootResponse.text).toContain('Final Schedule Preview');
+    expect(rootResponse.text).toContain('data-final-schedule-root');
+    expect(rootResponse.text).toContain('/assets/js/home-page.js');
     expect(rootResponse.text).not.toContain('href="/editor/decisions"');
     expect(rootResponse.text).not.toContain('data-decision-workflow-app');
     expect(rootResponse.text).not.toContain('href="/assign-reviewers"');

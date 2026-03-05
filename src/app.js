@@ -91,6 +91,7 @@ import ScheduleReviewController from './controllers/ScheduleReviewController.js'
 import ScheduleEditController from './controllers/ScheduleEditController.js';
 import ScheduleEditService from './models/services/ScheduleEditService.js';
 import authorizeRole from './controllers/middleware/authorizeRole.js';
+import { createFinalScheduleServerController } from './controllers/final-schedule-server-controller.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const __filename = fileURLToPath(import.meta.url);
@@ -268,6 +269,7 @@ export function createApp({
     path.join(__dirname, 'views', 'editor', 'schedule-conflicts.html'),
     'utf8'
   );
+  const finalScheduleTemplateHtml = readFileSync(path.join(__dirname, 'views', 'final-schedule.html'), 'utf8');
   const emailDeliveryService = createEmailDeliveryService({
     repository: resolvedRepository,
     sendEmail,
@@ -540,6 +542,11 @@ export function createApp({
     conflictFlagModel,
     scheduleEditService
   });
+  const finalScheduleServerController = createFinalScheduleServerController({
+    authController,
+    repository: resolvedRepository,
+    scheduleRepository
+  });
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
@@ -562,6 +569,9 @@ export function createApp({
   });
   app.get('/editor/schedule-conflicts', (_req, res) => {
     res.status(200).type('html').send(editorScheduleConflictsTemplateHtml);
+  });
+  app.get('/final-schedule', (_req, res) => {
+    res.status(200).type('html').send(finalScheduleTemplateHtml);
   });
 
   function attachScheduleActor(req, _res, next) {
@@ -830,6 +840,7 @@ export function createApp({
   app.get('/api/schedule-runs/:runId', attachScheduleActor, authorizeRole('admin', 'editor'), scheduleRunController.getRun);
   app.get('/api/schedules', attachScheduleActor, authorizeRole('admin', 'editor'), scheduleReviewController.listSchedules);
   app.get('/api/schedules/:scheduleId', attachScheduleActor, authorizeRole('admin', 'editor'), scheduleReviewController.getSchedule);
+  app.get('/api/final-schedule', finalScheduleServerController.getFinalSchedule);
   app.post(
     '/api/schedules/:scheduleId/save-attempts',
     attachScheduleActor,
@@ -953,6 +964,7 @@ export function createApp({
   app.locals.scheduleGenerationController = scheduleGenerationController;
   app.locals.scheduleRunController = scheduleRunController;
   app.locals.scheduleReviewController = scheduleReviewController;
+  app.locals.finalScheduleServerController = finalScheduleServerController;
 
   return app;
 }

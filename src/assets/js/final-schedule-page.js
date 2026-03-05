@@ -1,11 +1,14 @@
 import { createFinalScheduleController } from '../../controllers/final-schedule-controller.js';
 
 export async function bootstrapFinalSchedulePage({
-  documentRef = globalThis.document
+  documentRef = globalThis.document,
+  apiClient
 } = {}) {
-  const controller = createFinalScheduleController({
-    documentRef
-  });
+  const controller = createFinalScheduleController(
+    typeof apiClient === 'function'
+      ? { documentRef, apiClient }
+      : { documentRef }
+  );
 
   if (!controller.mounted) {
     return {

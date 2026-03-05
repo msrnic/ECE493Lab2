@@ -73,3 +73,29 @@
 
 - Check items off as completed: `[x]`
 - Add review notes inline next to each checklist item
+
+## UC-15 Execution Evidence
+
+- Date: 2026-03-04
+- Regression command: `npm run coverage`
+- Result: PASS (`195` test files, `746` tests)
+- Coverage result: PASS (`100%` statements, functions, lines, and branches; c8 branch verification `4285/4285`)
+
+### US1 Evidence (Published Schedule)
+
+- Acceptance: `tests/acceptance/uc-15-final-schedule.acceptance.test.js` published scenarios PASS
+- Unit: `tests/unit/models/final-schedule-model.test.js`, `tests/unit/views/final-schedule-view.test.js`, `tests/unit/controllers/final-schedule-controller.test.js` PASS
+- Integration: `tests/integration/final-schedule.integration.test.js` published route/API flow PASS
+
+### US2 Evidence (Unpublished Notice)
+
+- Acceptance: `tests/acceptance/uc-15-final-schedule.acceptance.test.js` unpublished scenario PASS
+- Unit: unpublished payload and notice rendering paths in model/view/controller suites PASS
+- Integration: `tests/integration/final-schedule.integration.test.js` unpublished API response PASS
+
+### Notes
+
+- Server route wiring for UC-15 completed in `src/app.js`:
+  - `GET /final-schedule` serves `src/views/final-schedule.html`
+  - `GET /api/final-schedule` handled by `createFinalScheduleServerController`
+- Stakeholder clarity survey results (SC-006) are pending external participant collection.

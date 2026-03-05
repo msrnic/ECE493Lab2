@@ -55,4 +55,36 @@ describe('final-schedule page bootstrap', () => {
       globalThis.fetch = originalFetch;
     }
   });
+
+  it('uses injected api client when provided', async () => {
+    document.body.innerHTML = '<section data-final-schedule-root></section>';
+    const apiClient = vi.fn().mockResolvedValue({
+      status: 'published',
+      conferenceTimeZone: 'America/Toronto',
+      generatedAt: '2026-06-01T10:00:00.000Z',
+      viewerContext: {
+        isAuthenticated: false,
+        viewerRole: 'anonymous',
+        authorId: null
+      },
+      sessions: [{
+        sessionId: 'MOCK-1',
+        title: 'Mock',
+        startTimeUtc: '2026-06-01T14:00:00.000Z',
+        endTimeUtc: '2026-06-01T14:30:00.000Z',
+        room: 'Room A',
+        authorIds: []
+      }]
+    });
+
+    const result = await bootstrapFinalSchedulePage({
+      documentRef: document,
+      apiClient
+    });
+
+    expect(apiClient).toHaveBeenCalledTimes(1);
+    expect(result.enhanced).toBe(true);
+    expect(result.status).toBe('published');
+    expect(document.querySelectorAll('[data-final-schedule-session]')).toHaveLength(1);
+  });
 });
