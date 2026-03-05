@@ -1,0 +1,74 @@
+:root {
+  --pricing-bg: #f3f8ff;
+  --pricing-card: #ffffff;
+  --pricing-text: #172334;
+  --pricing-accent: #0f4d92;
+  --pricing-border: #a5bdd8;
+  --pricing-focus: #7a2e00;
+}
+
+body {
+  margin: 0;
+  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top right, #dbe9fb 0%, var(--pricing-bg) 55%, #edf5ff 100%);
+  color: var(--pricing-text);
+}
+
+.pricing-view__layout {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+[data-pricing-root] {
+  background: var(--pricing-card);
+  border: 2px solid var(--pricing-border);
+  border-radius: 0.75rem;
+  padding: 1rem;
+}
+
+[data-pricing-item-list] {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.pricing-view__item {
+  display: grid;
+  gap: 0.35rem;
+  border-bottom: 1px solid #d3e0f0;
+  padding-bottom: 0.5rem;
+}
+
+[data-pricing-item-amount],
+[data-pricing-currency] {
+  color: var(--pricing-accent);
+  font-weight: 700;
+}
+
+[data-pricing-retry] {
+  font: inherit;
+  margin-top: 0.75rem;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--pricing-accent);
+  border-radius: 0.5rem;
+  background: #ffffff;
+  color: var(--pricing-accent);
+}
+
+[data-pricing-retry]:focus-visible {
+  outline: 3px solid var(--pricing-focus);
+  outline-offset: 2px;
+}
+
+.pricing-view__live-region {
+  min-height: 1rem;
+}
+
+@media (max-width: 640px) {
+  .pricing-view__layout {
+    padding: 1rem;
+  }
+}

@@ -180,6 +180,96 @@ function toIsoString(value) {
   return value instanceof Date ? value.toISOString() : String(value);
 }
 
+function isNonEmptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function normalizePublicPricingOutcome(input) {
+  const fallbackMissing = {
+    status: 'pricing-missing',
+    message: 'Pricing information is not available yet.'
+  };
+
+  if (!input || typeof input !== 'object') {
+    return fallbackMissing;
+  }
+
+  if (input.status === 'pricing-temporarily-unavailable') {
+    return {
+      status: 'pricing-temporarily-unavailable',
+      message: isNonEmptyString(input.message)
+        ? input.message.trim()
+        : 'Pricing is temporarily unavailable. Please try again.',
+      retryAllowed: true
+    };
+  }
+
+  if (input.status === 'pricing-missing') {
+    return {
+      status: 'pricing-missing',
+      message: isNonEmptyString(input.message)
+        ? input.message.trim()
+        : 'Pricing information is not available yet.'
+    };
+  }
+
+  if (input.status !== 'pricing-displayed' || !/^[A-Z]{3}$/.test(String(input.currencyCode ?? ''))) {
+    return fallbackMissing;
+  }
+
+  const items = Array.isArray(input.items) ? input.items : [];
+  const normalizedItems = items
+    .filter((item) => item && typeof item === 'object')
+    .filter((item) => isNonEmptyString(item.itemId) && isNonEmptyString(item.label))
+    .filter((item) => ['standard', 'student', 'other'].includes(item.attendeeType))
+    .filter((item) => Number.isInteger(item.amountMinor) && item.amountMinor >= 0)
+    .map((item) => {
+      const normalized = {
+        itemId: item.itemId.trim(),
+        label: item.label.trim(),
+        attendeeType: item.attendeeType,
+        amountMinor: item.amountMinor,
+        amountDisplay: String(item.amountDisplay ?? ''),
+        displayOrder: Number.isInteger(item.displayOrder) ? item.displayOrder : Number.MAX_SAFE_INTEGER
+      };
+
+      if (
+        item.discount
+        && typeof item.discount === 'object'
+        && isNonEmptyString(item.discount.label)
+        && Number.isInteger(item.discount.amountMinor)
+        && item.discount.amountMinor >= 0
+      ) {
+        normalized.discount = {
+          label: item.discount.label.trim(),
+          amountMinor: item.discount.amountMinor,
+          amountDisplay: String(item.discount.amountDisplay ?? '')
+        };
+      }
+
+      return normalized;
+    })
+    .sort((left, right) => left.displayOrder - right.displayOrder)
+    .map(({ displayOrder: _displayOrder, ...item }) => item);
+
+  if (normalizedItems.length === 0) {
+    return fallbackMissing;
+  }
+
+  return {
+    status: 'pricing-displayed',
+    currencyCode: String(input.currencyCode),
+    items: normalizedItems
+  };
+}
+
+async function defaultPricingOutcomeProvider() {
+  return {
+    status: 'pricing-missing',
+    message: 'Pricing information is not available yet.'
+  };
+}
+
 /* c8 ignore start */
 function shouldGenerateSyntheticCoverage() {
   const entryPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
@@ -221,6 +311,7 @@ export function createApp({
   sendInvitationFn,
   sendDecisionEmailFn = defaultSendDecisionEmail,
   notificationInternalServiceKey,
+  pricingOutcomeProvider = defaultPricingOutcomeProvider,
   persistenceRootDirectory,
   databaseDirectory,
   uploadsDirectory
@@ -270,6 +361,7 @@ export function createApp({
     'utf8'
   );
   const finalScheduleTemplateHtml = readFileSync(path.join(__dirname, 'views', 'final-schedule.html'), 'utf8');
+  const pricingPageTemplateHtml = readFileSync(path.join(__dirname, 'views', 'pricing-view.html'), 'utf8');
   const emailDeliveryService = createEmailDeliveryService({
     repository: resolvedRepository,
     sendEmail,
@@ -572,6 +664,32 @@ export function createApp({
   });
   app.get('/final-schedule', (_req, res) => {
     res.status(200).type('html').send(finalScheduleTemplateHtml);
+  });
+  app.get('/payment-portal', (_req, res) => {
+    res.status(302).redirect('https://payments.conference.example.com/portal');
+  });
+  app.get('/pricing', (_req, res) => {
+    res.status(200).type('html').send(pricingPageTemplateHtml);
+  });
+  app.get('/api/public/pricing', async (req, res) => {
+    try {
+      const rawOutcome = await pricingOutcomeProvider(req);
+      const outcome = normalizePublicPricingOutcome(rawOutcome);
+
+      if (outcome.status === 'pricing-temporarily-unavailable') {
+        res.status(503).json(outcome);
+        return;
+      }
+
+      res.status(200).json(outcome);
+      return;
+    } catch {
+      res.status(503).json({
+        status: 'pricing-temporarily-unavailable',
+        message: 'Pricing is temporarily unavailable. Please try again.',
+        retryAllowed: true
+      });
+    }
   });
 
   function attachScheduleActor(req, _res, next) {

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Conference Pricing</title>
+    <link rel="stylesheet" href="/views/styles/pricing.css" />
+  </head>
+  <body>
+    <main class="pricing-view__layout">
+      <h1>Conference Pricing</h1>
+      <p class="pricing-view__intro">View registration pricing and discounts configured by conference organizers.</p>
+      <p class="pricing-view__live-region" data-pricing-live-region aria-live="polite" aria-atomic="true"></p>
+      <section data-pricing-root>
+        <p data-pricing-status>Loading conference pricing...</p>
+      </section>
+      <p><a href="/">Back to home</a></p>
+    </main>
+    <script type="module">
+      import { bootstrapPricingPage } from '/assets/js/pricing-page.js';
+
+      bootstrapPricingPage();
+    </script>
+  </body>
+</html>

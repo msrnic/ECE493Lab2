@@ -63,6 +63,17 @@
         padding: 1rem;
         background: #fbfdff;
       }
+
+      [data-pricing-root] {
+        border: 1px solid #d9e2ec;
+        border-radius: 8px;
+        padding: 1rem;
+        background: #fbfdff;
+      }
+
+      [data-payment-portal-link] {
+        margin-top: 0.75rem;
+      }
     </style>
   </head>
   <body>
@@ -80,6 +91,14 @@
         <section data-final-schedule-root>
           <p data-final-schedule-status>Loading final schedule...</p>
         </section>
+      </section>
+      <section>
+        <h2>Conference Pricing</h2>
+        <p data-pricing-live-region aria-live="polite" aria-atomic="true"></p>
+        <section data-pricing-root>
+          <p data-pricing-status>Loading conference pricing...</p>
+        </section>
+        <a href="/payment-portal" data-payment-portal-link>Go to Payment Portal</a>
       </section>
     </main>
     <script type="module">

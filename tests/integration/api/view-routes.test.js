@@ -23,6 +23,9 @@ describe('view routes', () => {
     expect(homePage.text).toContain('href="/login"');
     expect(homePage.text).toContain('Final Schedule Preview');
     expect(homePage.text).toContain('data-final-schedule-root');
+    expect(homePage.text).toContain('Conference Pricing');
+    expect(homePage.text).toContain('data-pricing-root');
+    expect(homePage.text).toContain('href="/payment-portal"');
     expect(homePage.text).toContain('/assets/js/home-page.js');
     expect(homePage.text).not.toContain('data-decision-workflow-app');
 
@@ -41,6 +44,10 @@ describe('view routes', () => {
     const editorPage = await invokeApp(context.app, { path: '/editor/schedule-conflicts' });
     expect(editorPage.status).toBe(200);
     expect(editorPage.text).toContain('Schedule Conflict Review');
+
+    const paymentPortal = await invokeApp(context.app, { path: '/payment-portal' });
+    expect(paymentPortal.status).toBe(302);
+    expect(paymentPortal.headers.location).toBe('https://payments.conference.example.com/portal');
 
     const asset = await invokeApp(context.app, { path: '/assets/css/schedule-generation.css' });
     expect(asset.status).toBe(200);

@@ -26,6 +26,9 @@ describe('UC-01-AS acceptance suite', () => {
     expect(response.text).toContain('href="/login"');
     expect(response.text).toContain('Final Schedule Preview');
     expect(response.text).toContain('data-final-schedule-root');
+    expect(response.text).toContain('Conference Pricing');
+    expect(response.text).toContain('data-pricing-root');
+    expect(response.text).toContain('href="/payment-portal"');
     expect(response.text).toContain('/assets/js/home-page.js');
   });
 

@@ -91,6 +91,9 @@ describe('app bootstrap', () => {
     expect(rootResponse.text).toContain('href="/login"');
     expect(rootResponse.text).toContain('Final Schedule Preview');
     expect(rootResponse.text).toContain('data-final-schedule-root');
+    expect(rootResponse.text).toContain('Conference Pricing');
+    expect(rootResponse.text).toContain('data-pricing-root');
+    expect(rootResponse.text).toContain('href="/payment-portal"');
     expect(rootResponse.text).toContain('/assets/js/home-page.js');
     expect(rootResponse.text).not.toContain('href="/editor/decisions"');
     expect(rootResponse.text).not.toContain('data-decision-workflow-app');
@@ -126,6 +129,13 @@ describe('app bootstrap', () => {
     });
     expect(reviewerInboxApiUnauthenticated.statusCode).toBe(401);
     expect(reviewerInboxApiUnauthenticated.body.code).toBe('AUTHENTICATION_REQUIRED');
+
+    const paymentPortalRedirect = await invokeAppRoute(app, {
+      method: 'get',
+      path: '/payment-portal'
+    });
+    expect(paymentPortalRedirect.statusCode).toBe(302);
+    expect(paymentPortalRedirect.redirectLocation).toBe('https://payments.conference.example.com/portal');
 
     const passwordPageRedirect = await invokeHandler(passwordPageHandler);
     expect(passwordPageRedirect.statusCode).toBe(302);
