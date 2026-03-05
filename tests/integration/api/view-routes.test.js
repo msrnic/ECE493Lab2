@@ -46,8 +46,11 @@ describe('view routes', () => {
     expect(editorPage.text).toContain('Schedule Conflict Review');
 
     const paymentPortal = await invokeApp(context.app, { path: '/payment-portal' });
-    expect(paymentPortal.status).toBe(302);
-    expect(paymentPortal.headers.location).toBe('https://payments.conference.example.com/portal');
+    expect(paymentPortal.status).toBe(200);
+    expect(paymentPortal.text).toContain('data-payment-form');
+    expect(paymentPortal.text).toContain('name="cardNumber"');
+    expect(paymentPortal.text).toContain('name="expiry"');
+    expect(paymentPortal.text).toContain('name="securityNumber"');
 
     const asset = await invokeApp(context.app, { path: '/assets/css/schedule-generation.css' });
     expect(asset.status).toBe(200);

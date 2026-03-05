@@ -47,8 +47,9 @@ describe('UC-16-AS view conference pricing acceptance', () => {
       method: 'get',
       path: '/payment-portal'
     });
-    expect(paymentPortal.statusCode).toBe(302);
-    expect(paymentPortal.redirectLocation).toBe('https://payments.conference.example.com/portal');
+    expect(paymentPortal.statusCode).toBe(200);
+    expect(paymentPortal.text).toContain('data-payment-form');
+    expect(paymentPortal.text).toContain('name="cardNumber"');
 
     const page = await invokeAppRoute(app, {
       method: 'get',

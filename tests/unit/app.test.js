@@ -130,12 +130,13 @@ describe('app bootstrap', () => {
     expect(reviewerInboxApiUnauthenticated.statusCode).toBe(401);
     expect(reviewerInboxApiUnauthenticated.body.code).toBe('AUTHENTICATION_REQUIRED');
 
-    const paymentPortalRedirect = await invokeAppRoute(app, {
+    const paymentPortalPage = await invokeAppRoute(app, {
       method: 'get',
       path: '/payment-portal'
     });
-    expect(paymentPortalRedirect.statusCode).toBe(302);
-    expect(paymentPortalRedirect.redirectLocation).toBe('https://payments.conference.example.com/portal');
+    expect(paymentPortalPage.statusCode).toBe(200);
+    expect(paymentPortalPage.text).toContain('data-payment-form');
+    expect(paymentPortalPage.text).toContain('name="cardNumber"');
 
     const passwordPageRedirect = await invokeHandler(passwordPageHandler);
     expect(passwordPageRedirect.statusCode).toBe(302);

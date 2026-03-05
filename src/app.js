@@ -92,6 +92,12 @@ import ScheduleEditController from './controllers/ScheduleEditController.js';
 import ScheduleEditService from './models/services/ScheduleEditService.js';
 import authorizeRole from './controllers/middleware/authorizeRole.js';
 import { createFinalScheduleServerController } from './controllers/final-schedule-server-controller.js';
+import { createPaymentRepository } from './models/payment-repository.js';
+import { createGatewayClient } from './controllers/gateway-client.js';
+import { createPaymentController } from './controllers/payment-controller.js';
+import { createPaymentStatusController } from './controllers/payment-status-controller.js';
+import { createGatewayWebhookController } from './controllers/gateway-webhook-controller.js';
+import { registerPaymentRoutes } from './controllers/payment-routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const __filename = fileURLToPath(import.meta.url);
@@ -362,6 +368,8 @@ export function createApp({
   );
   const finalScheduleTemplateHtml = readFileSync(path.join(__dirname, 'views', 'final-schedule.html'), 'utf8');
   const pricingPageTemplateHtml = readFileSync(path.join(__dirname, 'views', 'pricing-view.html'), 'utf8');
+  const paymentPortalTemplateHtml = readFileSync(path.join(__dirname, 'views', 'payment.html'), 'utf8');
+  const paymentConfirmationTemplateHtml = readFileSync(path.join(__dirname, 'views', 'confirmation.html'), 'utf8');
   const emailDeliveryService = createEmailDeliveryService({
     repository: resolvedRepository,
     sendEmail,
@@ -639,6 +647,24 @@ export function createApp({
     repository: resolvedRepository,
     scheduleRepository
   });
+  const paymentRepository = createPaymentRepository({
+    nowFn: () => nowFn().toISOString()
+  });
+  const gatewayClient = createGatewayClient();
+  const paymentController = createPaymentController({
+    repository: paymentRepository,
+    gatewayClient,
+    nowFn
+  });
+  const paymentStatusController = createPaymentStatusController({
+    repository: paymentRepository,
+    nowFn
+  });
+  const gatewayWebhookController = createGatewayWebhookController({
+    repository: paymentRepository,
+    gatewayClient,
+    nowFn
+  });
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
@@ -665,8 +691,14 @@ export function createApp({
   app.get('/final-schedule', (_req, res) => {
     res.status(200).type('html').send(finalScheduleTemplateHtml);
   });
+  app.get('/portal', (_req, res) => {
+    res.status(200).type('html').send(paymentPortalTemplateHtml);
+  });
+  app.get('/portal/confirmation', (_req, res) => {
+    res.status(200).type('html').send(paymentConfirmationTemplateHtml);
+  });
   app.get('/payment-portal', (_req, res) => {
-    res.status(302).redirect('https://payments.conference.example.com/portal');
+    res.status(200).type('html').send(paymentPortalTemplateHtml);
   });
   app.get('/pricing', (_req, res) => {
     res.status(200).type('html').send(pricingPageTemplateHtml);
@@ -998,6 +1030,12 @@ export function createApp({
     reviewSubmissionController,
     requireReviewerSession
   });
+  registerPaymentRoutes({
+    app,
+    paymentController,
+    paymentStatusController,
+    gatewayWebhookController
+  });
   app.get('/api/reviewer/invitations', requireReviewerSession, invitationController.listReviewerInbox);
   app.post('/api/reviewer/invitations/:invitationId/accept', requireReviewerSession, invitationController.acceptReviewerInvitation);
   app.post('/api/reviewer/invitations/:invitationId/decline', requireReviewerSession, invitationController.declineReviewerInvitation);
@@ -1083,6 +1121,10 @@ export function createApp({
   app.locals.scheduleRunController = scheduleRunController;
   app.locals.scheduleReviewController = scheduleReviewController;
   app.locals.finalScheduleServerController = finalScheduleServerController;
+  app.locals.paymentRepository = paymentRepository;
+  app.locals.paymentController = paymentController;
+  app.locals.paymentStatusController = paymentStatusController;
+  app.locals.gatewayWebhookController = gatewayWebhookController;
 
   return app;
 }

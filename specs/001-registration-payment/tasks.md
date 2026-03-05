@@ -27,12 +27,12 @@ SC-001 through SC-009, and NFR-001 through NFR-003) and `plan.md`.
 **Purpose**: Implement shared domain and integration foundations required by all stories.  
 **⚠️ CRITICAL**: Complete this phase before user story work.
 
-- [ ] T008 Implement shared payment input validation helpers (UUID, token, idempotency key) in `src/models/payment-validation.js` for UC-17 / UC-17-AS
-- [ ] T009 [P] Implement shared persistence/repository interfaces for session, attempts, retry policy, and reconciliation in `src/models/payment-repository.js` for UC-17 / UC-17-AS
-- [ ] T010 [P] Implement gateway client abstraction for tokenized submit/status lookup operations in `src/controllers/gateway-client.js` for UC-17 / UC-17-AS
-- [ ] T011 Implement base `RegistrationCheckoutSession` domain model and allowed state transitions in `src/models/registration-session-model.js` for UC-17 / UC-17-AS
-- [ ] T012 [P] Create controller routing bootstrap for registration payment endpoints in `src/controllers/payment-routes.js` for UC-17 / UC-17-AS
-- [ ] T013 Define contract-to-controller mapping notes for all four OpenAPI endpoints in `specs/001-registration-payment/contracts/README.md` for UC-17 / UC-17-AS
+- [X] T008 Implement shared payment input validation helpers (UUID, token, idempotency key) in `src/models/payment-validation.js` for UC-17 / UC-17-AS
+- [X] T009 [P] Implement shared persistence/repository interfaces for session, attempts, retry policy, and reconciliation in `src/models/payment-repository.js` for UC-17 / UC-17-AS
+- [X] T010 [P] Implement gateway client abstraction for tokenized submit/status lookup operations in `src/controllers/gateway-client.js` for UC-17 / UC-17-AS
+- [X] T011 Implement base `RegistrationCheckoutSession` domain model and allowed state transitions in `src/models/registration-session-model.js` for UC-17 / UC-17-AS
+- [X] T012 [P] Create controller routing bootstrap for registration payment endpoints in `src/controllers/payment-routes.js` for UC-17 / UC-17-AS
+- [X] T013 Define contract-to-controller mapping notes for all four OpenAPI endpoints in `specs/001-registration-payment/contracts/README.md` for UC-17 / UC-17-AS
 - [ ] T014 Configure enforced minimum coverage threshold (95%) and 100% target reporting in `./vitest.config.js` for UC-17 / UC-17-AS
 
 **Checkpoint**: Shared architecture and quality gates are ready; story implementation can begin.
@@ -46,20 +46,20 @@ SC-001 through SC-009, and NFR-001 through NFR-003) and `plan.md`.
 
 ### Validation Tasks
 
-- [ ] T015 [P] [US1] Encode UC-17 approved-path acceptance scenario in `tests/acceptance/uc17-registration-payment.acceptance.test.js` for UC-17 / UC-17-AS
-- [ ] T016 [P] [US1] Add unit tests for approved payment attempt lifecycle transitions in `tests/unit/models/payment-attempt-model.test.js` for UC-17 / UC-17-AS
-- [ ] T017 [P] [US1] Add unit tests for registration completion transition rules in `tests/unit/models/registration-session-model.test.js` for UC-17 / UC-17-AS
+- [X] T015 [P] [US1] Encode UC-17 approved-path acceptance scenario in `tests/acceptance/uc17-registration-payment.acceptance.test.js` for UC-17 / UC-17-AS
+- [X] T016 [P] [US1] Add unit tests for approved payment attempt lifecycle transitions in `tests/unit/models/payment-attempt-model.test.js` for UC-17 / UC-17-AS
+- [X] T017 [P] [US1] Add unit tests for registration completion transition rules in `tests/unit/models/registration-session-model.test.js` for UC-17 / UC-17-AS
 - [ ] T018 [US1] Prepare approved-path acceptance evidence template in `tests/acceptance/uc17-us1-results.md` for UC-17 / UC-17-AS
 
 ### Implementation Tasks
 
-- [ ] T019 [P] [US1] Implement `PaymentAttempt` model for processing/approved outcomes and replay metadata in `src/models/payment-attempt-model.js` for UC-17 / UC-17-AS
-- [ ] T020 [P] [US1] Implement payment submit form and hosted-field container markup in `src/views/payment.html` for UC-17 / UC-17-AS
-- [ ] T021 [P] [US1] Implement approved confirmation page markup in `src/views/confirmation.html` for UC-17 / UC-17-AS
-- [ ] T022 [P] [US1] Implement payment/confirmation styling for success path states in `src/assets/css/payment.css` for UC-17 / UC-17-AS
-- [ ] T023 [US1] Implement payment submission controller for `POST /api/registration-sessions/{sessionId}/payment-attempts` approved and idempotent-replay responses in `src/controllers/payment-controller.js` for UC-17 / UC-17-AS
-- [ ] T024 [US1] Implement registration-session status controller for `GET /api/registration-sessions/{sessionId}` in `src/controllers/payment-status-controller.js` for UC-17 / UC-17-AS
-- [ ] T025 [US1] Implement view-only submit/confirmation wiring (no business logic) in `src/assets/js/payment-view.js` for UC-17 / UC-17-AS
+- [X] T019 [P] [US1] Implement `PaymentAttempt` model for processing/approved outcomes and replay metadata in `src/models/payment-attempt-model.js` for UC-17 / UC-17-AS
+- [X] T020 [P] [US1] Implement payment submit form and hosted-field container markup in `src/views/payment.html` for UC-17 / UC-17-AS
+- [X] T021 [P] [US1] Implement approved confirmation page markup in `src/views/confirmation.html` for UC-17 / UC-17-AS
+- [X] T022 [P] [US1] Implement payment/confirmation styling for success path states in `src/assets/css/payment.css` for UC-17 / UC-17-AS
+- [X] T023 [US1] Implement payment submission controller for `POST /api/registration-sessions/{sessionId}/payment-attempts` approved and idempotent-replay responses in `src/controllers/payment-controller.js` for UC-17 / UC-17-AS
+- [X] T024 [US1] Implement registration-session status controller for `GET /api/registration-sessions/{sessionId}` in `src/controllers/payment-status-controller.js` for UC-17 / UC-17-AS
+- [X] T025 [US1] Implement view-only submit/confirmation wiring (no business logic) in `src/assets/js/payment-view.js` for UC-17 / UC-17-AS
 - [ ] T026 [US1] Update approved + idempotent replay API examples and schemas in `specs/001-registration-payment/contracts/openapi.yaml` for UC-17 / UC-17-AS
 - [ ] T027 [US1] Execute approved-path acceptance checks and record coverage output in `tests/coverage/uc17-us1-coverage.md` for UC-17 / UC-17-AS
 
@@ -74,20 +74,20 @@ SC-001 through SC-009, and NFR-001 through NFR-003) and `plan.md`.
 
 ### Validation Tasks
 
-- [ ] T028 [P] [US2] Extend acceptance suite with declined, retry, pending, and cooldown boundary scenarios in `tests/acceptance/uc17-registration-payment.acceptance.test.js` for UC-17 / UC-17-AS
-- [ ] T029 [P] [US2] Add unit tests for retry window and cooldown expiry logic in `tests/unit/models/retry-policy-model.test.js` for UC-17 / UC-17-AS
-- [ ] T030 [P] [US2] Add integration tests for pending reconciliation via webhook/poll fallback in `tests/integration/gateway-webhook-controller.test.js` for UC-17 / UC-17-AS
+- [X] T028 [P] [US2] Extend acceptance suite with declined, retry, pending, and cooldown boundary scenarios in `tests/acceptance/uc17-registration-payment.acceptance.test.js` for UC-17 / UC-17-AS
+- [X] T029 [P] [US2] Add unit tests for retry window and cooldown expiry logic in `tests/unit/models/retry-policy-model.test.js` for UC-17 / UC-17-AS
+- [X] T030 [P] [US2] Add integration tests for pending reconciliation via webhook/poll fallback in `tests/integration/gateway-webhook-controller.test.js` for UC-17 / UC-17-AS
 - [ ] T031 [US2] Prepare decline/retry acceptance evidence template in `tests/acceptance/uc17-us2-results.md` for UC-17 / UC-17-AS
 
 ### Implementation Tasks
 
-- [ ] T032 [P] [US2] Implement retry-limit and cooldown policy state model in `src/models/retry-policy-model.js` for UC-17 / UC-17-AS
-- [ ] T033 [P] [US2] Implement reconciliation-event model with idempotent event processing in `src/models/reconciliation-event-model.js` for UC-17 / UC-17-AS
-- [ ] T034 [P] [US2] Extend payment page messaging regions for declined, pending, and cooldown states in `src/views/payment.html` for UC-17 / UC-17-AS
-- [ ] T035 [P] [US2] Extend payment view scripting for retry prompts, pending lockout, and cooldown timers in `src/assets/js/payment-view.js` for UC-17 / UC-17-AS
-- [ ] T036 [US2] Extend payment submission controller for declined/pending outcomes and retry blocking (`409`) responses in `src/controllers/payment-controller.js` for UC-17 / UC-17-AS
-- [ ] T037 [US2] Implement attempt-status controller for `GET /api/registration-sessions/{sessionId}/payment-attempts/{attemptId}` in `src/controllers/payment-status-controller.js` for UC-17 / UC-17-AS
-- [ ] T038 [US2] Implement gateway webhook reconciliation endpoint for `POST /api/payments/webhooks/gateway` in `src/controllers/gateway-webhook-controller.js` for UC-17 / UC-17-AS
+- [X] T032 [P] [US2] Implement retry-limit and cooldown policy state model in `src/models/retry-policy-model.js` for UC-17 / UC-17-AS
+- [X] T033 [P] [US2] Implement reconciliation-event model with idempotent event processing in `src/models/reconciliation-event-model.js` for UC-17 / UC-17-AS
+- [X] T034 [P] [US2] Extend payment page messaging regions for declined, pending, and cooldown states in `src/views/payment.html` for UC-17 / UC-17-AS
+- [X] T035 [P] [US2] Extend payment view scripting for retry prompts, pending lockout, and cooldown timers in `src/assets/js/payment-view.js` for UC-17 / UC-17-AS
+- [X] T036 [US2] Extend payment submission controller for declined/pending outcomes and retry blocking (`409`) responses in `src/controllers/payment-controller.js` for UC-17 / UC-17-AS
+- [X] T037 [US2] Implement attempt-status controller for `GET /api/registration-sessions/{sessionId}/payment-attempts/{attemptId}` in `src/controllers/payment-status-controller.js` for UC-17 / UC-17-AS
+- [X] T038 [US2] Implement gateway webhook reconciliation endpoint for `POST /api/payments/webhooks/gateway` in `src/controllers/gateway-webhook-controller.js` for UC-17 / UC-17-AS
 - [ ] T039 [US2] Update OpenAPI schemas/examples for pending reconciliation, blocked reasons, and webhook errors in `specs/001-registration-payment/contracts/openapi.yaml` for UC-17 / UC-17-AS
 - [ ] T040 [US2] Execute decline/retry acceptance checks and record coverage output in `tests/coverage/uc17-us2-coverage.md` for UC-17 / UC-17-AS
 

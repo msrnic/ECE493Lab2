@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Registration Payment Portal</title>
+    <link rel="stylesheet" href="/assets/css/payment.css" />
+  </head>
+  <body>
+    <main class="payment-shell" data-payment-root>
+      <h1>Conference Registration Payment</h1>
+      <p>Enter your payment information to complete registration.</p>
+
+      <section class="payment-card">
+        <form data-payment-form>
+          <label for="card-number">Card Number</label>
+          <input id="card-number" name="cardNumber" type="text" inputmode="numeric" autocomplete="cc-number" required />
+          <p data-payment-error="cardNumber" class="payment-error" hidden></p>
+
+          <label for="card-expiry">Expiry (MM/YYYY)</label>
+          <input id="card-expiry" name="expiry" type="text" inputmode="numeric" autocomplete="cc-exp" required />
+          <p data-payment-error="expiry" class="payment-error" hidden></p>
+
+          <label for="card-cvv">Security Code</label>
+          <input id="card-cvv" name="securityNumber" type="password" inputmode="numeric" autocomplete="cc-csc" required />
+          <p data-payment-error="securityNumber" class="payment-error" hidden></p>
+
+          <button type="submit">Submit Payment</button>
+        </form>
+
+        <p data-payment-status role="status" aria-live="polite"></p>
+      </section>
+    </main>
+    <script type="module" src="/assets/js/payment-view.js"></script>
+  </body>
+</html>
